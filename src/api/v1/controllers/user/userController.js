@@ -133,16 +133,6 @@ const login = async (req, res, next) => {
 
     let updateRes = await updateUserById(userResult._id, { isOnline: true });
 
-    let obj = {
-      _id: userResult._id,
-      email: userResult.email,
-      userName: userResult.userName,
-      token: token,
-      userType: userResult.userType,
-      permissions: userResult.permissions,
-      status: userResult.status,
-      isOnline: updateRes.isOnline,
-    };
     // await createLogHistory({
     //   userId: userResult._id,
     //   ip_Address: ip.address(),
@@ -150,7 +140,7 @@ const login = async (req, res, next) => {
     //   userType: userResult.userType,
     //   email: userResult.email,
     // });
-    return res.json(new response(obj, responseMessage.LOGIN));
+    return res.json(new response(updateRes, responseMessage.LOGIN));
   } catch (error) {
     console.log("==error===", error);
     return next(error);

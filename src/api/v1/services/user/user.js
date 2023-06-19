@@ -5,18 +5,7 @@ const userType = require("../../../../enums/userType");
 // Function to create a new user
 async function createUser(userData) {
   try {
-    const newUser = new User({
-      name: userData.name,
-      userName: userData.userName,
-      email: userData.email,
-      password: userData.password,
-      dateOfBirth: userData.dateOfBirth,
-      phoneNumber: userData.phoneNumber,
-      permissions: userData.permissions,
-      userType: userData.userType,
-      gender: userData.gender,
-      createdAt: Date.now(),
-    });
+    const newUser = new User(userData);
     const createdUser = await newUser.save();
     return createdUser;
   } catch (error) {
