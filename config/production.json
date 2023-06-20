@@ -1,0 +1,15 @@
+{
+    "dbConfig": {
+      "dbHost": "localhost",
+      "dbPort": 27017,
+      "dbName": "ino_Database"
+    },
+    "serverConfig": {
+      "serverURL": "http://localhost",
+      "serverPort": 6000
+    },
+  
+    "jwtsecret": "mysecretkey"
+  
+    }
+    
