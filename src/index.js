@@ -1,8 +1,9 @@
 // Import required modules
+require('dotenv').config();
+const config = require('config');
 const express = require('express');
 const mongoose = require('mongoose');
 const routes = require('./routes');
-const config = require('config');
 const bodyParser = require('body-parser');
 
 
@@ -19,12 +20,20 @@ routes(app);
 const connectToDatabase = async () => {
   try {
     const dbConfig = config.get('dbConfig');
-    await mongoose.connect(`mongodb://${dbConfig.dbHost}:${dbConfig.dbPort}/${dbConfig.dbName}`, { useNewUrlParser: true, useUnifiedTopology: true });
+    let dbUrl = `mongodb://${dbConfig.dbHost}:${dbConfig.dbPort}/${dbConfig.dbName}`;
+  
+    if (process.env.MONGO_URL) {
+      dbUrl = process.env.MONGO_URL;
+    }
+  
+    await mongoose.connect(dbUrl, { useNewUrlParser: true, useUnifiedTopology: true });
     console.log('Connected to the database');
   } catch (error) {
     console.error('Database connection error:', error);
     throw error;
   }
+  
+  
 };
 
 // Start the server
