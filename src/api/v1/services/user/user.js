@@ -13,13 +13,11 @@ async function createUser(userData) {
   }
 }
 
-async function checkUserExists(mobileNumber, email, userName) {
+async function getUserByPhoneNumber(mobileNumber) {
   try {
     const user = await User.findOne({
       $or: [
-        { phoneNumber: mobileNumber },
-        { email: email },
-        { userName: userName },
+        { phoneNumber: mobileNumber }
       ],
     });
     return user;
@@ -77,5 +75,5 @@ module.exports = {
   findUserByUsername,
   updateUserById,
   deleteUserById,
-  checkUserExists,
+  getUserByPhoneNumber,
 };

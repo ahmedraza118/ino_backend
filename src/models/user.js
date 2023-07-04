@@ -10,21 +10,17 @@ const mongooseAggregatePaginate = require("mongoose-aggregate-paginate");
 const userSchema = new mongoose.Schema({
   name: {
     type: String,
-    required: true,
   },
   userName: {
     type: String,
-    required: true,
     unique: true,
   },
   email: {
     type: String,
-    required: true,
     unique: true,
   },
   password: {
     type: String,
-    required: true,
   },
   dateOfBirth: {
     type: Date,
@@ -32,7 +28,7 @@ const userSchema = new mongoose.Schema({
   },
   phoneNumber: {
     type: String,
-    required: false,
+    required: true,
   },
   gender: {
     type: String,
@@ -40,6 +36,14 @@ const userSchema = new mongoose.Schema({
   },
   isOnline: { type: Boolean, default: false },
   status: { type: String, default: status.ACTIVE },
+  otpTime: {
+    type: Date,
+    default: null,
+  },
+  otp: {
+    type: String,
+    default: null,
+  },
   permissions: {
     promotionManagement: { type: Boolean, default: false },
     productManagement: { type: Boolean, default: false },
