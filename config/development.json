@@ -10,9 +10,9 @@
   },
   "jwtsecret": "mysecretkey",
   "twilio": {
-    "accountSid": "AC38a54c80296cd1ec317141d2ea7b5e9b",
-    "authToken": "506e1fadaa7b2de04bc4aa76881f19cf",
-    "number": "+923187858118"
+    "accountSid": "AC75d2d726b087dafa49ac9ec2681857fc",
+    "authToken": "8374c9ea9fab5e3fda38e6bdf6c0c6f6",
+    "messagingServiceSid": "MG6d2aa488d9d55eebb9ad96c7a42c7d50"
   },
   "cloudinary": {
     "cloud_name": "mobiloittetech",

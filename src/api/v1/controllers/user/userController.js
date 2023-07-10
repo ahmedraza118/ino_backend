@@ -1,4 +1,4 @@
-const _ = require('lodash');
+const _ = require("lodash");
 const Joi = require("joi");
 const config = require("config");
 const jwt = require("jsonwebtoken");
@@ -58,12 +58,9 @@ const register = async (req, res, next) => {
 
     if (error) {
       // Handle validation error
-      console.log(error);
-      throw error;
-    } else {
-      // Use the extracted values for further processing
-      console.log("user phone number", phoneNumber);
+      throw new Error(error.details[0].message);
     }
+
     var userResult = await getUserByPhoneNumber(phoneNumber);
 
     if (userResult) {
@@ -80,13 +77,18 @@ const register = async (req, res, next) => {
       let otp = await getOTP();
 
       if (phoneNumber) {
-        // let number = `${countryCode}${phoneNumber}`;
-        await sendSmsTwilio(phoneNumber, otp);
+        try {
+          await sendSmsTwilio(phoneNumber, otp);
+        } catch (error) {
+          // throw new Error("Failed to send OTP");
+          // Or, if you want to include the original Twilio error message:
+          throw new Error("Failed to send OTP: " + error.message);
+          return; // Stop the execution of the remaining code
+        }
       }
 
       req.body.otpTime = new Date().getTime();
       req.body.otp = otp;
-      req.body.isOnline = true;
       userResult = await updateUserById(userResult._id, req.body);
       console.log("Result:", userResult);
 
@@ -105,9 +107,16 @@ const register = async (req, res, next) => {
       req.body.otp = otp;
 
       if (phoneNumber) {
-        // let number = `${countryCode}${mobileNumber}`;
-        await sendSmsTwilio(phoneNumber, otp);
+        try {
+          await sendSmsTwilio(phoneNumber, otp);
+        } catch (error) {
+          // throw new Error("Failed to send OTP");
+          // Or, if you want to include the original Twilio error message:
+          throw new Error("Failed to send OTP: " + error.message);
+          return; // Stop the execution of the remaining code
+        }
       }
+
       result = await createUser(req.body);
       console.log("Result:", result);
 
@@ -125,14 +134,14 @@ const verifyOTP = async (req, res, next) => {
     const { phoneNumber, otp } = req.body;
 
     // Retrieve the user based on the phone number
-    const user = await getUserByPhoneNumber(phoneNumber);
+    const userResult = await getUserByPhoneNumber(phoneNumber);
 
-    if (!user) {
+    if (!userResult) {
       throw apiError.notFound(responseMessage.USER_NOT_FOUND);
     }
 
     // Check if the OTP matches
-    if (user.otp !== otp) {
+    if (userResult.otp !== otp) {
       return res.status(400).json({ message: "Invalid OTP" });
     }
 
@@ -140,7 +149,7 @@ const verifyOTP = async (req, res, next) => {
     const otpExpirationTime = 5 * 60 * 1000; // 5 minutes in milliseconds
     const currentTime = new Date().getTime();
 
-    if (currentTime - user.otpTime > otpExpirationTime) {
+    if (currentTime - userResult.otpTime > otpExpirationTime) {
       return res.status(400).json({ message: "OTP has expired" });
     }
 
@@ -151,13 +160,13 @@ const verifyOTP = async (req, res, next) => {
       userType: userResult.userType,
     });
     // Update the user's login status and clear the OTP
-    var updatedUser = await updateUserById(user._id, {
+    var updatedUser = await updateUserById(userResult._id, {
       isOnline: true,
       otp: null,
     });
 
     // Return the token and user details
-    updatedUser = _.omit(JSON.parse(JSON.stringify(user)), "otp");
+    updatedUser = _.omit(JSON.parse(JSON.stringify(updatedUser)), "otp");
     return res.json({
       token,
       user: updatedUser,
@@ -235,86 +244,120 @@ const login = async (req, res, next) => {
 
 const updateProfile = async (req, res, next) => {
   const validationSchema = {
-      name: Joi.string().allow("").optional(),
-      userName: Joi.string().allow("").optional(),
-      email: Joi.string().allow("").optional(),
-      countryCode: Joi.string().allow("").optional(),
-      mobileNumber: Joi.string().allow("").optional(),
-      gender: Joi.string().allow("").optional(),
-      bio: Joi.string().allow("").optional(),
-      dob: Joi.string().allow("").optional(),
-      facebook: Joi.string().allow("").optional(),
-      twitter: Joi.string().allow("").optional(),
-      instagram: Joi.string().allow("").optional(),
-      linkedIn: Joi.string().allow("").optional(),
-      location: Joi.string().allow("").optional(),
-      profilePic: Joi.string().allow("").optional(),
-      coverPic: Joi.string().allow("").optional(),
+    name: Joi.string().allow("").optional(),
+    userName: Joi.string().allow("").optional(),
+    email: Joi.string().allow("").optional(),
+    countryCode: Joi.string().allow("").optional(),
+    mobileNumber: Joi.string().allow("").optional(),
+    gender: Joi.string().allow("").optional(),
+    bio: Joi.string().allow("").optional(),
+    dob: Joi.string().allow("").optional(),
+    facebook: Joi.string().allow("").optional(),
+    twitter: Joi.string().allow("").optional(),
+    instagram: Joi.string().allow("").optional(),
+    linkedIn: Joi.string().allow("").optional(),
+    location: Joi.string().allow("").optional(),
+    profilePic: Joi.string().allow("").optional(),
+    coverPic: Joi.string().allow("").optional(),
   };
   try {
-      if (req.body.email) {
-          req.body.email = (req.body.email).toLowerCase();
+    if (req.body.email) {
+      req.body.email = req.body.email.toLowerCase();
+    }
+    if (req.body.userName) {
+      req.body.userName = req.body.userName.toLowerCase();
+    }
+    let validatedBody = await Joi.validate(req.body, validationSchema);
+    var {
+      userName,
+      email,
+      mobileNumber,
+      gender,
+      bio,
+      dob,
+      facebook,
+      twitter,
+      instagram,
+      linkedIn,
+      location,
+      profilePic,
+      coverPic,
+    } = validatedBody;
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: userType.USER,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    var findemail, mobile, findname;
+    if (mobileNumber.length == 0) {
+      mobile = "undefined";
+    } else {
+      mobile = mobileNumber;
+    }
+    if (email.length == 0) {
+      findemail = "undefined";
+    } else {
+      findemail = email;
+    }
+    if (userName.length == 0) {
+      findname = "undefined";
+    } else {
+      findname = userName;
+    }
+    var userInfo = await emailMobileExist(
+      mobile,
+      findemail,
+      findname,
+      userResult._id
+    );
+    if (userInfo) {
+      if (userInfo.email == email) {
+        throw apiError.conflict(responseMessage.EMAIL_EXIST);
       }
-      if (req.body.userName) {
-          req.body.userName = (req.body.userName).toLowerCase()
+      if (userInfo.userName == userName) {
+        throw apiError.conflict(responseMessage.USER_NAME_EXIST);
       }
-      let validatedBody = await Joi.validate(req.body, validationSchema)
-      var { userName, email, mobileNumber, gender, bio, dob, facebook, twitter, instagram, linkedIn, location, profilePic, coverPic } = validatedBody;
-      let userResult = await findUser({ _id: req.userId, userType: userType.USER, status: { $ne: status.DELETE } });
-      if (!userResult) {
-          throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      if (userInfo.mobileNumber == mobileNumber) {
+        throw apiError.conflict(responseMessage.MOBILE_EXIST);
       }
-      var findemail, mobile, findname
-      if (mobileNumber.length == 0) {
-          mobile = 'undefined'
-      } else {
-          mobile = mobileNumber
+    } else {
+      if (profilePic) {
+        validatedBody.profilePic = await commonFunction.getSecureUrl(
+          profilePic
+        );
       }
-      if (email.length == 0) {
-          findemail = 'undefined'
-      } else {
-          findemail = email
+      if (coverPic) {
+        validatedBody.coverPic = await commonFunction.getSecureUrl(coverPic);
       }
-      if (userName.length == 0) {
-          findname = 'undefined'
-      } else {
-          findname = userName
+      var date = new Date(new Date().getTime() + 19800000);
+      var hh = date.getHours();
+      var mm = date.getMinutes();
+      hh = hh < 10 ? "0" + hh : hh;
+      mm = mm < 10 ? "0" + mm : mm;
+      let curr_time = hh + ":" + mm;
+      let d = new Date().toISOString().slice(0, 10);
+      if (userResult.email != email && userResult.email.length != 0) {
+        await commonFunction.updateProfileSendMail(
+          userResult.email,
+          userResult.userName,
+          email,
+          curr_time,
+          d
+        );
       }
-      var userInfo = await emailMobileExist(mobile, findemail, findname, userResult._id);
-      if (userInfo) {
-          if (userInfo.email == email) {
-              throw apiError.conflict(responseMessage.EMAIL_EXIST);
-          }
-          if (userInfo.userName == userName) {
-              throw apiError.conflict(responseMessage.USER_NAME_EXIST);
-          }
-          if (userInfo.mobileNumber == mobileNumber) {
-              throw apiError.conflict(responseMessage.MOBILE_EXIST);
-          }
-      } else {
-          if (profilePic) {
-              validatedBody.profilePic = await commonFunction.getSecureUrl(profilePic);
-          }
-          if (coverPic) {
-              validatedBody.coverPic = await commonFunction.getSecureUrl(coverPic);
-          }
-          var date = new Date(new Date().getTime() + 19800000);
-          var hh = date.getHours();
-          var mm = date.getMinutes();
-          hh = hh < 10 ? '0' + hh : hh;
-          mm = mm < 10 ? '0' + mm : mm;
-          let curr_time = hh + ':' + mm;
-          let d = new Date().toISOString().slice(0, 10)
-          if (userResult.email != email && userResult.email.length != 0) {
-              await commonFunction.updateProfileSendMail(userResult.email, userResult.userName, email, curr_time, d);
-          }
-          let updated = await updateUserById({ _id: userResult._id }, validatedBody);
-          return res.json(new response(updated, responseMessage.PROFILE_UPDATED));
-      }
+      let updated = await updateUserById(
+        { _id: userResult._id },
+        validatedBody
+      );
+      return res.json(new response(updated, responseMessage.PROFILE_UPDATED));
+    }
   } catch (error) {
-      console.log("515===", error);
-      return next(error);
+    console.log("515===", error);
+    return next(error);
   }
-}
+};
 
 module.exports = { register, login, verifyOTP };

@@ -13,11 +13,9 @@ const userSchema = new mongoose.Schema({
   },
   userName: {
     type: String,
-    unique: true,
   },
   email: {
     type: String,
-    unique: true,
   },
   password: {
     type: String,
@@ -63,47 +61,41 @@ userSchema.plugin(mongoosePaginate);
 userSchema.plugin(mongooseAggregatePaginate);
 
 const userModel = mongoose.model("user", userSchema);
-
-// userModel.find({ userType: userType.ADMIN }, async (err, result) => {
-//   if (err) {
-//     console.log("Default admin creation error", err);
-//   }
-//   else if (result.length != 0) {
-//     console.log("Default admin already created.");
-//   }
-//   else {
-//     let binanceRes = await binance.generateBNBWallet(0, `${mnemonic}`);
-//     var obj = {
-//       name: "ahmed",
-//       userName: "ahmed123",
-//       email: "ahmedrazach118@gmail.com",
-//       bnbAccount: {
-//         address: binanceRes.address,
-//         privateKey: binanceRes.privateKey
-//       },
-//       password: bcrypt.hashSync("Mobiloitte@1"),
-//       referralCode: await commonFunction.getReferralCode(),
-//       otpVerification: true,
-//       userType: userType.ADMIN,
-//       gender: "Male",
-//       phoneNumber: "03037842213",
-//       permissions: {
-//         notificationManagement: true,
-//         feeManagement: true,
-//         userManagement: true,
-//         stakingManagement: true,
-//       }
-//     };
-
-//     userModel.create(obj, (err1, staticResult) => {
-//       if (err1) {
-//         console.log("Default admin error.", err1);
-//       }
-//       else {
-//         console.log("Default admin created.", staticResult);
-//       }
-//     });
-//   }
-// });
-
 module.exports = userModel;
+
+(async () => {
+  try {
+    const adminUser = await userModel.findOne({ userType: userType.ADMIN });
+
+    if (adminUser) {
+      console.log("Default admin already created.");
+    } else {
+      const saltRounds = 10;
+      const salt = await bcrypt.genSalt(saltRounds);
+      const hashedPassword = await bcrypt.hash("ahmed118", salt);
+
+      const obj = {
+        name: "ahmed",
+        userName: "ahmed123",
+        email: "ahmedrazach118@gmail.com",
+        password: hashedPassword,
+        userType: userType.ADMIN,
+        gender: "Male",
+        phoneNumber: "+923037842213",
+        permissions: {
+          notificationManagement: true,
+          feeManagement: true,
+          userManagement: true,
+          promotionManagement: true,
+          productManagement: true,
+          salesManagement: true,
+        },
+      };
+
+      const createdAdmin = await userModel.create(obj);
+      console.log("Default admin created.", createdAdmin);
+    }
+  } catch (error) {
+    console.log("Error creating default admin.", error);
+  }
+})();
