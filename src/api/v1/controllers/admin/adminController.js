@@ -1,28 +1,36 @@
-import Joi from "joi";
-import _ from "lodash";
-import config from "config";
-import apiError from "../../../../helper/apiError.js";
-import response from "../../../../../assets/response.js";
-import bcrypt from "bcryptjs";
-import userModel from "../../../../models/user.js";
-import { userServices } from "../../services/user.js";
-import { logoServices } from "../../services/logo.js";
-import { bannerServices } from "../../services/banner.js";
-import { socialServices } from "../../services/social.js";
-import { faqServices } from "../../services/faq.js";
-import { reportServices } from "../../services/report.js";
-import { activityServices } from "../../services/userActivity.js";
-import { feeServices } from "../../services/fee.js";
-import { requestServices } from "../../services/request.js";
-import { postServices } from "../../services/post.js";
-const mnemonic = config.get("mnemonic");
-import binance from "../../binance/binance.js";
-import { durationServices } from "../../services/duration.js";
-import { collectionServices } from "../../services/collection.js";
-import { postPromotionServices } from "../../services/postPromotion.js";
-import { auctionNftServices } from "../../services/auctionNft.js";
-import { transactionServices } from "../../services/transaction.js";
-import { logHistoryServices } from "../../services/logHistory.js";
+const Joi = require("joi");
+const _ = require("lodash");
+const config = require("config");
+const apiError = require("../../../../helper/apiError.js");
+const response = require("../../../../../assets/response.js");
+const bcrypt = require("bcryptjs");
+const userModel = require("../../../../models/user.js");
+const { userServices } = require("../../services/user/user.js");
+const { logoServices } = require("../../services/logo/logo.js");
+const { bannerServices } = require("../../services/banner/banner.js");
+const { faqServices } = require("../../services/faq/faq.js");
+const { reportServices } = require("../../services/report/report.js");
+const {
+  activityServices,
+} = require("../../services/userActivity/userActivity.js");
+const { feeServices } = require("../../services/fee/fee.js");
+const { requestServices } = require("../../services/request/request.js");
+// const { postServices } = require("../../services/post/post.js");
+const { durationServices } = require("../../services/duration/duration.js");
+// const { transactionServices } = require("../../services/transaction.js");
+const {
+  logHistoryServices,
+} = require("../../services/logHistory/logHistory.js");
+
+const {
+  createUser,
+  findUserByEmail,
+  findUserByUsername,
+  updateUserById,
+  deleteUserById,
+  getUserByPhoneNumber,
+  findUser
+} = require("../../services/user/user");
 const {
   createLogHistory,
   findLogHistory,
@@ -31,53 +39,18 @@ const {
   logHistoryWithPagination,
   paginateSearchLogHistory,
 } = logHistoryServices;
-const {
-  createTransaction,
-  findTransaction,
-  updateTransaction,
-  transactionList,
-  depositeList,
-  depositeList1,
-  paginateTransactionSearch,
-  paginateWalletTransactionSearch,
-  findTransactionCount,
-} = transactionServices;
-const {
-  createAuctionNft,
-  findAuctionNft,
-  listAuction,
-  updateAuctionNft,
-  auctionNftList,
-  allNftAuctionList,
-  allmyNftAuctionList,
-  allmyNftAuctionListBuy,
-  nftAuctionList,
-  updateManyAction,
-  trendingAuctionList,
-  findAuctionCount,
-} = auctionNftServices;
-const {
-  createPostPromotion,
-  findPostPromotion,
-  updatePostPromotion,
-  postPromotionList,
-  paginatePostPromotionSearch,
-  allPaginatePostPromotionSearch,
-  findPostPromotionCount,
-} = postPromotionServices;
-const {
-  createCollection,
-  findCollection,
-  updateCollection,
-  collectionList,
-  collectionPaginateSearch,
-  myCollectionPaginateSearch,
-  collectionListAll,
-  userCollectionListAll,
-  allCollectionPaginateSearch,
-  collectionSearchList,
-  findCollectionCount,
-} = collectionServices;
+// const {
+//   createTransaction,
+//   findTransaction,
+//   updateTransaction,
+//   transactionList,
+//   depositeList,
+//   depositeList1,
+//   paginateTransactionSearch,
+//   paginateWalletTransactionSearch,
+//   findTransactionCount,
+// } = transactionServices;
+
 const {
   createDuration,
   findDuration,
@@ -85,17 +58,17 @@ const {
   durationList,
   paginateSearchDuration,
 } = durationServices;
-const {
-  createUserPost,
-  findOnePost,
-  updatePost,
-  listPost,
-  paginatePostSearch,
-  paginatePostSearchByAdmin,
-  findPostCount,
-  paginatePostWithUserByAdmin,
-  topSellingPostAndResalepost,
-} = postServices;
+// const {
+//   createUserPost,
+//   findOnePost,
+//   updatePost,
+//   listPost,
+//   paginatePostSearch,
+//   paginatePostSearchByAdmin,
+//   findPostCount,
+//   paginatePostWithUserByAdmin,
+//   topSellingPostAndResalepost,
+// } = postServices;
 const { createRequest, findRequest, updateRequestById, requestList } =
   requestServices;
 const { createFee, findFee, updateFee, feeList } = feeServices;
@@ -109,29 +82,29 @@ const {
   paginateSearch,
   findSearchActivity,
 } = activityServices;
-const {
-  userCheck,
-  profileSubscribeList,
-  profileSubscriberList,
-  userCount,
-  checkUserExists,
-  emailMobileExist,
-  latestUserListWithPagination,
-  createUser,
-  findUser,
-  multiUpdateForUser,
-  findUserData,
-  updateUser,
-  updateUserById,
-  userAllDetails,
-  userAllDetailsByUserName,
-  checkSocialLogin,
-  userSubscriberListWithPagination,
-  userSubscriberList,
-  paginateSearchByAdmin,
-  findCount,
-  creatorList,
-} = userServices;
+// const {
+//   userCheck,
+//   profileSubscribeList,
+//   profileSubscriberList,
+//   userCount,
+//   checkUserExists,
+//   emailMobileExist,
+//   latestUserListWithPagination,
+//   createUser,
+//   findUser,
+//   multiUpdateForUser,
+//   findUserData,
+//   updateUser,
+//   updateUserById,
+//   userAllDetails,
+//   userAllDetailsByUserName,
+//   checkSocialLogin,
+//   userSubscriberListWithPagination,
+//   userSubscriberList,
+//   paginateSearchByAdmin,
+//   findCount,
+//   creatorList,
+// } = userServices;
 const { createLogo, findLogo, updateLogoById, logoList } = logoServices;
 const {
   createBanner,
@@ -141,14 +114,7 @@ const {
   updateBannerById,
   paginateSearchBanner,
 } = bannerServices;
-const {
-  createSocial,
-  findSocial,
-  findAllSocial,
-  updateSocial,
-  updateSocialById,
-  paginateSearchSocial,
-} = socialServices;
+
 const { createFaq, findFaq, updateFaqById, faqList } = faqServices;
 const {
   createReport,
@@ -160,16 +126,15 @@ const {
   updateManyReport,
 } = reportServices;
 
-import responseMessage from "../../../../../assets/responseMessage.js";
-
-import commonFunction from "../../../../helper/util.js";
-import jwt from "jsonwebtoken";
-import status from "../../../../enums/status.js";
-import userType from "../../../../enums/userType.js";
-import speakeasy from "speakeasy";
-import axios from "axios";
-import moment from "moment";
-import ip from "ip";
+const responseMessage = require("../../../../../assets/responseMessage.js");
+const commonFunction = require("../../../../helper/util.js");
+const jwt = require("jsonwebtoken");
+const status = require("../../../../enums/status.js");
+const userType = require("../../../../enums/userType.js");
+const speakeasy = require("speakeasy");
+const axios = require("axios");
+const moment = require("moment");
+const ip = require("ip");
 
 export class adminController {
   /**

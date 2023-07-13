@@ -16,9 +16,7 @@ async function createUser(userData) {
 async function getUserByPhoneNumber(mobileNumber) {
   try {
     const user = await User.findOne({
-      $or: [
-        { phoneNumber: mobileNumber }
-      ],
+      $or: [{ phoneNumber: mobileNumber }],
     });
     return user;
   } catch (error) {
@@ -69,6 +67,22 @@ async function deleteUserById(userId) {
   }
 }
 
+async function findUser(query) {
+  try {
+    // Assuming you have a database connection and a User model or collection
+
+    // Replace 'User' with your actual User model or collection name
+    const user = await User.findOne(query);
+
+    // Return the found user object or null if not found
+    return user;
+  } catch (error) {
+    // Handle any errors that occurred during the database operation
+    console.error("Error finding user:", error);
+    throw error;
+  }
+}
+
 module.exports = {
   createUser,
   findUserByEmail,
@@ -76,4 +90,5 @@ module.exports = {
   updateUserById,
   deleteUserById,
   getUserByPhoneNumber,
+  findUser,
 };

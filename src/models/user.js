@@ -24,6 +24,8 @@ const userSchema = new mongoose.Schema({
     type: Date,
     required: false,
   },
+  location: { type: String },
+  countryCode: { type: String },
   phoneNumber: {
     type: String,
     required: true,
@@ -32,8 +34,13 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: false,
   },
+  profilePic: { type: String },
+  planType: { type: String, default: "Basic" },
+  deviceToken: { type: String },
+  deviceType: { type: String },
   isOnline: { type: Boolean, default: false },
   status: { type: String, default: status.ACTIVE },
+  emailVerification: { type: Boolean, default: false },
   otpTime: {
     type: Date,
     default: null,
@@ -42,6 +49,25 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null,
   },
+  otpVerification: { type: Boolean, default: false },
+  interest: [
+    {
+      type: String,
+    },
+  ],
+  blockedUser: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "user",
+    },
+  ],
+  subscribePlan: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "plan",
+    },
+  ],
+  blockStatus: { type: Boolean, default: false },
   permissions: {
     promotionManagement: { type: Boolean, default: false },
     productManagement: { type: Boolean, default: false },
@@ -82,6 +108,7 @@ module.exports = userModel;
         userType: userType.ADMIN,
         gender: "Male",
         phoneNumber: "+923037842213",
+        otpVerification: true,
         permissions: {
           notificationManagement: true,
           feeManagement: true,
