@@ -16,7 +16,7 @@ async function createUser(userData) {
 async function getUserByPhoneNumber(mobileNumber) {
   try {
     const user = await User.findOne({
-      $or: [{ phoneNumber: mobileNumber }],
+      $or: [{ mobileNumber: mobileNumber }],
     });
     return user;
   } catch (error) {
@@ -42,6 +42,30 @@ async function findUserByUsername(userName) {
     return user;
   } catch (error) {
     throw error;
+  }
+}
+
+async function emailUserNameExist(email, userName, id) {
+  try {
+    const query = {
+      $and: [
+        { status: { $ne: status.DELETE } },
+        { _id: { $ne: id } },
+        {
+          $or: [
+            { email: email },
+            { userName: userName },
+          ],
+        },
+      ],
+    };
+
+    const user = await User.findOne(query);
+    return user;
+  } catch (error) {
+    // Handle the error gracefully (e.g., log or throw a custom error)
+    console.error("Error in emailMobileExist:", error);
+    throw new Error("An error occurred while checking user existence.");
   }
 }
 
@@ -91,4 +115,5 @@ module.exports = {
   deleteUserById,
   getUserByPhoneNumber,
   findUser,
+  emailUserNameExist,
 };

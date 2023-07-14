@@ -2,6 +2,9 @@ const _ = require("lodash");
 const Joi = require("joi");
 const config = require("config");
 const jwt = require("jsonwebtoken");
+const status = require("../../../../enums/status.js");
+const userType = require("../../../../enums/userType.js");
+const speakeasy = require("speakeasy");
 const userModel = require("../../../../models/user");
 const apiError = require("../../../../helper/apiError");
 const response = require("../../../../../assets/response");
@@ -14,6 +17,8 @@ const {
   updateUserById,
   deleteUserById,
   getUserByPhoneNumber,
+  findUser,
+  emailUserNameExist,
 } = require("../../services/user/user");
 
 const {
@@ -31,7 +36,7 @@ const register = async (req, res, next) => {
     // userName: Joi.string().required(),
     // email: Joi.string().optional(),
     // password: Joi.string().required(),
-    phoneNumber: Joi.string().required(),
+    mobileNumber: Joi.string().required(),
     // dateOfBirth: Joi.string().optional(),
     // gender: Joi.string().optional(),
     userType: Joi.string().optional(),
@@ -54,14 +59,14 @@ const register = async (req, res, next) => {
     // }
 
     const { value, error } = Joi.object(validationSchema).validate(req.body);
-    const { phoneNumber } = value;
+    const { mobileNumber } = value;
 
     if (error) {
       // Handle validation error
       throw new Error(error.details[0].message);
     }
 
-    var userResult = await getUserByPhoneNumber(phoneNumber);
+    var userResult = await getUserByPhoneNumber(mobileNumber);
 
     if (userResult) {
       // if (userInfo.email === email) {
@@ -70,15 +75,15 @@ const register = async (req, res, next) => {
       // if (userInfo.userName === userName) {
       //   throw new apiError(409, responseMessage.USER_NAME_EXIST);
       // }
-      // if (userInfo.phoneNumber === phoneNumber) {
+      // if (userInfo.mobileNumber === mobileNumber) {
       //   throw new apiError(409, responseMessage.MOBILE_EXIST);
       // }
 
       let otp = await getOTP();
 
-      if (phoneNumber) {
+      if (mobileNumber) {
         try {
-          await sendSmsTwilio(phoneNumber, otp);
+          await sendSmsTwilio(mobileNumber, otp);
         } catch (error) {
           // throw new Error("Failed to send OTP");
           // Or, if you want to include the original Twilio error message:
@@ -106,9 +111,9 @@ const register = async (req, res, next) => {
       req.body.otpTime = new Date().getTime();
       req.body.otp = otp;
 
-      if (phoneNumber) {
+      if (mobileNumber) {
         try {
-          await sendSmsTwilio(phoneNumber, otp);
+          await sendSmsTwilio(mobileNumber, otp);
         } catch (error) {
           // throw new Error("Failed to send OTP");
           // Or, if you want to include the original Twilio error message:
@@ -131,10 +136,10 @@ const register = async (req, res, next) => {
 
 const verifyOTP = async (req, res, next) => {
   try {
-    const { phoneNumber, otp } = req.body;
+    const { mobileNumber, otp } = req.body;
 
     // Retrieve the user based on the phone number
-    const userResult = await getUserByPhoneNumber(phoneNumber);
+    const userResult = await getUserByPhoneNumber(mobileNumber);
 
     if (!userResult) {
       throw apiError.notFound(responseMessage.USER_NOT_FOUND);
@@ -267,7 +272,10 @@ const updateProfile = async (req, res, next) => {
     if (req.body.userName) {
       req.body.userName = req.body.userName.toLowerCase();
     }
-    let validatedBody = await Joi.validate(req.body, validationSchema);
+    let { value, error } = Joi.object(validationSchema).validate(req.body);
+    if (error) {
+      throw error;
+    }
     var {
       userName,
       email,
@@ -282,7 +290,7 @@ const updateProfile = async (req, res, next) => {
       location,
       profilePic,
       coverPic,
-    } = validatedBody;
+    } = value;
     let userResult = await findUser({
       _id: req.userId,
       userType: userType.USER,
@@ -291,12 +299,8 @@ const updateProfile = async (req, res, next) => {
     if (!userResult) {
       throw apiError.notFound(responseMessage.USER_NOT_FOUND);
     }
-    var findemail, mobile, findname;
-    if (mobileNumber.length == 0) {
-      mobile = "undefined";
-    } else {
-      mobile = mobileNumber;
-    }
+    var findemail, findname;
+
     if (email.length == 0) {
       findemail = "undefined";
     } else {
@@ -307,8 +311,7 @@ const updateProfile = async (req, res, next) => {
     } else {
       findname = userName;
     }
-    var userInfo = await emailMobileExist(
-      mobile,
+    var userInfo = await emailUserNameExist(
       findemail,
       findname,
       userResult._id
@@ -320,17 +323,12 @@ const updateProfile = async (req, res, next) => {
       if (userInfo.userName == userName) {
         throw apiError.conflict(responseMessage.USER_NAME_EXIST);
       }
-      if (userInfo.mobileNumber == mobileNumber) {
-        throw apiError.conflict(responseMessage.MOBILE_EXIST);
-      }
     } else {
       if (profilePic) {
-        validatedBody.profilePic = await commonFunction.getSecureUrl(
-          profilePic
-        );
+        value.profilePic = await commonFunction.getSecureUrl(profilePic);
       }
       if (coverPic) {
-        validatedBody.coverPic = await commonFunction.getSecureUrl(coverPic);
+        value.coverPic = await commonFunction.getSecureUrl(coverPic);
       }
       var date = new Date(new Date().getTime() + 19800000);
       var hh = date.getHours();
@@ -339,19 +337,16 @@ const updateProfile = async (req, res, next) => {
       mm = mm < 10 ? "0" + mm : mm;
       let curr_time = hh + ":" + mm;
       let d = new Date().toISOString().slice(0, 10);
-      if (userResult.email != email && userResult.email.length != 0) {
-        await commonFunction.updateProfileSendMail(
-          userResult.email,
-          userResult.userName,
-          email,
-          curr_time,
-          d
-        );
-      }
-      let updated = await updateUserById(
-        { _id: userResult._id },
-        validatedBody
-      );
+      // if (userResult.email != email && userResult.email.length != 0) {
+      //   await commonFunction.updateProfileSendMail(
+      //     userResult.email,
+      //     userResult.userName,
+      //     email,
+      //     curr_time,
+      //     d
+      //   );
+      // }
+      let updated = await updateUserById({ _id: userResult._id }, value);
       return res.json(new response(updated, responseMessage.PROFILE_UPDATED));
     }
   } catch (error) {
@@ -360,4 +355,4 @@ const updateProfile = async (req, res, next) => {
   }
 };
 
-module.exports = { register, login, verifyOTP };
+module.exports = { register, verifyOTP, login, updateProfile };

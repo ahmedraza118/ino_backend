@@ -5,6 +5,8 @@ const status = require("../enums/status");
 
 const mongoosePaginate = require("mongoose-paginate");
 const mongooseAggregatePaginate = require("mongoose-aggregate-paginate");
+const { Schema } = require('mongoose');
+
 
 // Define the user schema
 const userSchema = new mongoose.Schema({
@@ -26,10 +28,11 @@ const userSchema = new mongoose.Schema({
   },
   location: { type: String },
   countryCode: { type: String },
-  phoneNumber: {
+  mobileNumber: {
     type: String,
     required: true,
   },
+  dob: { type: String },
   gender: {
     type: String,
     required: false,
