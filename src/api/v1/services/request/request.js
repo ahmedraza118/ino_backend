@@ -1,5 +1,5 @@
-const requestModel = require("../../../models/request.js");
-const status = require("../../../enums/status.js");
+const requestModel = require("../../../../models/request.js");
+const status = require("../../../../enums/status.js");
 
 const requestServices = {
   createRequest: async (insertObj) => {

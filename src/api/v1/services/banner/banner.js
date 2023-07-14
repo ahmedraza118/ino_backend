@@ -1,5 +1,5 @@
-const bannerModel = require("../../../models/banner.js");
-const status = require("../../../enums/status.js");
+const bannerModel = require("../../../../models/banner.js");
+const status = require("../../../../enums/status.js");
 
 const bannerServices = {
   createBanner: async (insertObj) => {

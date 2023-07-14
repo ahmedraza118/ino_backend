@@ -1,4 +1,4 @@
-const feeModel = require("../../../models/fee.js");
+const feeModel = require("../../../../models/fee.js");
 
 const feeServices = {
   createFee: async (insertObj) => {

@@ -1,5 +1,5 @@
-const logHistory = require("../../../models/logHistory.js");
-const status = require("../../../enums/status.js");
+const logHistory = require("../../../../models/logHistory.js");
+const status = require("../../../../enums/status.js");
 
 const logHistoryServices = {
   createLogHistory: async (insertObj) => {

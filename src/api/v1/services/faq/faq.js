@@ -1,5 +1,5 @@
-const faqModel = require("../../../models/faq.js");
-const status = require("../../../enums/status.js");
+const faqModel = require("../../../../models/faq.js");
+const status = require("../../../../enums/status.js");
 
 const faqServices = {
   createFaq: async (insertObj) => {

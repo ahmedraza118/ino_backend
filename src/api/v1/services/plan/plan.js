@@ -1,5 +1,5 @@
-const planModel = require("../../../models/plan.js");
-const userModel = require("../../../models/user.js");
+const planModel = require("../../../../models/plan.js");
+const userModel = require("../../../../models/user.js");
 
 const planServices = {
   createPlan: async (insertObj) => {

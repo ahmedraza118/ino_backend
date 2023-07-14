@@ -1,5 +1,5 @@
-const subscriptionModel = require("../../../models/subscription.js");
-const userModel = require("../../../models/user.js");
+const subscriptionModel = require("../../../../models/subscription.js");
+const userModel = require("../../../../models/user.js");
 const mongoose = require("mongoose");
 
 const subscriptionServices = {

@@ -10,6 +10,8 @@ const { logoServices } = require("../../services/logo/logo.js");
 const { bannerServices } = require("../../services/banner/banner.js");
 const { faqServices } = require("../../services/faq/faq.js");
 const { reportServices } = require("../../services/report/report.js");
+const { interestServices } = require("../../services/interest/interest.js");
+
 const {
   activityServices,
 } = require("../../services/userActivity/userActivity.js");
@@ -29,7 +31,8 @@ const {
   updateUserById,
   deleteUserById,
   getUserByPhoneNumber,
-  findUser
+  findUser,
+  emailUserNameExist,
 } = require("../../services/user/user");
 const {
   createLogHistory,
@@ -125,6 +128,13 @@ const {
   paginateSearchReport,
   updateManyReport,
 } = reportServices;
+const {
+  createInterest,
+  findInterest,
+  updateInterest,
+  interestList,
+  paginateSearchInterest,
+} = interestServices;
 
 const responseMessage = require("../../../../../assets/responseMessage.js");
 const commonFunction = require("../../../../helper/util.js");
@@ -136,7 +146,7 @@ const axios = require("axios");
 const moment = require("moment");
 const ip = require("ip");
 
-export class adminController {
+class adminController {
   /**
    * @swagger
    * /admin/login:
@@ -189,7 +199,7 @@ export class adminController {
         email: userResult.email,
         userType: userResult.userType,
       });
-      let updateRes = await updateUser(
+      let updateRes = await updateUserById(
         { _id: userResult._id },
         { isOnline: true }
       );
@@ -209,7 +219,9 @@ export class adminController {
         userType: userResult.userType,
         email: userResult.email,
       });
-      return res.json(new response(obj, responseMessage.LOGIN));
+      return res.json(
+        new response({ token, updateRes }, responseMessage.LOGIN)
+      );
     } catch (error) {
       console.log("===error====", error);
       return next(error);
@@ -453,19 +465,19 @@ export class adminController {
    *         description: Returns success message
    */
   async profile(req, res, next) {
-    // console.log("in the profile api");
+    console.log("in the start of profile api");
 
     try {
       let userResult = await findUser({
-        _id: req.query.userId,
-        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+        _id: req.userId,
+        userType: { $in: [userType.ADMIN] },
       });
 
       console.log("in the profile api");
       if (!userResult) {
         throw apiError.notFound(responseMessage.USER_NOT_FOUND);
       }
-      let updateRes = await updateUser(
+      let updateRes = await updateUserById(
         { _id: userResult._id },
         { isOnline: true }
       );
@@ -525,7 +537,10 @@ export class adminController {
       if (req.body.userName) {
         req.body.userName = req.body.userName.toLowerCase();
       }
-      let validatedBody = await Joi.validate(req.body, validationSchema);
+      let { value, error } = Joi.object(validationSchema).validate(req.body);
+      if (error) {
+        throw error;
+      }
       var {
         userName,
         email,
@@ -540,21 +555,17 @@ export class adminController {
         location,
         profilePic,
         coverPic,
-      } = validatedBody;
+      } = value;
       let userResult = await findUser({
         _id: req.userId,
-        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+        userType: userType.USER,
         status: { $ne: status.DELETE },
       });
       if (!userResult) {
         throw apiError.notFound(responseMessage.USER_NOT_FOUND);
       }
-      var findemail, mobile, findname;
-      if (mobileNumber.length == 0) {
-        mobile = "undefined";
-      } else {
-        mobile = mobileNumber;
-      }
+      var findemail, findname;
+
       if (email.length == 0) {
         findemail = "undefined";
       } else {
@@ -565,8 +576,7 @@ export class adminController {
       } else {
         findname = userName;
       }
-      var userInfo = await emailMobileExist(
-        mobile,
+      var userInfo = await emailUserNameExist(
         findemail,
         findname,
         userResult._id
@@ -578,17 +588,12 @@ export class adminController {
         if (userInfo.userName == userName) {
           throw apiError.conflict(responseMessage.USER_NAME_EXIST);
         }
-        if (userInfo.mobileNumber == mobileNumber) {
-          throw apiError.conflict(responseMessage.MOBILE_EXIST);
-        }
       } else {
         if (profilePic) {
-          validatedBody.profilePic = await commonFunction.getSecureUrl(
-            profilePic
-          );
+          value.profilePic = await commonFunction.getSecureUrl(profilePic);
         }
         if (coverPic) {
-          validatedBody.coverPic = await commonFunction.getSecureUrl(coverPic);
+          value.coverPic = await commonFunction.getSecureUrl(coverPic);
         }
         var date = new Date(new Date().getTime() + 19800000);
         var hh = date.getHours();
@@ -597,19 +602,16 @@ export class adminController {
         mm = mm < 10 ? "0" + mm : mm;
         let curr_time = hh + ":" + mm;
         let d = new Date().toISOString().slice(0, 10);
-        if (userResult.email != email && userResult.email.length != 0) {
-          await commonFunction.updateProfileSendMail(
-            userResult.email,
-            userResult.userName,
-            email,
-            curr_time,
-            d
-          );
-        }
-        let updated = await updateUserById(
-          { _id: userResult._id },
-          validatedBody
-        );
+        // if (userResult.email != email && userResult.email.length != 0) {
+        //   await commonFunction.updateProfileSendMail(
+        //     userResult.email,
+        //     userResult.userName,
+        //     email,
+        //     curr_time,
+        //     d
+        //   );
+        // }
+        let updated = await updateUserById({ _id: userResult._id }, value);
         return res.json(new response(updated, responseMessage.PROFILE_UPDATED));
       }
     } catch (error) {
@@ -617,6 +619,215 @@ export class adminController {
       return next(error);
     }
   }
+
+  /**
+   * @swagger
+   * /user/createInterest:
+   *   post:
+   *     tags:
+   *       - INTEREST
+   *     description: createInterest
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: name
+   *         description: name
+   *         in: formData
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async createInterest(req, res, next) {
+    const validationSchema = {
+      name: Joi.string().required(),
+    };
+    try {
+      const { value, error } = Joi.object(validationSchema).validate(req.body);
+      if (error) {
+        throw error;
+      }
+
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let interestRes = await findInterest({
+        name: req.body.name,
+        status: { $ne: status.DELETE },
+      });
+      if (interestRes) {
+        throw apiError.conflict(responseMessage.INTEREST_EXIST);
+      }
+      value.userId = userResult._id;
+      let saveRes = await createInterest(value);
+      return res.json(new response(saveRes, responseMessage.CREATE_INTEREST));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/viewInterest:
+   *   get:
+   *     tags:
+   *       - INTEREST
+   *     description: viewInterest
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: interestId
+   *         description: interestId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async viewInterest(req, res, next) {
+    const validationSchema = {
+      interestId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let resultRes = await findInterest({
+        _id: validatedBody.interestId,
+        status: { $ne: status.DELETE },
+      });
+      if (!resultRes) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/deleteInterest:
+   *   delete:
+   *     tags:
+   *       - INTEREST
+   *     description: deleteInterest
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: interestId
+   *         description: interestId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async deleteInterest(req, res, next) {
+    const validationSchema = {
+      interestId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let userResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let resultRes = await findInterest({
+        _id: validatedBody.interestId,
+        status: { $ne: status.DELETE },
+      });
+      if (!resultRes) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      let updateRes = await updateInterest(
+        { _id: resultRes._id },
+        { status: status.DELETE }
+      );
+      return res.json(new response(updateRes, responseMessage.INTEREST_DELETE));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/paginateSearchInterest:
+   *   get:
+   *     tags:
+   *       - INTEREST
+   *     description: paginateSearchInterest
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: fromDate
+   *         description: fromDate
+   *         in: query
+   *         required: false
+   *       - name: toDate
+   *         description: toDate
+   *         in: query
+   *         required: false
+   *       - name: page
+   *         description: page
+   *         in: query
+   *         required: false
+   *       - name: limit
+   *         description: limit
+   *         in: query
+   *         required: false
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async paginateSearchInterest(req, res, next) {
+    const validationSchema = {
+      fromDate: Joi.string().optional(),
+      toDate: Joi.string().optional(),
+      page: Joi.string().optional(),
+      limit: Joi.string().optional(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let resultRes = await paginateSearchInterest(validatedBody);
+      if (resultRes.docs.length == 0) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  // get All Interests
+
+  async getAllInterests(req, res, next) {
+    try {
+      const interests = await interestList();
+      return res.json(interests);
+    } catch (error) {
+      // Handle the error gracefully (e.g., log or throw a custom error)
+      console.error("Error in getAllInterests:", error);
+      return next(error);
+    }
+  }
+
+  ////////////////////////////////////////////
+
   /**
    * @swagger
    * /admin/addLogo:
@@ -4275,4 +4486,4 @@ export class adminController {
   }
 }
 
-export default new adminController();
+module.exports = adminController;

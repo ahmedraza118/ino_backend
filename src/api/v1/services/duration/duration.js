@@ -1,5 +1,5 @@
-const durationModel = require("../../../models/duration.js");
-const status = require("../../../enums/status.js");
+const durationModel = require("../../../../models/duration.js");
+const status = require("../../../../enums/status.js");
 
 const durationServices = {
   createDuration: async (insertObj) => {

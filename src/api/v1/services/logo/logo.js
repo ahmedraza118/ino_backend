@@ -1,5 +1,5 @@
-const logoModel = require("../../../models/logoModel.js");
-const status = require("../../../enums/status.js");
+const logoModel = require("../../../../models/logoModel.js");
+const status = require("../../../../enums/status.js");
 
 const logoServices = {
   createLogo: async (insertObj) => {

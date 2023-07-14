@@ -355,4 +355,45 @@ const updateProfile = async (req, res, next) => {
   }
 };
 
-module.exports = { register, verifyOTP, login, updateProfile };
+/**
+ * @swagger
+ * /admin/profile:
+ *   get:
+ *     tags:
+ *       - ADMIN
+ *     description: profile
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const profile = async (req, res, next) => {
+  console.log("in the start of profile api");
+
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: { $in: [userType.USER] },
+    });
+
+    console.log("in the profile api");
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let updateRes = await updateUserById(
+      { _id: userResult._id },
+      { isOnline: true }
+    );
+    return res.json(new response(updateRes, responseMessage.USER_DETAILS));
+  } catch (error) {
+    return next(error);
+  }
+};
+
+module.exports = { register, verifyOTP, login, updateProfile, profile };

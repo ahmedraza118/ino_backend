@@ -1,6 +1,6 @@
-const activityModel = require("../../../models/activityModel.js");
-const userModel = require("../../../models/user.js");
-const status = require("../../../enums/status.js");
+const activityModel = require("../../../../models/activityModel.js");
+const userModel = require("../../../../models/user.js");
+const status = require("../../../../enums/status.js");
 
 const activityServices = {
   createActivity: async (insertObj) => {

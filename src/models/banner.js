@@ -1,21 +1,23 @@
-import Mongoose, { Schema } from "mongoose";
-import status from '../enums/status.js';
-import mongoosePaginate from "mongoose-paginate";
+const mongoose = require("mongoose");
+const { Schema } = mongoose;
+const status = require('../enums/status.js');
+const mongoosePaginate = require("mongoose-paginate");
 
 const options = {
-    collection: "banner",
-    timestamps: true
+  collection: "banner",
+  timestamps: true
 };
 
 const schemaDefination = new Schema(
-    {
-        bannerTitle: { type: String },
-        bannerDescription:{type:String},
-        bannerImage:{type: String},
-        status: { type: String, default: status.BLOCK }
-    },
-    options
+  {
+    bannerTitle: { type: String },
+    bannerDescription: { type: String },
+    bannerImage: { type: String },
+    status: { type: String, default: status.BLOCK }
+  },
+  options
 );
-schemaDefination.plugin(mongoosePaginate)
-module.exports = Mongoose.model("banner", schemaDefination);
 
+schemaDefination.plugin(mongoosePaginate);
+
+module.exports = mongoose.model("banner", schemaDefination);

@@ -4,6 +4,7 @@ const {
   login,
   verifyOTP,
   updateProfile,
+  profile,
 } = require("./userController");
 const auth = require("../../../../helper/auth");
 // const upload = require("../../../../helper/uploadHandler");
@@ -14,5 +15,6 @@ router.post("/register", register);
 router.post("/login", login);
 router.post("/verifyOTP", verifyOTP);
 router.post("/updateProfile", auth.verifyToken, updateProfile);
+router.get("/profile", auth.verifyToken, profile);
 
 module.exports = router;

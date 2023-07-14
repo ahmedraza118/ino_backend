@@ -1,5 +1,5 @@
-const interestModel = require("../../../models/interest.js");
-const status = require("../../../enums/status.js");
+const interestModel = require("../../../../models/interest.js");
+const status = require("../../../../enums/status.js");
 
 const interestServices = {
   createInterest: async (insertObj) => {
@@ -14,9 +14,17 @@ const interestServices = {
     return await interestModel.findOneAndUpdate(query, updateObj, { new: true });
   },
 
-  interestList: async (query) => {
-    return await interestModel.find(query);
+  interestList: async () => {
+    try {
+      const interests = await interestModel.find({});
+      return interests;
+    } catch (error) {
+      // Handle the error gracefully (e.g., log or throw a custom error)
+      console.error('Error in interestList:', error);
+      throw new Error('An error occurred while fetching the interest list.');
+    }
   },
+  
 
   paginateSearchInterest: async (validatedBody) => {
     let query = { status: { $ne: status.DELETE } };
