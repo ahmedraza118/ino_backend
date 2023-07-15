@@ -11,11 +11,23 @@ const durationServices = {
   },
 
   updateDuration: async (query, updateObj) => {
-    return await durationModel.findOneAndUpdate(query, updateObj, { new: true });
+    return await durationModel.findOneAndUpdate(query, updateObj, {
+      new: true,
+    });
   },
 
   durationList: async (query) => {
     return await durationModel.find(query);
+  },
+
+  fetchAllDurationList: async () => {
+    try {
+      const durationList = await durationModel.find(); // Fetch all durationList
+      return durationList;
+    } catch (error) {
+      console.error("Error while fetching durationList:", error);
+      throw new Error("Failed to fetch durationList. Please try again later.");
+    }
   },
 
   paginateSearchDuration: async (validatedBody) => {

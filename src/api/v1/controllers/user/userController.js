@@ -396,4 +396,6 @@ const profile = async (req, res, next) => {
   }
 };
 
+
+
 module.exports = { register, verifyOTP, login, updateProfile, profile };

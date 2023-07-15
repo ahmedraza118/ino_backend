@@ -45,6 +45,20 @@ async function findUserByUsername(userName) {
   }
 }
 
+async function listAllUsers() {
+  try {
+    const users = await User.find({
+      userType: userType.USER,
+      status: { $ne: status.DELETE },
+    }); // Fetch all users with user type "USER"
+    return users;
+  } catch (error) {
+    // Handle the error and provide a meaningful error message
+    console.error("Error while fetching all users:", error);
+    throw new Error("Failed to fetch all users. Please try again later.");
+  }
+}
+
 async function emailUserNameExist(email, userName, id) {
   try {
     const query = {
@@ -52,10 +66,7 @@ async function emailUserNameExist(email, userName, id) {
         { status: { $ne: status.DELETE } },
         { _id: { $ne: id } },
         {
-          $or: [
-            { email: email },
-            { userName: userName },
-          ],
+          $or: [{ email: email }, { userName: userName }],
         },
       ],
     };
@@ -116,4 +127,5 @@ module.exports = {
   getUserByPhoneNumber,
   findUser,
   emailUserNameExist,
+  listAllUsers,
 };

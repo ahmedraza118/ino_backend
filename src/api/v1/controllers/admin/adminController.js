@@ -33,6 +33,7 @@ const {
   getUserByPhoneNumber,
   findUser,
   emailUserNameExist,
+  listAllUsers,
 } = require("../../services/user/user");
 const {
   createLogHistory,
@@ -60,6 +61,7 @@ const {
   updateDuration,
   durationList,
   paginateSearchDuration,
+  fetchAllDurationList,
 } = durationServices;
 // const {
 //   createUserPost,
@@ -1773,7 +1775,7 @@ class adminController {
       const validBody = await Joi.validate(req.body, validSchema);
       let admin = await findUser({
         _id: req.userId,
-        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+        userType: { $in: [userType.ADMIN] },
       });
       if (!admin) {
         throw apiError.invalid(responseMessage.USER_NOT_FOUND);
@@ -1940,7 +1942,7 @@ class adminController {
       const validBody = await Joi.validate(req.query);
       let admin = await findUser({
         _id: req.userId,
-        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+        userType: { $in: [userType.ADMIN] },
       });
       if (!admin) {
         throw apiError.invalid(responseMessage.INVALID_USER);
@@ -2220,7 +2222,7 @@ class adminController {
       const validatedBody = await Joi.validate(req.body, validationSchema);
       let adminResult = await findUser({
         _id: req.userId,
-        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+        userType: { $in: [userType.ADMIN] },
         status: { $ne: status.DELETE },
       });
       if (!adminResult) {
@@ -2521,7 +2523,7 @@ class adminController {
    *       200:
    *         description: Returns success message
    */
-  async listUser(req, res, next) {
+  async listPaginateUser(req, res, next) {
     const validationSchema = {
       search: Joi.string().optional(),
       fromDate: Joi.string().optional(),
@@ -2535,7 +2537,7 @@ class adminController {
       let adminResult = await findUser({
         _id: req.userId,
         status: { $ne: status.DELETE },
-        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+        userType: { $in: [userType.ADMIN] },
       });
       if (!adminResult) {
         throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
@@ -2543,6 +2545,28 @@ class adminController {
       validatedBody.userType = userType.USER;
       let data = await paginateSearchByAdmin(validatedBody);
       if (data.docs.length == 0) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      } else {
+        return res.json(new response(data, responseMessage.DATA_FOUND));
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  //list All users
+  async listAllUser(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      }
+      let data = await listAllUsers();
+      if (data.length == 0) {
         throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
       } else {
         return res.json(new response(data, responseMessage.DATA_FOUND));
@@ -2579,7 +2603,7 @@ class adminController {
       let adminResult = await findUser({
         _id: req.userId,
         status: { $ne: status.DELETE },
-        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+        userType: { $in: [userType.ADMIN] },
       });
       if (!adminResult) {
         throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
@@ -3186,7 +3210,7 @@ class adminController {
       let adminResult = await findUser({
         _id: req.userId,
         status: { $ne: status.DELETE },
-        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+        userType: { $in: [userType.ADMIN] },
       });
       if (!adminResult) {
         throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
@@ -3198,7 +3222,7 @@ class adminController {
       if (!data) {
         throw apiError.notFound(responseMessage.USER_NOT_FOUND);
       } else {
-        let updateRes = await updateUser(
+        let updateRes = await updateUserById(
           { _id: data._id },
           { status: status.DELETE }
         );
@@ -3320,7 +3344,7 @@ class adminController {
       const validatedBody = await Joi.validate(req.body, validSchema);
       let admin = await findUser({
         _id: req.userId,
-        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+        userType: { $in: [userType.ADMIN] },
       });
       if (!admin) {
         throw apiError.invalid(responseMessage.UNAUTHORIZED);
@@ -3377,7 +3401,7 @@ class adminController {
    *       501:
    *         description: Something went wrong.
    */
-  async listDuration(req, res, next) {
+  async listPaginateDuration(req, res, next) {
     const validationSchema = {
       fromDate: Joi.string().optional(),
       toDate: Joi.string().optional(),
@@ -3388,6 +3412,20 @@ class adminController {
       const validatedBody = await Joi.validate(req.query, validationSchema);
       let find = await paginateSearchDuration(validatedBody);
       if (find.docs.length == 0) {
+        throw apiError.conflict(responseMessage.DATA_NOT_FOUND);
+      }
+      return res.json(new response(find, responseMessage.DATA_FOUND));
+    } catch (error) {
+      console.log(error);
+      return next(error);
+    }
+  }
+
+  // fetch All duration list
+  async listAllDuration(req, res, next) {
+    try {
+      let find = await fetchAllDurationList();
+      if (find.length == 0) {
         throw apiError.conflict(responseMessage.DATA_NOT_FOUND);
       }
       return res.json(new response(find, responseMessage.DATA_FOUND));
@@ -3473,7 +3511,7 @@ class adminController {
       const validatedBody = await Joi.validate(req.body, validSchema);
       let admin = await findUser({
         _id: req.userId,
-        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+        userType: { $in: [userType.ADMIN] },
       });
       if (!admin) {
         throw apiError.invalid(responseMessage.UNAUTHORIZED);
@@ -3544,7 +3582,7 @@ class adminController {
       const validatedBody = await Joi.validate(req.body, validSchema);
       let admin = await findUser({
         _id: req.userId,
-        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+        userType: { $in: [userType.ADMIN] },
       });
       if (!admin) {
         throw apiError.invalid(responseMessage.UNAUTHORIZED);
