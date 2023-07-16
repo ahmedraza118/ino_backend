@@ -11,6 +11,7 @@ const { bannerServices } = require("../../services/banner/banner.js");
 const { faqServices } = require("../../services/faq/faq.js");
 const { reportServices } = require("../../services/report/report.js");
 const { interestServices } = require("../../services/interest/interest.js");
+const { identificationServices } = require("../../services/identification/identification.js");
 
 const {
   activityServices,
@@ -137,6 +138,13 @@ const {
   interestList,
   paginateSearchInterest,
 } = interestServices;
+const {
+  createIdentification,
+  findIdentification,
+  updateIdentification,
+  identificationList,
+  paginateSearchIdentification,
+} = identificationServices;
 
 const responseMessage = require("../../../../../assets/responseMessage.js");
 const commonFunction = require("../../../../helper/util.js");
@@ -560,7 +568,7 @@ class adminController {
       } = value;
       let userResult = await findUser({
         _id: req.userId,
-        userType: userType.USER,
+        userType: userType.ADMIN,
         status: { $ne: status.DELETE },
       });
       if (!userResult) {
@@ -622,6 +630,216 @@ class adminController {
     }
   }
 
+    /**
+   * @swagger
+   * /user/createIdentification:
+   *   post:
+   *     tags:
+   *       - IDENTIFICATION
+   *     description: createIdentification
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: name
+   *         description: name
+   *         in: formData
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+    async createIdentification(req, res, next) {
+      const validationSchema = {
+        name: Joi.string().required(),
+      };
+      try {
+        const { value, error } = Joi.object(validationSchema).validate(req.body);
+        if (error) {
+          throw error;
+        }
+  
+        let userResult = await findUser({
+          _id: req.userId,
+          userType: userType.ADMIN,
+          status: { $ne: status.DELETE },
+        });
+        if (!userResult) {
+          throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+        }
+        let identificationRes = await findIdentification({
+          name: req.body.name,
+          status: { $ne: status.DELETE },
+        });
+        if (identificationRes) {
+          throw apiError.conflict(responseMessage.IDENTIFICATION_EXIST);
+        }
+        value.userId = userResult._id;
+        let saveRes = await createIdentification(value);
+        return res.json(new response(saveRes, responseMessage.CREATE_IDENTIFICATION));
+      } catch (error) {
+        return next(error);
+      }
+    }
+
+
+    /**
+   * @swagger
+   * /user/viewIdentification:
+   *   get:
+   *     tags:
+   *       - IDENTIFICATION
+   *     description: viewIdentification
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: identificationId
+   *         description: identificationId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async viewIdentification(req, res, next) {
+    const validationSchema = {
+      identificationId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let resultRes = await findIdentification({
+        _id: validatedBody.identificationId,
+        status: { $ne: status.DELETE },
+      });
+      if (!resultRes) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/deleteIdentification:
+   *   delete:
+   *     tags:
+   *       - IDENTIFICATION
+   *     description: deleteIdentification
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: identificationId
+   *         description: identificationId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async deleteIdentification(req, res, next) {
+    const validationSchema = {
+      identificationId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let resultRes = await findIdentification({
+        _id: validatedBody.identificationId,
+        status: { $ne: status.DELETE },
+      });
+      if (!resultRes) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      let updateRes = await updateIdentification(
+        { _id: resultRes._id },
+        { status: status.DELETE }
+      );
+      return res.json(new response(updateRes, responseMessage.IDENTIFICATION_DELETE));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/paginateSearchIdentification:
+   *   get:
+   *     tags:
+   *       - IDENTIFICATION
+   *     description: paginateSearchIdentification
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: fromDate
+   *         description: fromDate
+   *         in: query
+   *         required: false
+   *       - name: toDate
+   *         description: toDate
+   *         in: query
+   *         required: false
+   *       - name: page
+   *         description: page
+   *         in: query
+   *         required: false
+   *       - name: limit
+   *         description: limit
+   *         in: query
+   *         required: false
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async paginateSearchIdentification(req, res, next) {
+    const validationSchema = {
+      fromDate: Joi.string().optional(),
+      toDate: Joi.string().optional(),
+      page: Joi.string().optional(),
+      limit: Joi.string().optional(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let resultRes = await paginateSearchIdentification(validatedBody);
+      if (resultRes.docs.length == 0) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  // get All Interests
+
+  async getAllIdentifications(req, res, next) {
+    try {
+      const identifications = await identificationList();
+      return res.json(identifications);
+    } catch (error) {
+      // Handle the error gracefully (e.g., log or throw a custom error)
+      console.error("Error in getAllIdentifications:", error);
+      return next(error);
+    }
+  }
+
+  ////////////////////////////////////////////
+
   /**
    * @swagger
    * /user/createInterest:
@@ -638,7 +856,7 @@ class adminController {
    *         required: true
    *       - name: name
    *         description: name
-   *         in: formData
+   *         in: formData 
    *         required: true
    *     responses:
    *       200:

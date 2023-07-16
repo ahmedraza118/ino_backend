@@ -8,12 +8,13 @@ const router = Express.Router();
 
 // router.post("/register", register);
 router.post("/login", adminControllerInstance.login);
+router.get("/profile", auth.verifyToken, adminControllerInstance.profile);
+router.get("/updateProfile", auth.verifyToken, adminControllerInstance.updateProfile);
 // router.post("/verifyOTP", adminControllerInstance.verifyOtp);
 // router.post("/resetPassword", adminControllerInstance.resetPassword);
 // router.post("/forgotPassword", adminControllerInstance.forgotPassword);
 
 
-router.get("/profile", auth.verifyToken, adminControllerInstance.profile);
 
 // interst routes
 router.post("/createInterest", auth.verifyToken, adminControllerInstance.createInterest);
@@ -55,5 +56,12 @@ router.post("/editDuration", auth.verifyToken, adminControllerInstance.editDurat
 router.get("/listPaginteDuration", auth.verifyToken, adminControllerInstance.listPaginateDuration);
 router.get("/viewDuration", auth.verifyToken, adminControllerInstance.viewDuration);
 router.get("/listAllDuration", auth.verifyToken, adminControllerInstance.listAllDuration);
+
+//identifications routes
+router.get("/viewIdentification", auth.verifyToken, adminControllerInstance.viewIdentification);
+router.post("/createIdentification", auth.verifyToken, adminControllerInstance.createIdentification);
+router.post("/deleteIdentification", auth.verifyToken, adminControllerInstance.deleteIdentification);
+router.get("/paginateSearchIdentification", auth.verifyToken, adminControllerInstance.paginateSearchIdentification);
+router.get("/getAllIdentifications", auth.verifyToken, adminControllerInstance.getAllIdentifications);
 
 module.exports = router;
