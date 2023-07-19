@@ -4,7 +4,7 @@ const auth = require("../../../../helper/auth");
 // const upload = require("../../../../helper/uploadHandler");
 const adminControllerInstance = new adminController();
 
-const router = Express.Router();
+const  router = Express.Router();
 
 // router.post("/register", register);
 router.post("/login", adminControllerInstance.login);

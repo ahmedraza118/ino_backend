@@ -1,7 +1,9 @@
 module.exports = Object.freeze({
-    ACTIVE: 'ACTIVE',
-    BLOCK: 'BLOCK',
-    DELETE: 'DELETE',
-    EXPIRED: 'EXPIRED',
-    STOPPED:'STOPPED'
-})
+  ACTIVE: "ACTIVE",
+  BLOCK: "BLOCK",
+  DELETE: "DELETE",
+  EXPIRED: "EXPIRED",
+  STOPPED: "STOPPED",
+  APPROVED: "APPROVED",
+  PENDING: "PENDING",
+});

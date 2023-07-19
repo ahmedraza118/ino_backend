@@ -10,6 +10,30 @@ const apiError = require("../../../../helper/apiError");
 const response = require("../../../../../assets/response");
 const bcrypt = require("bcryptjs");
 const responseMessage = require("../../../../../assets/responseMessage");
+const commonFunction = require("../../../../helper/util.js");
+
+
+const { postServices } = require("../../services/post/post");
+const { activityServices }  = require("../../services/userActivity/userActivity");
+
+
+const {
+  createUserPost,
+  findOnePost,
+  updatePost,
+  listPost,
+  paginatePostSearch,
+  paginateAllPostSearch,
+  paginatePostSearchBuy,
+  paginateAllPostSearchPrivatePublic,
+  allPostList,
+  paginateAllPostSearchPrivatePublicTrending,
+  tagPostbyuserlist,
+  deletePostComment,
+  deletePostCommentReply,
+  paginateAllPostSearchPrivatePublicFind,
+} = postServices;
+
 const {
   createUser,
   findUserByEmail,
@@ -30,6 +54,17 @@ const {
   getSecureUrl,
   genBase64,
 } = require("../../../../helper/util");
+
+const {
+  createActivity,
+  findActivity,
+  updateActivity,
+  multiUpdateActivity,
+  activityList,
+  activityListWithSort,
+  findAllActivity,
+  paginateSearch,
+} = activityServices;
 
 const register = async (req, res, next) => {
   const validationSchema = {
@@ -396,6 +431,122 @@ const profile = async (req, res, next) => {
   }
 };
 
-
+/**
+ * @swagger
+ * /user/createPost:
+ *   post:
+ *     tags:
+ *       - USER POSTS
+ *     description: createPost
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: createPost
+ *         description: createPost
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/createPost'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const createPost = async (req, res, next) => {
+  try {
+    const validationSchema = {
+      // collectionId: Joi.string().required(),
+      postTitle: Joi.string().required(),
+      mediaUrl: Joi.string().required(),
+      details: Joi.string().required(),
+      postType: Joi.string().required(),
+      amount: Joi.string().required(),
+      mediaType: Joi.string().required(),
+    };
+    const validatedBody = await Joi.validate(req.body, validationSchema);
+    var userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      // let result = await findCollection({ _id: validatedBody.collectionId, userId: userResult._id, status: { $ne: status.DELETE } })
+      // if (!result) {
+      //     throw apiError.notFound(responseMessage.COLLECTION_NOT_FOUND)
+      // } else {
+      if (validatedBody.mediaUrl) {
+        validatedBody.mediaUrl = await commonFunction.getSecureUrl(
+          validatedBody.mediaUrl
+        );
+      }
+      validatedBody.type = "POST";
+      validatedBody.userId = userResult._id;
+      validatedBody.creatorId = userResult._id;
+      var savePost = await createUserPost(validatedBody);
+      await updateUserById({ _id: userResult._id }, { isPost: true });
+      await createActivity({
+        userId: userResult._id,
+        postId: savePost._id,
+        // collectionId: result._id,
+        title: "Post create",
+        desctiption: "Post create successfully.",
+        type: "POST",
+      });
+      // if (validatedBody.hashTagName.length != 0) {
+      //   for (let i = 0; i < validatedBody.hashTagName.length; i++) {
+      //     let hashTagRes = await findHashTag({
+      //       hashTagName: validatedBody.hashTagName[i],
+      //       status: { $ne: status.DELETE },
+      //     });
+      //     if (!hashTagRes) {
+      //       let obj = {
+      //         hashTagName: validatedBody.hashTagName[i],
+      //         postCount: 1,
+      //         userCount: 1,
+      //         postDetails: [
+      //           {
+      //             postId: savePost._id,
+      //           },
+      //         ],
+      //       };
+      //       let saveRes = await createHashTag(obj);
+      //       var updateRes = await updatePost(
+      //         { _id: savePost._id },
+      //         {
+      //           $addToSet: { hashTagId: saveRes._id },
+      //           $inc: { hashTagCount: 1 },
+      //         }
+      //       );
+      //     } else {
+      //       var updateRes = await updatePost(
+      //         { _id: savePost._id },
+      //         {
+      //           $addToSet: { hashTagId: hashTagRes._id },
+      //           $inc: { hashTagCount: 1 },
+      //         }
+      //       );
+      //       await updateHashTag(
+      //         { _id: hashTagRes._id },
+      //         {
+      //           $push: { postDetails: { $each: [{ postId: savePost._id }] } },
+      //           $inc: { postCount: 1, userCount: 1 },
+      //         }
+      //       );
+      //     }
+      //   }
+      //   return res.json(new response(updateRes, responseMessage.POST_CREATE));
+      // }
+      return res.json(new response(savePost, responseMessage.POST_CREATE));
+      // }
+    }
+  } catch (error) {
+    console.log("====================>", error);
+    return next(error);
+  }
+};
 
 module.exports = { register, verifyOTP, login, updateProfile, profile };

@@ -10,10 +10,10 @@ const schemaDefination = new Schema(
       type: Schema.Types.ObjectId,
       ref: "user",
     },
-    isSubscribed: {
-      type: Boolean,
-      default: false,
-    },
+    // isSubscribed: {
+    //   type: Boolean,
+    //   default: false,
+    // },
     creatorId: {
       type: Schema.Types.ObjectId,
       ref: "user",
@@ -115,10 +115,10 @@ const schemaDefination = new Schema(
     details: {
       type: String,
     },
-    postType: {
-      type: String,
-      enum: ["PRIVATE", "PUBLIC"],
-    },
+    // postType: {
+    //   type: String,
+    //   enum: ["PRIVATE", "PUBLIC"],
+    // },
     mediaType: {
       type: String,
       enum: ["TEXT", "MEDIA"],
@@ -159,17 +159,17 @@ const schemaDefination = new Schema(
     type: {
       type: String,
     },
-    hashTagId: [
-      {
-        type: Schema.Types.ObjectId,
-        ref: "hashTag",
-      },
-    ],
-    hashTagCount: {
-      type: Number,
-      default: 0,
-    },
-    royality: { type: Number, default: 0 },
+    // hashTagId: [
+    //   {
+    //     type: Schema.Types.ObjectId,
+    //     ref: "hashTag",
+    //   },
+    // ],
+    // hashTagCount: {
+    //   type: Number,
+    //   default: 0,
+    // },
+    // royality: { type: Number, default: 0 },
     isWatchList: { type: Boolean, default: false },
     reactOnPost: { type: Array },
     reactOnPostCount: {
