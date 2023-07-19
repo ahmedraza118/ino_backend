@@ -18,3 +18,5 @@ router.post("/updateProfile", auth.verifyToken, updateProfile);
 router.get("/profile", auth.verifyToken, profile);
 
 module.exports = router;
+
+
