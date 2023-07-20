@@ -64,4 +64,9 @@ router.post("/deleteIdentification", auth.verifyToken, adminControllerInstance.d
 router.get("/paginateSearchIdentification", auth.verifyToken, adminControllerInstance.paginateSearchIdentification);
 router.get("/getAllIdentifications", auth.verifyToken, adminControllerInstance.getAllIdentifications);
 
+//post Request routes
+router.get("/postRequestList", auth.verifyToken, adminControllerInstance.postRequestList);
+router.get("/postRequestDetails", auth.verifyToken, adminControllerInstance.postRequestDetails);
+router.get("/postRequestView", auth.verifyToken, adminControllerInstance.postRequestView);
+router.post("/postRequestUpdate", auth.verifyToken, adminControllerInstance.postRequestUpdate);
 module.exports = router;

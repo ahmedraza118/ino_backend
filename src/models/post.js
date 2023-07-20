@@ -176,7 +176,7 @@ const schemaDefination = new Schema(
       type: Number,
       default: 0,
     },
-    status: { type: String, default: status.ACTIVE },
+    status: { type: String, default: status.PENDING },
   },
   { timestamps: true }
 );

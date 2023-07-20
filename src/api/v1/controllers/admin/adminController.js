@@ -11,13 +11,20 @@ const { bannerServices } = require("../../services/banner/banner.js");
 const { faqServices } = require("../../services/faq/faq.js");
 const { reportServices } = require("../../services/report/report.js");
 const { interestServices } = require("../../services/interest/interest.js");
-const { identificationServices } = require("../../services/identification/identification.js");
+const {
+  identificationServices,
+} = require("../../services/identification/identification.js");
 
 const {
   activityServices,
 } = require("../../services/userActivity/userActivity.js");
 const { feeServices } = require("../../services/fee/fee.js");
+const { postServices } = require("../../services/post/post");
+
 const { requestServices } = require("../../services/request/request.js");
+const {
+  postRequestServices,
+} = require("../../services/postRequest/postRequest.js");
 // const { postServices } = require("../../services/post/post.js");
 const { durationServices } = require("../../services/duration/duration.js");
 // const { transactionServices } = require("../../services/transaction.js");
@@ -64,19 +71,26 @@ const {
   paginateSearchDuration,
   fetchAllDurationList,
 } = durationServices;
-// const {
-//   createUserPost,
-//   findOnePost,
-//   updatePost,
-//   listPost,
-//   paginatePostSearch,
-//   paginatePostSearchByAdmin,
-//   findPostCount,
-//   paginatePostWithUserByAdmin,
-//   topSellingPostAndResalepost,
-// } = postServices;
+const {
+  createUserPost,
+  findOnePost,
+  updatePost,
+  listPost,
+  paginatePostSearch,
+  paginatePostSearchByAdmin,
+  findPostCount,
+  paginatePostWithUserByAdmin,
+  topSellingPostAndResalepost,
+} = postServices;
 const { createRequest, findRequest, updateRequestById, requestList } =
   requestServices;
+const {
+  createPostRequest,
+  findPostRequest,
+  updatePostRequestById,
+  postRequestList,
+  viewRequestDetails,
+} = postRequestServices;
 const { createFee, findFee, updateFee, feeList } = feeServices;
 const {
   createActivity,
@@ -155,6 +169,7 @@ const speakeasy = require("speakeasy");
 const axios = require("axios");
 const moment = require("moment");
 const ip = require("ip");
+const { updateUserPost } = require("../user/userController.js");
 
 class adminController {
   /**
@@ -630,7 +645,7 @@ class adminController {
     }
   }
 
-    /**
+  /**
    * @swagger
    * /user/createIdentification:
    *   post:
@@ -652,41 +667,42 @@ class adminController {
    *       200:
    *         description: Returns success message
    */
-    async createIdentification(req, res, next) {
-      const validationSchema = {
-        name: Joi.string().required(),
-      };
-      try {
-        const { value, error } = Joi.object(validationSchema).validate(req.body);
-        if (error) {
-          throw error;
-        }
-  
-        let userResult = await findUser({
-          _id: req.userId,
-          userType: userType.ADMIN,
-          status: { $ne: status.DELETE },
-        });
-        if (!userResult) {
-          throw apiError.notFound(responseMessage.USER_NOT_FOUND);
-        }
-        let identificationRes = await findIdentification({
-          name: req.body.name,
-          status: { $ne: status.DELETE },
-        });
-        if (identificationRes) {
-          throw apiError.conflict(responseMessage.IDENTIFICATION_EXIST);
-        }
-        value.userId = userResult._id;
-        let saveRes = await createIdentification(value);
-        return res.json(new response(saveRes, responseMessage.CREATE_IDENTIFICATION));
-      } catch (error) {
-        return next(error);
+  async createIdentification(req, res, next) {
+    const validationSchema = {
+      name: Joi.string().required(),
+    };
+    try {
+      const { value, error } = Joi.object(validationSchema).validate(req.body);
+      if (error) {
+        throw error;
       }
+
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let identificationRes = await findIdentification({
+        name: req.body.name,
+        status: { $ne: status.DELETE },
+      });
+      if (identificationRes) {
+        throw apiError.conflict(responseMessage.IDENTIFICATION_EXIST);
+      }
+      value.userId = userResult._id;
+      let saveRes = await createIdentification(value);
+      return res.json(
+        new response(saveRes, responseMessage.CREATE_IDENTIFICATION)
+      );
+    } catch (error) {
+      return next(error);
     }
+  }
 
-
-    /**
+  /**
    * @swagger
    * /user/viewIdentification:
    *   get:
@@ -770,7 +786,9 @@ class adminController {
         { _id: resultRes._id },
         { status: status.DELETE }
       );
-      return res.json(new response(updateRes, responseMessage.IDENTIFICATION_DELETE));
+      return res.json(
+        new response(updateRes, responseMessage.IDENTIFICATION_DELETE)
+      );
     } catch (error) {
       return next(error);
     }
@@ -856,7 +874,7 @@ class adminController {
    *         required: true
    *       - name: name
    *         description: name
-   *         in: formData 
+   *         in: formData
    *         required: true
    *     responses:
    *       200:
@@ -2840,6 +2858,77 @@ class adminController {
       return next(error);
     }
   }
+  /**
+   * @swagger
+   * /admin/postRequestView:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: postRequestView
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: postRequestId
+   *         description: postRequestId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async postRequestView(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let resultRes = await findPostRequest({
+          _id: req.query.postRequestId,
+          status: { $ne: status.DELETE },
+        });
+        if (!resultRes) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async postRequestDetails(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let resultRes = await viewRequestDetails({
+          _id: req.query.postRequestId,
+          status: { $ne: status.DELETE },
+        });
+        if (!resultRes) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
 
   /**
    * @swagger
@@ -2874,6 +2963,111 @@ class adminController {
           throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
         } else {
           return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+  /**
+   * @swagger
+   * /admin/postRequestList:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: postRequestList
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async postRequestList(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let resultRes = await postRequestList({
+          status: { $ne: status.DELETE },
+        });
+        if (resultRes.length == 0) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async postRequestUpdate(req, res, next) {
+    const validationSchema = {
+      postRequestId: Joi.string().required(),
+      status: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.body, validationSchema);
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let reqRes = await findPostRequest({
+          _id: validatedBody.postRequestId,
+          status: { $ne: status.DELETE },
+        });
+        if (!reqRes) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          let postRes = await findOnePost({
+            _id: reqRes.postId,
+            status: { $ne: status.DELETE },
+          });
+
+          if (!postRes) {
+            throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+          } else {
+            if (validatedBody.status === "ACTIVE") {
+              postRes = await updatePost(
+                { _id: reqRes.postId },
+                { status: status.ACTIVE }
+              );
+              reqRes = await updatePostRequestById(
+                { _id: validatedBody.postRequestId },
+                { status: status.APPROVED }
+              );
+            } else {
+              postRes = await updatePost(
+                { _id: reqRes.postId },
+                { status: status.BLOCK }
+              );
+
+              reqRes = await updatePostRequestById(
+                { _id: validatedBody.postRequestId },
+                { status: status.REGECTED }
+              );
+            }
+            return res.json(
+              new response(
+                { postRes, reqRes },
+                responseMessage.POST_REQUEST_UPDATED
+              )
+            );
+          }
         }
       }
     } catch (error) {

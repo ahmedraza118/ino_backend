@@ -6,4 +6,5 @@ module.exports = Object.freeze({
   STOPPED: "STOPPED",
   APPROVED: "APPROVED",
   PENDING: "PENDING",
+  REGECTED: "REGECTED",
 });
