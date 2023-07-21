@@ -8,12 +8,11 @@
     "serverURL": "0.0.0.0",
     "serverPort": 6000
   },
-
   "jwtsecret": "mysecretkey",
   "twilio": {
     "accountSid": "ACf786a64203b2524f8ee2878ee632bbe7",
     "authToken": "746861191af93561bd9de02d47a1ad26",
-    "number": "+18555728559"
+    "messagingServiceSid": "MG6d2aa488d9d55eebb9ad96c7a42c7d50"
   },
   "cloudinary": {
     "cloud_name": "mobiloittetech",
