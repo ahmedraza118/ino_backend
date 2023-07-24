@@ -43,6 +43,9 @@ const userSchema = new mongoose.Schema({
   deviceType: { type: String },
   isOnline: { type: Boolean, default: false },
   status: { type: String, default: status.ACTIVE },
+  isPost: { type: Boolean, default: false },
+  isProduct: { type: Boolean, default: false },
+  isService: { type: Boolean, default: false },
   emailVerification: { type: Boolean, default: false },
   otpTime: {
     type: Date,

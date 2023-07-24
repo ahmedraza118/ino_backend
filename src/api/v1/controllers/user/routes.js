@@ -10,6 +10,11 @@ const {
   postListPaginate,
   updateUserPost,
   deleteUserPost,
+  createProduct,
+  productView,
+  updateUserProduct,
+  deleteUserProduct,
+  productListPaginate,
 } = require("./userController");
 const auth = require("../../../../helper/auth");
 // const upload = require("../../../../helper/uploadHandler");
@@ -31,5 +36,11 @@ router.get("/postListPaginate", auth.verifyToken, postListPaginate);
 router.post("/createPost", auth.verifyToken, createPost);
 router.post("/updateUserPost", auth.verifyToken, updateUserPost);
 router.post("/deleteUserPost", auth.verifyToken, deleteUserPost);
+//post routes
+router.get("/productView", auth.verifyToken, productView);
+router.post("/createProduct", auth.verifyToken, createProduct);
+router.post("/updateUserProduct", auth.verifyToken, updateUserProduct);
+router.post("/deleteUserProduct", auth.verifyToken, deleteUserProduct);
+router.get("/productListPaginate", auth.verifyToken, productListPaginate);
 
 module.exports = router;

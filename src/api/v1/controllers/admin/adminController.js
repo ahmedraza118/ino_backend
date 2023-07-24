@@ -14,17 +14,28 @@ const { interestServices } = require("../../services/interest/interest.js");
 const {
   identificationServices,
 } = require("../../services/identification/identification.js");
+const {
+  productCategorieServices,
+} = require("../../services/productCategorie/productCategorie");
+const {
+  productSubCategorieServices,
+} = require("../../services/productSubCategorie/productSubCategorie");
 
 const {
   activityServices,
 } = require("../../services/userActivity/userActivity.js");
 const { feeServices } = require("../../services/fee/fee.js");
 const { postServices } = require("../../services/post/post");
+const { productServices } = require("../../services/product/product");
+
 
 const { requestServices } = require("../../services/request/request.js");
 const {
   postRequestServices,
 } = require("../../services/postRequest/postRequest.js");
+const {
+  productRequestServices,
+} = require("../../services/productRequest/productRequest.js");
 // const { postServices } = require("../../services/post/post.js");
 const { durationServices } = require("../../services/duration/duration.js");
 // const { transactionServices } = require("../../services/transaction.js");
@@ -82,6 +93,22 @@ const {
   paginatePostWithUserByAdmin,
   topSellingPostAndResalepost,
 } = postServices;
+const {
+  createUserProduct,
+  findOneProduct,
+  updateProduct,
+  listProduct,
+  paginateProductSearch,
+  paginateAllProductSearch,
+  paginateProductSearchBuy,
+  paginateAllProductSearchPrivatePublic,
+  allProductList,
+  paginateAllProductSearchPrivatePublicTrending,
+  tagProductbyuserlist,
+  deleteProductComment,
+  deleteProductCommentReply,
+  paginateAllProductSearchPrivatePublicFind,
+} = productServices;
 const { createRequest, findRequest, updateRequestById, requestList } =
   requestServices;
 const {
@@ -91,6 +118,13 @@ const {
   postRequestList,
   viewRequestDetails,
 } = postRequestServices;
+const {
+  createProductRequest,
+  findProductRequest,
+  updateProductRequestById,
+  productRequestList,
+  viewProductRequestDetails,
+} = productRequestServices;
 const { createFee, findFee, updateFee, feeList } = feeServices;
 const {
   createActivity,
@@ -159,6 +193,20 @@ const {
   identificationList,
   paginateSearchIdentification,
 } = identificationServices;
+const {
+  createProductCategorie,
+  findProductCategorie,
+  updateProductCategorie,
+  productCategorieList,
+  paginateSearchProductCategorie,
+} = productCategorieServices;
+const {
+  createProductSubCategorie,
+  findProductSubCategorie,
+  updateProductSubCategorie,
+  productSubCategorieList,
+  paginateSearchProductSubCategorie,
+} = productSubCategorieServices;
 
 const responseMessage = require("../../../../../assets/responseMessage.js");
 const commonFunction = require("../../../../helper/util.js");
@@ -169,7 +217,8 @@ const speakeasy = require("speakeasy");
 const axios = require("axios");
 const moment = require("moment");
 const ip = require("ip");
-const { updateUserPost } = require("../user/userController.js");
+// const { updateUserPost } = require("../user/userController.js");
+
 
 class adminController {
   /**
@@ -644,6 +693,434 @@ class adminController {
       return next(error);
     }
   }
+
+  //////////////////////
+  /**
+   * @swagger
+   * /user/createProductCategorie:
+   *   post:
+   *     tags:
+   *       - PRODUCT CATEGORIE
+   *     description: createProductCategorie
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: name
+   *         description: name
+   *         in: formData
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async createProductCategorie(req, res, next) {
+    const validationSchema = {
+      name: Joi.string().required(),
+      description: Joi.string().required(),
+    };
+    try {
+      const { value, error } = Joi.object(validationSchema).validate(req.body);
+      if (error) {
+        throw error;
+      }
+
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let categorieRes = await findProductCategorie({
+        name: req.body.name,
+        status: { $ne: status.DELETE },
+      });
+      if (categorieRes) {
+        throw apiError.conflict(responseMessage.CATEGORIE_EXIST);
+      }
+      value.userId = userResult._id;
+      let saveRes = await createProductCategorie(value);
+      return res.json(new response(saveRes, responseMessage.CREATE_CATEGORIE));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/viewProductCategorie:
+   *   get:
+   *     tags:
+   *       - viewProductCategorie
+   *     description: viewProductCategorie
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: product name
+   *         description: description
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async viewProductCategorie(req, res, next) {
+    const validationSchema = {
+      categorieId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let resultRes = await findProductCategorie({
+        _id: validatedBody.categorieId,
+        status: { $ne: status.DELETE },
+      });
+      if (!resultRes) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/deleteProductCategorie:
+   *   delete:
+   *     tags:
+   *       - deleteProductCategorie
+   *     description: deleteProductCategorie
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: name
+   *         description: description
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async deleteProductCategorie(req, res, next) {
+    const validationSchema = {
+      categorieId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let resultRes = await findProductCategorie({
+        _id: validatedBody.categorieId,
+        status: { $ne: status.DELETE },
+      });
+      if (!resultRes) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      let updateRes = await updateProductCategorie(
+        { _id: resultRes._id },
+        { status: status.DELETE }
+      );
+      return res.json(
+        new response(updateRes, responseMessage.CATEGORIE_DELETE)
+      );
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/SearchProductCategories:
+   *   get:
+   *     tags:
+   *       - Search
+   *     description: SearchProductCategories
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: fromDate
+   *         description: fromDate
+   *         in: query
+   *         required: false
+   *       - name: toDate
+   *         description: toDate
+   *         in: query
+   *         required: false
+   *       - name: page
+   *         description: page
+   *         in: query
+   *         required: false
+   *       - name: limit
+   *         description: limit
+   *         in: query
+   *         required: false
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async SearchProductCategories(req, res, next) {
+    const validationSchema = {
+      fromDate: Joi.string().optional(),
+      toDate: Joi.string().optional(),
+      page: Joi.string().optional(),
+      limit: Joi.string().optional(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let resultRes = await paginateSearchProductCategorie(validatedBody);
+      if (resultRes.docs.length == 0) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  // get All Product Categories
+
+  async getAllProdctCategories(req, res, next) {
+    try {
+      const categorieRes = await productCategorieList();
+      return res.json(new response(categorieRes, responseMessage.DATA_FOUND));
+    } catch (error) {
+      // Handle the error gracefully (e.g., log or throw a custom error)
+      console.error("Error in getAllproductCategories:", error);
+      return next(error);
+    }
+  }
+
+  ////////////////////////////////////////////
+
+    /**
+   * @swagger
+   * /user/createProductSubCategorie:
+   *   post:
+   *     tags:
+   *       - PRODUCT CATEGORIE
+   *     description: createProductSubCategorie
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: name
+   *         description: name
+   *         in: formData
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+    async createProductSubCategorie(req, res, next) {
+      const validationSchema = {
+        name: Joi.string().required(),
+        description: Joi.string().required(),
+      };
+      try {
+        const { value, error } = Joi.object(validationSchema).validate(req.body);
+        if (error) {
+          throw error;
+        }
+  
+        let userResult = await findUser({
+          _id: req.userId,
+          userType: userType.ADMIN,
+          status: { $ne: status.DELETE },
+        });
+        if (!userResult) {
+          throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+        }
+        let categorieRes = await findProductSubCategorie({
+          name: req.body.name,
+          status: { $ne: status.DELETE },
+        });
+        if (categorieRes) {
+          throw apiError.conflict(responseMessage.CATEGORIE_EXIST);
+        }
+        value.userId = userResult._id;
+        let saveRes = await createProductSubCategorie(value);
+        return res.json(new response(saveRes, responseMessage.CREATE_CATEGORIE));
+      } catch (error) {
+        return next(error);
+      }
+    }
+  
+    /**
+     * @swagger
+     * /user/viewProductSubCategorie:
+     *   get:
+     *     tags:
+     *       - viewProductSubCategorie
+     *     description: viewProductSubCategorie
+     *     produces:
+     *       - application/json
+     *     parameters:
+     *       - name: product name
+     *         description: description
+     *         in: query
+     *         required: true
+     *     responses:
+     *       200:
+     *         description: Returns success message
+     */
+    async viewProductSubCategorie(req, res, next) {
+      const validationSchema = {
+        categorieId: Joi.string().required(),
+      };
+      try {
+        const validatedBody = await Joi.validate(req.query, validationSchema);
+        let resultRes = await findProductSubCategorie({
+          _id: validatedBody.categorieId,
+          status: { $ne: status.DELETE },
+        });
+        if (!resultRes) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        }
+        return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+      } catch (error) {
+        return next(error);
+      }
+    }
+  
+    /**
+     * @swagger
+     * /user/deleteProductSubCategorie:
+     *   delete:
+     *     tags:
+     *       - deleteProductCategorie
+     *     description: deleteProductSubCategorie
+     *     produces:
+     *       - application/json
+     *     parameters:
+     *       - name: token
+     *         description: token
+     *         in: header
+     *         required: true
+     *       - name: name
+     *         description: description
+     *         in: query
+     *         required: true
+     *     responses:
+     *       200:
+     *         description: Returns success message
+     */
+    async deleteProductSubCategorie(req, res, next) {
+      const validationSchema = {
+        categorieId: Joi.string().required(),
+      };
+      try {
+        const validatedBody = await Joi.validate(req.query, validationSchema);
+        let userResult = await findUser({
+          _id: req.userId,
+          userType: userType.ADMIN,
+          status: { $ne: status.DELETE },
+        });
+        if (!userResult) {
+          throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+        }
+        let resultRes = await findProductSubCategorie({
+          _id: validatedBody.categorieId,
+          status: { $ne: status.DELETE },
+        });
+        if (!resultRes) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        }
+        let updateRes = await updateProductSubCategorie(
+          { _id: resultRes._id },
+          { status: status.DELETE }
+        );
+        return res.json(
+          new response(updateRes, responseMessage.CATEGORIE_DELETE)
+        );
+      } catch (error) {
+        return next(error);
+      }
+    }
+  
+    /**
+     * @swagger
+     * /user/SearchProductSubCategories:
+     *   get:
+     *     tags:
+     *       - Search
+     *     description: SearchProductSubCategories
+     *     produces:
+     *       - application/json
+     *     parameters:
+     *       - name: fromDate
+     *         description: fromDate
+     *         in: query
+     *         required: false
+     *       - name: toDate
+     *         description: toDate
+     *         in: query
+     *         required: false
+     *       - name: page
+     *         description: page
+     *         in: query
+     *         required: false
+     *       - name: limit
+     *         description: limit
+     *         in: query
+     *         required: false
+     *     responses:
+     *       200:
+     *         description: Returns success message
+     */
+    async SearchProductSubCategories(req, res, next) {
+      const validationSchema = {
+        fromDate: Joi.string().optional(),
+        toDate: Joi.string().optional(),
+        page: Joi.string().optional(),
+        limit: Joi.string().optional(),
+      };
+      try {
+        const validatedBody = await Joi.validate(req.query, validationSchema);
+        let resultRes = await paginateSearchProductSubCategorie(validatedBody);
+        if (resultRes.docs.length == 0) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        }
+        return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+      } catch (error) {
+        return next(error);
+      }
+    }
+  
+    // get All Product Sub Categories
+  
+    async getAllProdctSubCategories(req, res, next) {
+      try {
+        const categorieRes = await productSubCategorieList();
+        return res.json(new response(categorieRes, responseMessage.DATA_FOUND));
+      } catch (error) {
+        // Handle the error gracefully (e.g., log or throw a custom error)
+        console.error("Error in getAllproductCategories:", error);
+        return next(error);
+      }
+    }
+  
+    ////////////////////////////////////////////
+
+
+
 
   /**
    * @swagger
@@ -3074,6 +3551,210 @@ class adminController {
       return next(error);
     }
   }
+
+  //////////product Requests ///////////////
+  /**
+   * @swagger
+   * /admin/productRequestView:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: productRequestView
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: productRequestId
+   *         description: productRequestId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async productRequestView(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let resultRes = await findProductRequest({
+          _id: req.query.productRequestId,
+          status: { $ne: status.DELETE },
+        });
+        if (!resultRes) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+// product request details shows user and the product details
+  async productRequestDetails(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let resultRes = await viewProductRequestDetails({
+          _id: req.query.productRequestId,
+          status: { $ne: status.DELETE },
+        });
+        if (!resultRes) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+
+  /**
+   * @swagger
+   * /admin/productRequestList:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: productRequestList
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async productRequestList(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let resultRes = await productRequestList({
+          status: { $ne: status.DELETE },
+        });
+        if (resultRes.length == 0) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+   /**
+   * @swagger
+   * /admin/productRequestUpdate:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: productRequestUpdate
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+
+  async productRequestUpdate(req, res, next) {
+    const validationSchema = {
+      productRequestId: Joi.string().required(),
+      status: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.body, validationSchema);
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let reqRes = await findProductRequest({
+          _id: validatedBody.postRequestId,
+          status: { $ne: status.DELETE },
+        });
+        if (!reqRes) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          let productRes = await findOneProduct({
+            _id: reqRes.postId,
+            status: { $ne: status.DELETE },
+          });
+
+          if (!productRes) {
+            throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+          } else {
+            if (validatedBody.status === "ACTIVE") {
+              productRes = await updateProduct(
+                { _id: reqRes.postId },
+                { status: status.ACTIVE }
+              );
+              reqRes = await updateProductRequestById(
+                { _id: validatedBody.postRequestId },
+                { status: status.APPROVED }
+              );
+            } else {
+              productRes = await updateProduct(
+                { _id: reqRes.postId },
+                { status: status.BLOCK }
+              );
+
+              reqRes = await updateProductRequestById(
+                { _id: validatedBody.postRequestId },
+                { status: status.REGECTED }
+              );
+            }
+            return res.json(
+              new response(
+                { productRes, reqRes },
+                responseMessage.POST_REQUEST_UPDATED
+              )
+            );
+          }
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+
+
+  ///////////////////////////////
 
   /**
    * @swagger
