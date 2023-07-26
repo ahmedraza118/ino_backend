@@ -12,6 +12,7 @@ module.exports = {
 	UNBLOCK_BY_ADMIN: 'User UnBlocked successfully',
 	DELETE_BY_ADMIN: 'Your account has been deleted by admin',
 	NO_TOKEN: 'Please provide token',
+	INVALID_TOKEN: 'Invalid Token!',
 	LOGIN: 'Logged in Successfully!',
 	OTP_VERIFY: 'OTP verified successfully',
 	USER_ALREADY_EXIST: 'User already exist',
