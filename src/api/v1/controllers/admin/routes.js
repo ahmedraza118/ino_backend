@@ -278,4 +278,25 @@ router.post(
   auth.verifyToken,
   adminControllerInstance.productRequestUpdate
 );
+//Service Request routes
+router.get(
+  "/serviceRequestList",
+  auth.verifyToken,
+  adminControllerInstance.productRequestList
+);
+router.get(
+  "/serviceRequestDetails",
+  auth.verifyToken,
+  adminControllerInstance.productRequestDetails
+);
+router.get(
+  "/serviceRequestView",
+  auth.verifyToken,
+  adminControllerInstance.productRequestView
+);
+router.post(
+  "/serviceRequestUpdate",
+  auth.verifyToken,
+  adminControllerInstance.productRequestUpdate
+);
 module.exports = router;

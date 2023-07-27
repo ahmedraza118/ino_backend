@@ -132,6 +132,8 @@ module.exports = {
 	POST_UPDATED: "Post updated successfully. ",
 	SERVICE_UPDATED: "Service updated successfully. ",
 	POST_REQUEST_UPDATED: "Post request updated successfully. ",
+	PRODUCT_REQUEST_UPDATED: "Product request updated successfully. ",
+	SERVICE_REQUEST_UPDATED: "Service request updated successfully. ",
 	POST_DELETED: "Post Deleted successfully. ",
 	POST_LIST: "Post list fetched successfully. ",
 	POST_LIKES: "Post liked successfully. ",

@@ -30,6 +30,7 @@ const {
 const { feeServices } = require("../../services/fee/fee.js");
 const { postServices } = require("../../services/post/post");
 const { productServices } = require("../../services/product/product");
+const { serviceServices } = require("../../services/service/service");
 
 
 const { requestServices } = require("../../services/request/request.js");
@@ -39,6 +40,10 @@ const {
 const {
   productRequestServices,
 } = require("../../services/productRequest/productRequest.js");
+const {
+  serviceRequestServices,
+} = require("../../services/serviceRequest/serviceRequest.js");
+
 // const { postServices } = require("../../services/post/post.js");
 const { durationServices } = require("../../services/duration/duration.js");
 // const { transactionServices } = require("../../services/transaction.js");
@@ -112,6 +117,23 @@ const {
   deleteProductCommentReply,
   paginateAllProductSearchPrivatePublicFind,
 } = productServices;
+const {
+  createUserService,
+  findOneService,
+  updateService,
+  listService,
+  paginateServiceSearch,
+  paginateAllServiceSearch,
+  paginateServiceSearchBuy,
+  paginateAllServiceSearchPrivatePublic,
+  allServiceList,
+  paginateAllServiceSearchPrivatePublicTrending,
+  tagServicebyuserlist,
+  deleteServiceComment,
+  deleteServiceCommentReply,
+  paginateAllServiceSearchPrivatePublicFind,
+} = serviceServices;
+
 const { createRequest, findRequest, updateRequestById, requestList } =
   requestServices;
 const {
@@ -128,6 +150,15 @@ const {
   productRequestList,
   viewProductRequestDetails,
 } = productRequestServices;
+
+const {
+  createServiceRequest,
+  findServiceRequest,
+  updateServiceRequestById,
+  serviceRequestList,
+  viewServiceRequestDetails,
+} = serviceRequestServices;
+
 const { createFee, findFee, updateFee, feeList } = feeServices;
 const {
   createActivity,
@@ -3925,14 +3956,14 @@ class adminController {
         throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
       } else {
         let reqRes = await findProductRequest({
-          _id: validatedBody.postRequestId,
+          _id: validatedBody.productRequestId,
           status: { $ne: status.DELETE },
         });
         if (!reqRes) {
           throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
         } else {
           let productRes = await findOneProduct({
-            _id: reqRes.postId,
+            _id: reqRes.productId,
             status: { $ne: status.DELETE },
           });
 
@@ -3941,28 +3972,231 @@ class adminController {
           } else {
             if (validatedBody.status === "ACTIVE") {
               productRes = await updateProduct(
-                { _id: reqRes.postId },
+                { _id: reqRes.productId },
                 { status: status.ACTIVE }
               );
               reqRes = await updateProductRequestById(
-                { _id: validatedBody.postRequestId },
+                { _id: validatedBody.productRequestId },
                 { status: status.APPROVED }
               );
             } else {
               productRes = await updateProduct(
-                { _id: reqRes.postId },
+                { _id: reqRes.productId },
                 { status: status.BLOCK }
               );
 
               reqRes = await updateProductRequestById(
-                { _id: validatedBody.postRequestId },
+                { _id: validatedBody.productRequestId },
                 { status: status.REGECTED }
               );
             }
             return res.json(
               new response(
                 { productRes, reqRes },
-                responseMessage.POST_REQUEST_UPDATED
+                responseMessage.PRODUCT_REQUEST_UPDATED
+              )
+            );
+          }
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+
+
+  ///////////////////////////////
+  //////////Service Requests ///////////////
+  /**
+   * @swagger
+   * /admin/serviceRequestView:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: serviceRequestView
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: serviceRequestId
+   *         description: serviceRequestId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async serviceRequestView(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let resultRes = await findServiceRequest({
+          _id: req.query.serviceRequestId,
+          status: { $ne: status.DELETE },
+        });
+        if (!resultRes) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+// service request details shows user and the product details
+  async serviceRequestDetails(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let resultRes = await viewServiceRequestDetails({
+          _id: req.query.serviceRequestId,
+          status: { $ne: status.DELETE },
+        });
+        if (!resultRes) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+
+  /**
+   * @swagger
+   * /admin/serviceRequestList:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: serviceRequestList
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async serviceRequestList(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let resultRes = await serviceRequestList({
+          status: { $ne: status.DELETE },
+        });
+        if (resultRes.length == 0) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+   /**
+   * @swagger
+   * /admin/serviceRequestUpdate:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: serviceRequestUpdate
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+
+  async serviceRequestUpdate(req, res, next) {
+    const validationSchema = {
+      serviceRequestId: Joi.string().required(),
+      status: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.body, validationSchema);
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let reqRes = await findServiceRequest({
+          _id: validatedBody.serviceRequestId,
+          status: { $ne: status.DELETE },
+        });
+        if (!reqRes) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          let serviceRes = await findOneService({
+            _id: reqRes.serviceId,
+            status: { $ne: status.DELETE },
+          });
+
+          if (!serviceRes) {
+            throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+          } else {
+            if (validatedBody.status === "ACTIVE") {
+              serviceRes = await updateService(
+                { _id: reqRes.serviceId },
+                { status: status.ACTIVE }
+              );
+              reqRes = await updateServiceRequestById(
+                { _id: validatedBody.serviceRequestId },
+                { status: status.APPROVED }
+              );
+            } else {
+              serviceRes = await updateService(
+                { _id: reqRes.serviceId },
+                { status: status.BLOCK }
+              );
+
+              reqRes = await updateServiceRequestById(
+                { _id: validatedBody.serviceRequestId },
+                { status: status.REGECTED }
+              );
+            }
+            return res.json(
+              new response(
+                { serviceRes, reqRes },
+                responseMessage.SERVICE_REQUEST_UPDATED
               )
             );
           }
