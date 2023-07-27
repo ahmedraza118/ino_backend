@@ -15,6 +15,11 @@ const {
   updateUserProduct,
   deleteUserProduct,
   productListPaginate,
+  serviceView,
+  serviceListPaginate,
+  deleteUserService,
+  updateUserService,
+  createService,
 } = require("./userController");
 const auth = require("../../../../helper/auth");
 // const upload = require("../../../../helper/uploadHandler");
@@ -36,11 +41,17 @@ router.get("/postListPaginate", auth.verifyToken, postListPaginate);
 router.post("/createPost", auth.verifyToken, createPost);
 router.post("/updateUserPost", auth.verifyToken, updateUserPost);
 router.post("/deleteUserPost", auth.verifyToken, deleteUserPost);
-//post routes
+//product routes
 router.get("/productView", auth.verifyToken, productView);
 router.post("/createProduct", auth.verifyToken, createProduct);
 router.post("/updateUserProduct", auth.verifyToken, updateUserProduct);
 router.post("/deleteUserProduct", auth.verifyToken, deleteUserProduct);
 router.get("/productListPaginate", auth.verifyToken, productListPaginate);
+//Service routes
+router.get("/serviceView", auth.verifyToken, serviceView);
+router.post("/createService", auth.verifyToken, createService);
+router.post("/updateUserService", auth.verifyToken, updateUserService);
+router.post("/deleteUserService", auth.verifyToken, deleteUserService);
+router.get("/serviceListPaginate", auth.verifyToken, serviceListPaginate);
 
 module.exports = router;

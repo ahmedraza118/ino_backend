@@ -14,6 +14,7 @@ const commonFunction = require("../../../../helper/util.js");
 
 const { postServices } = require("../../services/post/post");
 const { productServices } = require("../../services/product/product");
+const { serviceServices } = require("../../services/service/service");
 const {
   activityServices,
 } = require("../../services/userActivity/userActivity");
@@ -26,6 +27,9 @@ const {
 const {
   productRequestServices,
 } = require("../../services/productRequest/productRequest.js");
+const {
+  serviceRequestServices,
+} = require("../../services/serviceRequest/serviceRequest.js");
 
 
 const {
@@ -60,6 +64,22 @@ const {
   deleteProductCommentReply,
   paginateAllProductSearchPrivatePublicFind,
 } = productServices;
+const {
+  createUserService,
+  findOneService,
+  updateService,
+  listService,
+  paginateServiceSearch,
+  paginateAllServiceSearch,
+  paginateServiceSearchBuy,
+  paginateAllServiceSearchPrivatePublic,
+  allServiceList,
+  paginateAllServiceSearchPrivatePublicTrending,
+  tagServicebyuserlist,
+  deleteServiceComment,
+  deleteServiceCommentReply,
+  paginateAllServiceSearchPrivatePublicFind,
+} = serviceServices;
 
 const {
   createReport,
@@ -84,6 +104,13 @@ const {
   productRequestList,
   viewProductRequestDetails,
 } = productRequestServices;
+const {
+  createServiceRequest,
+  findServiceRequest,
+  updateServiceRequestById,
+  serviceRequestList,
+  viewServiceRequestDetails,
+} = serviceRequestServices;
 
 
 const {
@@ -361,7 +388,7 @@ const updateProfile = async (req, res, next) => {
     }
     let { value, error } = Joi.object(validationSchema).validate(req.body);
     if (error) {
-      throw error;
+      return res.json(new response(error, responseMessage.BAD_REQUEST));
     }
     var {
       userName,
@@ -1118,15 +1145,15 @@ const allPostListPaginate = async (req, res, next) => {
   }
 };
 
-/////////
+/////////Products////////////
 
 /**
  * @swagger
- * /user/createPost:
+ * /user/createProduct:
  *   post:
  *     tags:
- *       - USER POSTS
- *     description: createPost
+ *       - USER PRODUCT
+ *     description: createProduct
  *     produces:
  *       - application/json
  *     parameters:
@@ -1139,7 +1166,7 @@ const allPostListPaginate = async (req, res, next) => {
  *         in: body
  *         required: true
  *         schema:
- *           $ref: '#/definitions/createPost'
+ *           $ref: '#/definitions/createProduct'
  *     responses:
  *       200:
  *         description: Returns success message
@@ -1760,6 +1787,648 @@ const allProductListPaginate = async (req, res, next) => {
   }
 };
 
+/////////Services////////////
+
+/**
+ * @swagger
+ * /user/createService:
+ *   post:
+ *     tags:
+ *       - USER SERVICE
+ *     description: createService
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: createPost
+ *         description: createService
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/createService'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const createService = async (req, res, next) => {
+  try {
+    const validationSchema = {
+      // collectionId: Joi.string().required(),
+      serviceName: Joi.string().required(),
+      mediaUrl: Joi.string().required(),
+      details: Joi.string().required(),
+      // postType: Joi.string().required(),
+      rate: Joi.string().required(),
+      mediaType: Joi.string().required(),
+      categorie: Joi.string().required(),
+      // subCategorie: Joi.string().optional(),
+      
+    };
+    const validatedBody = await Joi.validate(req.body, validationSchema);
+    var userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      // let result = await findCollection({ _id: validatedBody.collectionId, userId: userResult._id, status: { $ne: status.DELETE } })
+      // if (!result) {
+      //     throw apiError.notFound(responseMessage.COLLECTION_NOT_FOUND)
+      // } else {
+      if (validatedBody.mediaUrl) {
+        validatedBody.mediaUrl = await commonFunction.getSecureUrl(
+          validatedBody.mediaUrl
+        );
+      }
+      validatedBody.type = "SERVICE";
+      validatedBody.userId = userResult._id;
+      validatedBody.creatorId = userResult._id;
+      var saveService = await createUserService(validatedBody);
+      await updateUserById({ _id: userResult._id }, { isProduct: true });
+      await createActivity({
+        userId: userResult._id,
+        postId: saveService._id,
+        // collectionId: result._id,
+        title: "Service create",
+        desctiption: "Service create successfully.",
+        type: "SERVICE",
+      });
+
+      let obj = {
+        message: "Please approve my Service",
+        userId: userResult._id,
+        productId: saveService._id,
+        type: "CREATE",
+      };
+      let saveRequest = await createServiceRequest(obj);
+      // if (validatedBody.hashTagName.length != 0) {
+      //   for (let i = 0; i < validatedBody.hashTagName.length; i++) {
+      //     let hashTagRes = await findHashTag({
+      //       hashTagName: validatedBody.hashTagName[i],
+      //       status: { $ne: status.DELETE },
+      //     });
+      //     if (!hashTagRes) {
+      //       let obj = {
+      //         hashTagName: validatedBody.hashTagName[i],
+      //         postCount: 1,
+      //         userCount: 1,
+      //         postDetails: [
+      //           {
+      //             postId: savePost._id,
+      //           },
+      //         ],
+      //       };
+      //       let saveRes = await createHashTag(obj);
+      //       var updateRes = await updatePost(
+      //         { _id: savePost._id },
+      //         {
+      //           $addToSet: { hashTagId: saveRes._id },
+      //           $inc: { hashTagCount: 1 },
+      //         }
+      //       );
+      //     } else {
+      //       var updateRes = await updatePost(
+      //         { _id: savePost._id },
+      //         {
+      //           $addToSet: { hashTagId: hashTagRes._id },
+      //           $inc: { hashTagCount: 1 },
+      //         }
+      //       );
+      //       await updateHashTag(
+      //         { _id: hashTagRes._id },
+      //         {
+      //           $push: { postDetails: { $each: [{ postId: savePost._id }] } },
+      //           $inc: { postCount: 1, userCount: 1 },
+      //         }
+      //       );
+      //     }
+      //   }
+      //   return res.json(new response(updateRes, responseMessage.POST_CREATE));
+      // }
+      return res.json(
+        new response({ saveService, saveRequest }, responseMessage.SERVICE_CREATE)
+      );
+      // }
+    }
+  } catch (error) {
+    console.log("====================>", error);
+    return next(error);
+  }
+};
+
+/**
+ * @swagger
+ * /user/updateService:
+ *   put:
+ *     tags:
+ *       - USER POSTS
+ *     description: updateUserService
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: updateUserService
+ *         description: updateUserService
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/updateUserService'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const updateUserService = async (req, res, next) => {
+  try {
+    const validationSchema = {
+      serviceId: Joi.string().required(),
+      // collectionId: Joi.string().allow('').optional(),
+      serviceName: Joi.string().allow("").optional(),
+      mediaUrl: Joi.string().allow("").optional(),
+      details: Joi.string().allow("").optional(),
+      // postType: Joi.string().allow('').optional(),
+      rate: Joi.string().allow("").optional(),
+      // royality: Joi.string().allow('').optional(),
+      // hashTagName: Joi.array().allow("").optional(),
+      // tag: Joi.array().allow("").optional(),
+      mediaType: Joi.string().allow("").optional(),
+      categorie: Joi.string().allow("").optional(),
+      // subCategorie: Joi.string().allow("").optional(),
+    };
+    const validatedBody = await Joi.validate(req.body, validationSchema);
+    var userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let productRes = await findOneService({
+        _id: validatedBody.productId,
+        userId: userResult._id,
+        status: { $ne: status.DELETE },
+      });
+      if (!productRes) {
+        throw apiError.notFound(responseMessage.SERVICE_NOT_FOUND);
+      }
+      // let result = await findCollection({ _id: validatedBody.collectionId, userId: userResult._id, status: { $ne: status.DELETE } })
+      // if (!result) {
+      //     throw apiError.notFound(responseMessage.COLLECTION_NOT_FOUND)
+      // } else {
+      if (validatedBody.mediaUrl) {
+        validatedBody.mediaUrl = await commonFunction.getSecureUrl(
+          validatedBody.mediaUrl
+        );
+      }
+      validatedBody.type = "SERVICE";
+      validatedBody.userId = userResult._id;
+      validatedBody.creatorId = userResult._id;
+      var saveService = await updateService({ _id: productRes._id }, validatedBody);
+      await updateUserById({ _id: userResult._id }, { isService: true });
+      await createActivity({
+        userId: userResult._id,
+        productId: saveService._id,
+        // collectionId: result._id,
+        title: "Service update",
+        desctiption: "Service update successfully.",
+        type: "SERVICE",
+      });
+      // if (validatedBody.hashTagName.length != 0) {
+      //     for (let i = 0; i < validatedBody.hashTagName.length; i++) {
+      //         let hashTagRes = await findHashTag({ hashTagName: validatedBody.hashTagName[i], status: { $ne: status.DELETE } })
+      //         if (!hashTagRes) {
+      //             let obj = {
+      //                 hashTagName: validatedBody.hashTagName[i],
+      //                 postCount: 1,
+      //                 userCount: 1,
+      //                 postDetails: [{
+      //                     postId: savePost._id,
+      //                 }]
+      //             }
+      //             let saveRes = await createHashTag(obj)
+      //             var updateRes = await updatePost({ _id: savePost._id }, { $addToSet: { hashTagId: saveRes._id }, $inc: { hashTagCount: 1 } })
+      //         } else {
+      //             var updateRes = await updatePost({ _id: savePost._id }, { $addToSet: { hashTagId: hashTagRes._id }, $inc: { hashTagCount: 1 } })
+      //             await updateHashTag({ _id: hashTagRes._id }, { $push: { postDetails: { $each: [{ postId: savePost._id }] } }, $inc: { postCount: 1, userCount: 1 } });
+      //         }
+      //     }
+      //     return res.json(new response(updateRes, responseMessage.POST_CREATE));
+      // }
+      return res.json(new response(saveService, responseMessage.SERVICE_UPDATED));
+      // }
+    }
+  } catch (error) {
+    console.log("====================>", error);
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /user/deleteUserService:
+ *   put:
+ *     tags:
+ *       - USER Service
+ *     description: updateService
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: updatePost
+ *         description: updateService
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/updateService'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const deleteUserService = async (req, res, next) => {
+  try {
+    const validationSchema = {
+      serviceId: Joi.string().required(),
+    };
+    const validatedBody = await Joi.validate(req.body, validationSchema);
+    var userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let serviceRes = await findOneService({
+        _id: validatedBody.serviceId,
+        userId: userResult._id,
+        status: { $ne: status.DELETE },
+      });
+      if (!serviceRes) {
+        throw apiError.notFound(responseMessage.SERVICE_NOT_FOUND);
+      }
+      validatedBody.creatorId = userResult._id;
+      validatedBody.status = status.DELETE;
+      var saveService = await updateService({ _id: serviceRes._id }, validatedBody);
+      await updateUserById({ _id: userResult._id }, { isService: true });
+      await createActivity({
+        userId: userResult._id,
+        postId: saveService._id,
+        // collectionId: result._id,
+        title: "Service Delete",
+        desctiption: "Service Deleted successfully.",
+        type: "SERVICE",
+      });
+      return res.json(new response(saveService, responseMessage.SERVICE_DELETE));
+      // }
+    }
+  } catch (error) {
+    console.log("====================>", error);
+    return next(error);
+  }
+};
+
+/**
+ * @swagger
+ * /user/serviceListPaginate:
+ *   get:
+ *     tags:
+ *       - USER serviceListPaginate
+ *     description: serviceListPaginate
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: search
+ *         description: search
+ *         in: query
+ *         required: false
+ *       - name: fromDate
+ *         description: fromDate
+ *         in: query
+ *         required: false
+ *       - name: toDate
+ *         description: toDate
+ *         in: query
+ *         required: false
+ *       - name: page
+ *         description: page
+ *         in: query
+ *         required: false
+ *       - name: limit
+ *         description: limit
+ *         in: query
+ *         required: false
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const serviceListPaginate = async (req, res, next) => {
+  const validationSchema = {
+    search: Joi.string().optional(),
+    fromDate: Joi.string().optional(),
+    toDate: Joi.string().optional(),
+    page: Joi.string().optional(),
+    limit: Joi.string().optional(),
+  };
+  try {
+    const validatedBody = await Joi.validate(req.query, validationSchema);
+    const { search, fromDate, toDate, page, limit } = validatedBody;
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    validatedBody.userId = userResult._id;
+    let dataResults = await paginateServiceSearch(validatedBody);
+    if (dataResults.docs.length == 0) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    }
+    return res.json(new response(dataResults, responseMessage.DATA_FOUND));
+  } catch (error) {
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /user/ServiceView:
+ *   get:
+ *     tags:
+ *       - USER ServiceView
+ *     description: ServiceView
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: postId
+ *         description: postId
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const serviceView = async (req, res, next) => {
+  const validationSchema = {
+    serviceId: Joi.string().optional(),
+  };
+  try {
+    const validatedBody = await Joi.validate(req.query, validationSchema);
+    const { serviceId } = validatedBody;
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let dataResults = await findOneService({
+      _id: serviceId,
+      status: { $ne: status.DELETE },
+    });
+    let commentReportList = await findAllReport({
+      userId: userResult._id,
+      serviceId: serviceId,
+    });
+    // let [userCollection, collectionIdList] = await Promise.all([await userCollectionListAll({ userId: userResult._id, status: { $ne: status.DELETE } }), await collectionSubscriptionUserList({ userId: userResult._id, status: { $ne: status.DELETE } })]);
+    if (!dataResults) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    }
+    // for (let cObj of collectionIdList) {
+    //     if (cObj['collectionId'].toString() == dataResults.collectionId) {
+    //         dataResults['isSubscribed'] = true;
+    //     }
+    // }
+    // for (let uObj of userCollection) {
+    //     if (uObj['_id'].toString() == dataResults.collectionId) {
+    //         dataResults['isSubscribed'] = true;
+    //     }
+    // }
+    for (let commentObject of commentReportList) {
+      dataResults["comment"] = dataResults["comment"].filter(
+        (item) => !item["reportedId"].includes(commentObject._id)
+      );
+    }
+    return res.json(new response(dataResults, responseMessage.DATA_FOUND));
+  } catch (error) {
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /user/allServiceListPaginate:
+ *   get:
+ *     tags:
+ *       - USER Services
+ *     description: allServiceListPaginate
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: search
+ *         description: search
+ *         in: query
+ *         required: false
+ *       - name: fromDate
+ *         description: fromDate
+ *         in: query
+ *         required: false
+ *       - name: toDate
+ *         description: toDate
+ *         in: query
+ *         required: false
+ *       - name: page
+ *         description: page
+ *         in: query
+ *         required: false
+ *       - name: limit
+ *         description: limit
+ *         in: query
+ *         required: false
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const allServiceListPaginate = async (req, res, next) => {
+  const validationSchema = {
+    search: Joi.string().optional(),
+    fromDate: Joi.string().optional(),
+    toDate: Joi.string().optional(),
+    page: Joi.string().optional(),
+    limit: Joi.string().optional(),
+  };
+  try {
+    const paginateGood = (array, page_size, page_number) => {
+      return array.slice(
+        (page_number - 1) * page_size,
+        page_number * page_size
+      );
+    };
+    const validatedBody = await Joi.validate(req.query, validationSchema);
+    const { search, fromDate, toDate, page, limit } = validatedBody;
+    var userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    // let postPromotionResult = await postPromotionList({ status: status.ACTIVE })
+    validatedBody["status"] = status.ACTIVE;
+    // validatedBody['postType'] = { $in: ['PRIVATE', 'PUBLIC'] };
+    validatedBody["isSold"] = false;
+    validatedBody["isBuy"] = false;
+    let newDoc = [];
+    // let data = await paginateAllPostSearchPrivatePublicFind(validatedBody);
+    let [data, postPromotionResult, userCollection, collectionIdList] =
+      await Promise.all([
+        paginateAllPostSearchPrivatePublicFind(validatedBody),
+        // postPromotionList({ status: status.ACTIVE }),
+        // userCollectionListAll({ userId: userResult._id, status: { $ne: status.DELETE } }),
+        // collectionSubscriptionUserList({ userId: userResult._id, status: { $ne: status.DELETE } })
+      ]);
+
+    let postPromotionRes = [];
+    for (let i = 0; i < postPromotionResult.length; i++) {
+      if (!userResult.blockedUser.includes(postPromotionResult[i].userId._id)) {
+        postPromotionRes.push(postPromotionResult[i]);
+      }
+    }
+
+    let blockUserRes = [];
+    for (let i = 0; i < data.length; i++) {
+      if (!userResult.blockedUser.includes(data[i].userId._id)) {
+        blockUserRes.push(data[i]);
+      }
+    }
+
+    let dataResults = [];
+    for (let i = 0; i < blockUserRes.length; i++) {
+      if (!userResult.hidePost.includes(blockUserRes[i]._id)) {
+        dataResults.push(blockUserRes[i]);
+      }
+    }
+    for (let i in dataResults) {
+      for (let cObj of collectionIdList) {
+        if (
+          cObj["collectionId"]["_id"].toString() == dataResults[i].collectionId
+        ) {
+          dataResults[i]["isSubscribed"] = true;
+        }
+      }
+      for (let uObj of userCollection) {
+        if (uObj["_id"].toString() == dataResults[i].collectionId) {
+          dataResults[i]["isSubscribed"] = true;
+        }
+      }
+      if (userResult["myWatchlist"].includes(dataResults[i]._id) == true) {
+        dataResults[i]["isWatchList"] = true;
+      }
+      dataResults[i].reactOnPost = await dataResults[i].reactOnPost.find(
+        (o) => {
+          return o.userId.toString() == userResult._id.toString();
+        }
+      );
+    }
+    var finaldataRes = [];
+    for (let obj of dataResults) {
+      let findReportRes = await findAllReport({
+        userId: userResult._id,
+        postId: obj._id,
+      });
+      if (findReportRes.length == 0) {
+        finaldataRes.push(obj);
+      } else {
+        for (let commentObject of findReportRes) {
+          obj["comment"] = obj["comment"].filter(
+            (item) => !item["reportedId"].includes(commentObject._id)
+          );
+        }
+        if (!obj.reportedId.includes(findReportRes[0]._id)) {
+          finaldataRes.push(obj);
+        }
+      }
+    }
+    let resultRes = [];
+    let count = 0;
+    var userDob = new Date(userResult.dob);
+    var currentDate = new Date();
+    var diffDays = currentDate.getYear() - userDob.getYear();
+    var postPromotionfinalResult = [];
+    for (let i = 0; i < postPromotionRes.length; i++) {
+      for (let j = 0; j < userResult.interest.length; j++) {
+        for (let x = 0; x < postPromotionRes[i].interest.length; x++) {
+          if (
+            postPromotionRes[i].interest[x] == userResult.interest[j] &&
+            postPromotionRes[i].minAge <= diffDays &&
+            postPromotionRes[i].maxAge >= diffDays &&
+            userResult._id.toString() !=
+              postPromotionRes[i].userId._id.toString()
+          ) {
+            postPromotionfinalResult.push(postPromotionRes[i]);
+          } else if (
+            userResult._id.toString() ==
+            postPromotionRes[i].userId._id.toString()
+          ) {
+            postPromotionfinalResult.push(postPromotionRes[i]);
+          }
+        }
+      }
+    }
+    if (finaldataRes.length == 0) {
+      for (let i = 0; i < postPromotionfinalResult.length; i++) {
+        resultRes.push(postPromotionfinalResult[i]);
+      }
+    }
+    for (let i = 0; i < finaldataRes.length; i++) {
+      count++;
+      resultRes.push(finaldataRes[i]);
+      if (
+        count % 2 == 0 &&
+        postPromotionfinalResult[count / 2 - 1] &&
+        resultRes.includes(postPromotionfinalResult[count / 2 - 1]) == false
+      ) {
+        resultRes.push(postPromotionfinalResult[count / 2 - 1]);
+      }
+    }
+    let options2 = {
+      page: parseInt(req.query.page) || 1,
+      limit: parseInt(req.query.limit) || 10,
+    };
+    let properResult = {
+      docs: paginateGood(resultRes, options2.limit, options2.page),
+      total: resultRes.length,
+      limit: options2.limit,
+      page: options2.page,
+      pages: Math.ceil(resultRes.length / options2.limit),
+    };
+    if (properResult.docs.length == 0) {
+      throw apiError.notFound(responseMessage.POST_NOT_FOUND);
+    }
+    return res.json(new response(properResult, responseMessage.DATA_FOUND));
+  } catch (error) {
+    console.log("Catch error ==>", error);
+    return next(error);
+  }
+};
+
 module.exports = {
   register,
   verifyOTP,
@@ -1775,5 +2444,10 @@ module.exports = {
   productListPaginate,
   deleteUserProduct,
   updateUserProduct,
-  createProduct
+  createProduct,
+  serviceView,
+  serviceListPaginate,
+  deleteUserService,
+  updateUserService,
+  createService
 };

@@ -209,6 +209,33 @@ router.get(
   adminControllerInstance.getAllProdctSubCategories
 );
 
+//Service Categories routes
+router.get(
+  "/viewServiceCategorie",
+  auth.verifyToken,
+  adminControllerInstance.viewServiceCategorie
+);
+router.post(
+  "/createServiceCategorie",
+  auth.verifyToken,
+  adminControllerInstance.createServiceCategorie
+);
+router.post(
+  "/deleteServiceCategorie",
+  auth.verifyToken,
+  adminControllerInstance.deleteServiceCategorie
+);
+router.get(
+  "/SearchServiceCategories",
+  auth.verifyToken,
+  adminControllerInstance.SearchServiceCategories
+);
+router.get(
+  "/getAllServiceCategories",
+  auth.verifyToken,
+  adminControllerInstance.getAllServiceCategories
+);
+
 //post Request routes
 router.get(
   "/postRequestList",

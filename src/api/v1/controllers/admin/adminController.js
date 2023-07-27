@@ -18,6 +18,9 @@ const {
   productCategorieServices,
 } = require("../../services/productCategorie/productCategorie");
 const {
+  serviceCategorieServices,
+} = require("../../services/serviceCategorie/serviceCategorie");
+const {
   productSubCategorieServices,
 } = require("../../services/productSubCategorie/productSubCategorie");
 
@@ -200,6 +203,13 @@ const {
   productCategorieList,
   paginateSearchProductCategorie,
 } = productCategorieServices;
+const {
+  createServiceCategorie,
+  findServiceCategorie,
+  updateServiceCategorie,
+  serviceCategorieList,
+  paginateSearchServiceCategorie,
+} = serviceCategorieServices;
 const {
   createProductSubCategorie,
   findProductSubCategorie,
@@ -1119,7 +1129,218 @@ class adminController {
   
     ////////////////////////////////////////////
 
+//////////////////////
+  /**
+   * @swagger
+   * /user/createServiceCategorie:
+   *   post:
+   *     tags:
+   *       - SERVICE CATEGORIE
+   *     description: createServiceCategorie
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: name
+   *         description: name
+   *         in: formData
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async createServiceCategorie(req, res, next) {
+    const validationSchema = {
+      name: Joi.string().required(),
+      description: Joi.string().required(),
+    };
+    try {
+      const { value, error } = Joi.object(validationSchema).validate(req.body);
+      if (error) {
+        throw error;
+      }
 
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let categorieRes = await findServiceCategorie({
+        name: req.body.name,
+        status: { $ne: status.DELETE },
+      });
+      if (categorieRes) {
+        throw apiError.conflict(responseMessage.CATEGORIE_EXIST);
+      }
+      value.userId = userResult._id;
+      let saveRes = await createServiceCategorie(value);
+      return res.json(new response(saveRes, responseMessage.CREATE_CATEGORIE));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/viewServiceCategorie:
+   *   get:
+   *     tags:
+   *       - viewServiceCategorie
+   *     description: viewServicesCategorie
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: service name
+   *         description: description
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async viewServiceCategorie(req, res, next) {
+    const validationSchema = {
+      categorieId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let resultRes = await findServiceCategorie({
+        _id: validatedBody.categorieId,
+        status: { $ne: status.DELETE },
+      });
+      if (!resultRes) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/deleteServiceCategorie:
+   *   delete:
+   *     tags:
+   *       - deleteServiceCategorie
+   *     description: deleteServiceCategorie
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: name
+   *         description: description
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async deleteServiceCategorie(req, res, next) {
+    const validationSchema = {
+      categorieId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let resultRes = await findServiceCategorie({
+        _id: validatedBody.categorieId,
+        status: { $ne: status.DELETE },
+      });
+      if (!resultRes) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      let updateRes = await updateServiceCategorie(
+        { _id: resultRes._id },
+        { status: status.DELETE }
+      );
+      return res.json(
+        new response(updateRes, responseMessage.CATEGORIE_DELETE)
+      );
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/SearchServiceCategories:
+   *   get:
+   *     tags:
+   *       - Search
+   *     description: SearchServiceCategories
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: fromDate
+   *         description: fromDate
+   *         in: query
+   *         required: false
+   *       - name: toDate
+   *         description: toDate
+   *         in: query
+   *         required: false
+   *       - name: page
+   *         description: page
+   *         in: query
+   *         required: false
+   *       - name: limit
+   *         description: limit
+   *         in: query
+   *         required: false
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async SearchServiceCategories(req, res, next) {
+    const validationSchema = {
+      fromDate: Joi.string().optional(),
+      toDate: Joi.string().optional(),
+      page: Joi.string().optional(),
+      limit: Joi.string().optional(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let resultRes = await paginateSearchServiceCategorie(validatedBody);
+      if (resultRes.docs.length == 0) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  // get All Service Categories
+
+  async getAllServiceCategories(req, res, next) {
+    try {
+      const categorieRes = await serviceCategorieList();
+      return res.json(new response(categorieRes, responseMessage.DATA_FOUND));
+    } catch (error) {
+      // Handle the error gracefully (e.g., log or throw a custom error)
+      console.error("Error in getAllServiceCategories:", error);
+      return next(error);
+    }
+  }
+
+  ////////////////////////////////////////////
 
 
   /**
@@ -2950,7 +3171,7 @@ class adminController {
           throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
         } else {
           if (userResult.status == status.ACTIVE) {
-            let statusRes = await updateUser(
+            let statusRes = await updateUserById(
               { _id: userResult._id },
               { $set: { status: status.BLOCK } }
             );
@@ -2969,7 +3190,7 @@ class adminController {
               { _id: resultRes._id },
               { status: status.DELETE }
             );
-            let statusRes = await updateUser(
+            let statusRes = await updateUserById(
               { _id: userResult._id },
               { $set: { status: status.ACTIVE } }
             );

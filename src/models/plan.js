@@ -22,9 +22,7 @@ const schemaDefination = new Schema(
     amount: {
       type: Number, default: 0
     },
-    coinName: {
-      type: String
-    },
+
     duration: {
       type: String
     },
