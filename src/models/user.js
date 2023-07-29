@@ -120,7 +120,7 @@ module.exports = userModel;
         password: hashedPassword,
         userType: userType.ADMIN,
         gender: "Male",
-        phoneNumber: "+923037842213",
+        mobileNumber: "+923037842213",
         otpVerification: true,
         permissions: {
           notificationManagement: true,
