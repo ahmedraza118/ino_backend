@@ -6,7 +6,7 @@
   },
   "serverConfig": {
     "serverURL": "http://localhost",
-    "serverPort": 6000
+    "serverPort": 1909
   },
   "jwtsecret": "mysecretkey",
   "twilio": {
