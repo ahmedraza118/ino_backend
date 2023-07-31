@@ -29,6 +29,9 @@ class apiError extends Error {
   static invalid(msg) {
     return new apiError(402, msg);
   }
+  static invalidLogIn(msg) {
+    return new apiError(401, msg);
+  }
   static notAllowed(msg) {
     return new apiError(405, msg);
   }

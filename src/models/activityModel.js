@@ -62,6 +62,22 @@ var userActivityModel = new schema({
         type: schema.Types.ObjectId,
         ref: "post"
     },
+    productId:{
+        type: schema.Types.ObjectId,
+        ref: "product"
+    },
+    ServiceId:{
+        type: schema.Types.ObjectId,
+        ref: "service"
+    },
+    jobId:{
+        type: schema.Types.ObjectId,
+        ref: "job"
+    },
+    projectId:{
+        type: schema.Types.ObjectId,
+        ref: "project"
+    },
     postPromotionId:{
         type: schema.Types.ObjectId,
         ref: "postPromotion"
@@ -74,7 +90,7 @@ var userActivityModel = new schema({
     },
     type: {
         type: String,
-        enum: ["EXPORT","COLLECTION", "RATING", "TRACKING", "FOLLOW", "UNFOLLOW", "AUCTION", "STORY","BUY", "LIKE", "DISLIKE", "HIDE", "UNHIDE", "COMMENT", "COMMENT_REPLY","POST","BID","BLOCK","UNBLOCK","UN_IGNORE","IGNORE","POSTPROMOTION","REPORT","SUBSCRIBE","STORYCOMMENT","REELS","SHARE"]
+        enum: ["EXPORT","PRODUCT","SERVICE","JOB","PROJECT","COLLECTION", "RATING", "TRACKING", "FOLLOW", "UNFOLLOW", "AUCTION", "STORY","BUY", "LIKE", "DISLIKE", "HIDE", "UNHIDE", "COMMENT", "COMMENT_REPLY","POST","BID","BLOCK","UNBLOCK","UN_IGNORE","IGNORE","POSTPROMOTION","REPORT","SUBSCRIBE","STORYCOMMENT","REELS","SHARE"]
     },
     status: {
         type: String,

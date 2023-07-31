@@ -307,7 +307,7 @@ class adminController {
       }
 
       if (!bcrypt.compareSync(password, userResult.password)) {
-        throw apiError.invalid(responseMessage.INCORRECT_LOGIN);
+        throw apiError.invalidLogIn(responseMessage.INCORRECT_LOGIN);
       }
       let token = await commonFunction.getToken({
         id: userResult._id,

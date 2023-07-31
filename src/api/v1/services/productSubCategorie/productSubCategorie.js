@@ -47,7 +47,7 @@ const productSubCategorieServices = {
       page: parseInt(page) || 1,
       limit: parseInt(limit) || 15,
       sort: { createdAt: -1 },
-      populate: "postId",
+      populate: "productId",
     };
 
     return await productSubCategorieModel.paginate(query, options);
