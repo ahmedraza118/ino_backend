@@ -15,6 +15,8 @@ const commonFunction = require("../../../../helper/util.js");
 const { postServices } = require("../../services/post/post");
 const { productServices } = require("../../services/product/product");
 const { serviceServices } = require("../../services/service/service");
+const { jobServices } = require("../../services/job/job");
+const { projectServices } = require("../../services/project/project");
 const {
   activityServices,
 } = require("../../services/userActivity/userActivity");
@@ -28,9 +30,14 @@ const {
   productRequestServices,
 } = require("../../services/productRequest/productRequest.js");
 const {
+  jobRequestServices,
+} = require("../../services/jobRequest/jobRequest.js");
+const {
+  projectRequestServices,
+} = require("../../services/projectRequest/projectRequest.js");
+const {
   serviceRequestServices,
 } = require("../../services/serviceRequest/serviceRequest.js");
-
 
 const {
   createUserPost,
@@ -65,6 +72,38 @@ const {
   paginateAllProductSearchPrivatePublicFind,
 } = productServices;
 const {
+  createUserJob,
+  findOneJob,
+  updateJob,
+  listJob,
+  paginateJobSearch,
+  paginateAllJobSearch,
+  paginateJobSearchBuy,
+  paginateAllJobSearchPrivatePublic,
+  allJobList,
+  paginateAllJobSearchPrivatePublicTrending,
+  tagJobbyuserlist,
+  deleteJobComment,
+  deleteJobCommentReply,
+  paginateAllJobSearchPrivatePublicFind,
+} = jobServices;
+const {
+  createUserProject,
+  findOneProject,
+  updateProject,
+  listProject,
+  paginateProjectSearch,
+  paginateAllProjectSearch,
+  paginateProjectSearchBuy,
+  paginateAllProjectSearchPrivatePublic,
+  allProjectList,
+  paginateAllProjectSearchPrivatePublicTrending,
+  tagProjectbyuserlist,
+  deleteProjectComment,
+  deleteProjectCommentReply,
+  paginateAllProjectSearchPrivatePublicFind,
+} = projectServices;
+const {
   createUserService,
   findOneService,
   updateService,
@@ -98,12 +137,19 @@ const {
   postRequestList,
 } = postRequestServices;
 const {
-  createProductRequest,
-  findProductRequest,
-  updateProductRequestById,
-  productRequestList,
-  viewProductRequestDetails,
-} = productRequestServices;
+  createJobRequest,
+  findJobRequest,
+  updateJobRequestById,
+  jobRequestList,
+  viewJobRequestDetails,
+} = jobRequestServices;
+const {
+  createProjectRequest,
+  findProjectRequest,
+  updateProjectRequestById,
+  projectRequestList,
+  viewProjectRequestDetails,
+} = projectRequestServices;
 const {
   createServiceRequest,
   findServiceRequest,
@@ -111,7 +157,6 @@ const {
   serviceRequestList,
   viewServiceRequestDetails,
 } = serviceRequestServices;
-
 
 const {
   createUser,
@@ -1183,7 +1228,6 @@ const createProduct = async (req, res, next) => {
       mediaType: Joi.string().required(),
       categorie: Joi.string().required(),
       subCategorie: Joi.string().optional(),
-      
     };
     const validatedBody = await Joi.validate(req.body, validationSchema);
     var userResult = await findUser({
@@ -1347,7 +1391,10 @@ const updateUserProduct = async (req, res, next) => {
       validatedBody.type = "PRODUCT";
       validatedBody.userId = userResult._id;
       validatedBody.creatorId = userResult._id;
-      var saveProduct = await updateProduct({ _id: productRes._id }, validatedBody);
+      var saveProduct = await updateProduct(
+        { _id: productRes._id },
+        validatedBody
+      );
       await updateUserById({ _id: userResult._id }, { isPost: true });
       await createActivity({
         userId: userResult._id,
@@ -1787,6 +1834,1300 @@ const allProductListPaginate = async (req, res, next) => {
   }
 };
 
+/////////Job////////////
+
+/**
+ * @swagger
+ * /user/createJob:
+ *   post:
+ *     tags:
+ *       - USER PRODUCT
+ *     description: createJob
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: createJob
+ *         description: createJob
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/createJob'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const createJob = async (req, res, next) => {
+  try {
+    const validationSchema = {
+      // collectionId: Joi.string().required(),
+      title: Joi.string().required(),
+      sector: Joi.string().required(),
+      profession: Joi.string().required(),
+      mediaUrl: Joi.string().required(),
+      description: Joi.string().required(),
+      // postType: Joi.string().required(),
+      salary: Joi.string().required(),
+      mediaType: Joi.string().required(),
+      experience: Joi.string().required(),
+      skills: Joi.string().optional(),
+    };
+    const validatedBody = await Joi.validate(req.body, validationSchema);
+    var userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      // let result = await findCollection({ _id: validatedBody.collectionId, userId: userResult._id, status: { $ne: status.DELETE } })
+      // if (!result) {
+      //     throw apiError.notFound(responseMessage.COLLECTION_NOT_FOUND)
+      // } else {
+      if (validatedBody.mediaUrl) {
+        validatedBody.mediaUrl = await commonFunction.getSecureUrl(
+          validatedBody.mediaUrl
+        );
+      }
+      validatedBody.type = "JOB";
+      validatedBody.userId = userResult._id;
+      validatedBody.creatorId = userResult._id;
+      var saveJob = await createUserJob(validatedBody);
+      await updateUserById({ _id: userResult._id }, { isJob: true });
+      await createActivity({
+        userId: userResult._id,
+        postId: saveJob._id,
+        // collectionId: result._id,
+        title: "Job create",
+        desctiption: "Job create successfully.",
+        type: "JOB",
+      });
+
+      let obj = {
+        message: "Please approve my Job",
+        userId: userResult._id,
+        productId: saveJob._id,
+        type: "CREATE",
+      };
+      let saveRequest = await createJobRequest(obj);
+      // if (validatedBody.hashTagName.length != 0) {
+      //   for (let i = 0; i < validatedBody.hashTagName.length; i++) {
+      //     let hashTagRes = await findHashTag({
+      //       hashTagName: validatedBody.hashTagName[i],
+      //       status: { $ne: status.DELETE },
+      //     });
+      //     if (!hashTagRes) {
+      //       let obj = {
+      //         hashTagName: validatedBody.hashTagName[i],
+      //         postCount: 1,
+      //         userCount: 1,
+      //         postDetails: [
+      //           {
+      //             postId: savePost._id,
+      //           },
+      //         ],
+      //       };
+      //       let saveRes = await createHashTag(obj);
+      //       var updateRes = await updatePost(
+      //         { _id: savePost._id },
+      //         {
+      //           $addToSet: { hashTagId: saveRes._id },
+      //           $inc: { hashTagCount: 1 },
+      //         }
+      //       );
+      //     } else {
+      //       var updateRes = await updatePost(
+      //         { _id: savePost._id },
+      //         {
+      //           $addToSet: { hashTagId: hashTagRes._id },
+      //           $inc: { hashTagCount: 1 },
+      //         }
+      //       );
+      //       await updateHashTag(
+      //         { _id: hashTagRes._id },
+      //         {
+      //           $push: { postDetails: { $each: [{ postId: savePost._id }] } },
+      //           $inc: { postCount: 1, userCount: 1 },
+      //         }
+      //       );
+      //     }
+      //   }
+      //   return res.json(new response(updateRes, responseMessage.POST_CREATE));
+      // }
+      return res.json(
+        new response({ saveJob, saveRequest }, responseMessage.JOB_CREATE)
+      );
+      // }
+    }
+  } catch (error) {
+    console.log("====================>", error);
+    return next(error);
+  }
+};
+
+/**
+ * @swagger
+ * /user/updateJob:
+ *   put:
+ *     tags:
+ *       - USER POSTS
+ *     description: updateJob
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: updateJob
+ *         description: updateJob
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/updateJob'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const updateUserJob = async (req, res, next) => {
+  try {
+    const validationSchema = {
+      jobId: Joi.string().required(),
+      // collectionId: Joi.string().allow('').optional(),
+      title: Joi.string().allow("").optional(),
+      mediaUrl: Joi.string().allow("").optional(),
+      sector: Joi.string().allow("").optional(),
+      // postType: Joi.string().allow('').optional(),
+      profession: Joi.string().allow("").optional(),
+      description: Joi.string().allow("").optional(),
+      salary: Joi.string().allow("").optional(),
+      // hashTagName: Joi.array().allow("").optional(),
+      // tag: Joi.array().allow("").optional(),
+      mediaType: Joi.string().allow("").optional(),
+      experience: Joi.string().allow("").optional(),
+      skills: Joi.string().allow("").optional(),
+    };
+    const validatedBody = await Joi.validate(req.body, validationSchema);
+    var userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let jobRes = await findOneJob({
+        _id: validatedBody.jobId,
+        userId: userResult._id,
+        status: { $ne: status.DELETE },
+      });
+      if (!jobRes) {
+        throw apiError.notFound(responseMessage.JOB_NOT_FOUND);
+      }
+      // let result = await findCollection({ _id: validatedBody.collectionId, userId: userResult._id, status: { $ne: status.DELETE } })
+      // if (!result) {
+      //     throw apiError.notFound(responseMessage.COLLECTION_NOT_FOUND)
+      // } else {
+      if (validatedBody.mediaUrl) {
+        validatedBody.mediaUrl = await commonFunction.getSecureUrl(
+          validatedBody.mediaUrl
+        );
+      }
+      validatedBody.type = "JOB";
+      validatedBody.userId = userResult._id;
+      validatedBody.creatorId = userResult._id;
+      var saveJob = await updateJob({ _id: jobRes._id }, validatedBody);
+      await updateUserById({ _id: userResult._id }, { isJob: true });
+      await createActivity({
+        userId: userResult._id,
+        productId: saveJob._id,
+        // collectionId: result._id,
+        title: "Job update",
+        desctiption: "Job update successfully.",
+        type: "JOB",
+      });
+      // if (validatedBody.hashTagName.length != 0) {
+      //     for (let i = 0; i < validatedBody.hashTagName.length; i++) {
+      //         let hashTagRes = await findHashTag({ hashTagName: validatedBody.hashTagName[i], status: { $ne: status.DELETE } })
+      //         if (!hashTagRes) {
+      //             let obj = {
+      //                 hashTagName: validatedBody.hashTagName[i],
+      //                 postCount: 1,
+      //                 userCount: 1,
+      //                 postDetails: [{
+      //                     postId: savePost._id,
+      //                 }]
+      //             }
+      //             let saveRes = await createHashTag(obj)
+      //             var updateRes = await updatePost({ _id: savePost._id }, { $addToSet: { hashTagId: saveRes._id }, $inc: { hashTagCount: 1 } })
+      //         } else {
+      //             var updateRes = await updatePost({ _id: savePost._id }, { $addToSet: { hashTagId: hashTagRes._id }, $inc: { hashTagCount: 1 } })
+      //             await updateHashTag({ _id: hashTagRes._id }, { $push: { postDetails: { $each: [{ postId: savePost._id }] } }, $inc: { postCount: 1, userCount: 1 } });
+      //         }
+      //     }
+      //     return res.json(new response(updateRes, responseMessage.POST_CREATE));
+      // }
+      return res.json(new response(saveJob, responseMessage.JOB_UPDATED));
+      // }
+    }
+  } catch (error) {
+    console.log("====================>", error);
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /user/deleteUserJob:
+ *   put:
+ *     tags:
+ *       - USER POSTS
+ *     description: updateJob
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: updateJob
+ *         description: updateJob
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/updateJob'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const deleteUserJob = async (req, res, next) => {
+  try {
+    const validationSchema = {
+      jobId: Joi.string().required(),
+    };
+    const validatedBody = await Joi.validate(req.body, validationSchema);
+    var userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let jobRes = await findOneJob({
+        _id: validatedBody.jobId,
+        userId: userResult._id,
+        status: { $ne: status.DELETE },
+      });
+      if (!jobRes) {
+        throw apiError.notFound(responseMessage.JOB_NOT_FOUND);
+      }
+      validatedBody.creatorId = userResult._id;
+      validatedBody.status = status.DELETE;
+      var saveJob = await updateJob({ _id: jobRes._id }, validatedBody);
+      await updateUserById({ _id: userResult._id }, { isJob: true });
+      await createActivity({
+        userId: userResult._id,
+        postId: saveJob._id,
+        // collectionId: result._id,
+        title: "Job Delete",
+        desctiption: "Job Deleted successfully.",
+        type: "JOB",
+      });
+      return res.json(new response(saveJob, responseMessage.JOB_DELETE));
+      // }
+    }
+  } catch (error) {
+    console.log("====================>", error);
+    return next(error);
+  }
+};
+
+/**
+ * @swagger
+ * /user/jobListPaginate:
+ *   get:
+ *     tags:
+ *       - USER jobListPaginate
+ *     description: jobListPaginate
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: search
+ *         description: search
+ *         in: query
+ *         required: false
+ *       - name: fromDate
+ *         description: fromDate
+ *         in: query
+ *         required: false
+ *       - name: toDate
+ *         description: toDate
+ *         in: query
+ *         required: false
+ *       - name: page
+ *         description: page
+ *         in: query
+ *         required: false
+ *       - name: limit
+ *         description: limit
+ *         in: query
+ *         required: false
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const jobListPaginate = async (req, res, next) => {
+  const validationSchema = {
+    search: Joi.string().optional(),
+    fromDate: Joi.string().optional(),
+    toDate: Joi.string().optional(),
+    page: Joi.string().optional(),
+    limit: Joi.string().optional(),
+  };
+  try {
+    const validatedBody = await Joi.validate(req.query, validationSchema);
+    const { search, fromDate, toDate, page, limit } = validatedBody;
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    validatedBody.userId = userResult._id;
+    let dataResults = await paginateJobSearch(validatedBody);
+    if (dataResults.docs.length == 0) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    }
+    return res.json(new response(dataResults, responseMessage.DATA_FOUND));
+  } catch (error) {
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /user/jobView:
+ *   get:
+ *     tags:
+ *       - USER jobView
+ *     description: jobView
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: postId
+ *         description: postId
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const jobView = async (req, res, next) => {
+  const validationSchema = {
+    jobId: Joi.string().optional(),
+  };
+  try {
+    const validatedBody = await Joi.validate(req.query, validationSchema);
+    const { jobId } = validatedBody;
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let dataResults = await findOneJob({
+      _id: jobId,
+      status: { $ne: status.DELETE },
+    });
+    let commentReportList = await findAllReport({
+      userId: userResult._id,
+      jobId: jobId,
+    });
+    // let [userCollection, collectionIdList] = await Promise.all([await userCollectionListAll({ userId: userResult._id, status: { $ne: status.DELETE } }), await collectionSubscriptionUserList({ userId: userResult._id, status: { $ne: status.DELETE } })]);
+    if (!dataResults) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    }
+    // for (let cObj of collectionIdList) {
+    //     if (cObj['collectionId'].toString() == dataResults.collectionId) {
+    //         dataResults['isSubscribed'] = true;
+    //     }
+    // }
+    // for (let uObj of userCollection) {
+    //     if (uObj['_id'].toString() == dataResults.collectionId) {
+    //         dataResults['isSubscribed'] = true;
+    //     }
+    // }
+    for (let commentObject of commentReportList) {
+      dataResults["comment"] = dataResults["comment"].filter(
+        (item) => !item["reportedId"].includes(commentObject._id)
+      );
+    }
+    return res.json(new response(dataResults, responseMessage.DATA_FOUND));
+  } catch (error) {
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /user/allJobListPaginate:
+ *   get:
+ *     tags:
+ *       - USER Products
+ *     description: allJobListPaginate
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: search
+ *         description: search
+ *         in: query
+ *         required: false
+ *       - name: fromDate
+ *         description: fromDate
+ *         in: query
+ *         required: false
+ *       - name: toDate
+ *         description: toDate
+ *         in: query
+ *         required: false
+ *       - name: page
+ *         description: page
+ *         in: query
+ *         required: false
+ *       - name: limit
+ *         description: limit
+ *         in: query
+ *         required: false
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const allJobListPaginate = async (req, res, next) => {
+  const validationSchema = {
+    search: Joi.string().optional(),
+    fromDate: Joi.string().optional(),
+    toDate: Joi.string().optional(),
+    page: Joi.string().optional(),
+    limit: Joi.string().optional(),
+  };
+  try {
+    const paginateGood = (array, page_size, page_number) => {
+      return array.slice(
+        (page_number - 1) * page_size,
+        page_number * page_size
+      );
+    };
+    const validatedBody = await Joi.validate(req.query, validationSchema);
+    const { search, fromDate, toDate, page, limit } = validatedBody;
+    var userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    // let postPromotionResult = await postPromotionList({ status: status.ACTIVE })
+    validatedBody["status"] = status.ACTIVE;
+    // validatedBody['postType'] = { $in: ['PRIVATE', 'PUBLIC'] };
+    validatedBody["isSold"] = false;
+    validatedBody["isBuy"] = false;
+    let newDoc = [];
+    // let data = await paginateAllPostSearchPrivatePublicFind(validatedBody);
+    let [data, postPromotionResult, userCollection, collectionIdList] =
+      await Promise.all([
+        paginateAllPostSearchPrivatePublicFind(validatedBody),
+        // postPromotionList({ status: status.ACTIVE }),
+        // userCollectionListAll({ userId: userResult._id, status: { $ne: status.DELETE } }),
+        // collectionSubscriptionUserList({ userId: userResult._id, status: { $ne: status.DELETE } })
+      ]);
+
+    let postPromotionRes = [];
+    for (let i = 0; i < postPromotionResult.length; i++) {
+      if (!userResult.blockedUser.includes(postPromotionResult[i].userId._id)) {
+        postPromotionRes.push(postPromotionResult[i]);
+      }
+    }
+
+    let blockUserRes = [];
+    for (let i = 0; i < data.length; i++) {
+      if (!userResult.blockedUser.includes(data[i].userId._id)) {
+        blockUserRes.push(data[i]);
+      }
+    }
+
+    let dataResults = [];
+    for (let i = 0; i < blockUserRes.length; i++) {
+      if (!userResult.hidePost.includes(blockUserRes[i]._id)) {
+        dataResults.push(blockUserRes[i]);
+      }
+    }
+    for (let i in dataResults) {
+      for (let cObj of collectionIdList) {
+        if (
+          cObj["collectionId"]["_id"].toString() == dataResults[i].collectionId
+        ) {
+          dataResults[i]["isSubscribed"] = true;
+        }
+      }
+      for (let uObj of userCollection) {
+        if (uObj["_id"].toString() == dataResults[i].collectionId) {
+          dataResults[i]["isSubscribed"] = true;
+        }
+      }
+      if (userResult["myWatchlist"].includes(dataResults[i]._id) == true) {
+        dataResults[i]["isWatchList"] = true;
+      }
+      dataResults[i].reactOnPost = await dataResults[i].reactOnPost.find(
+        (o) => {
+          return o.userId.toString() == userResult._id.toString();
+        }
+      );
+    }
+    var finaldataRes = [];
+    for (let obj of dataResults) {
+      let findReportRes = await findAllReport({
+        userId: userResult._id,
+        postId: obj._id,
+      });
+      if (findReportRes.length == 0) {
+        finaldataRes.push(obj);
+      } else {
+        for (let commentObject of findReportRes) {
+          obj["comment"] = obj["comment"].filter(
+            (item) => !item["reportedId"].includes(commentObject._id)
+          );
+        }
+        if (!obj.reportedId.includes(findReportRes[0]._id)) {
+          finaldataRes.push(obj);
+        }
+      }
+    }
+    let resultRes = [];
+    let count = 0;
+    var userDob = new Date(userResult.dob);
+    var currentDate = new Date();
+    var diffDays = currentDate.getYear() - userDob.getYear();
+    var postPromotionfinalResult = [];
+    for (let i = 0; i < postPromotionRes.length; i++) {
+      for (let j = 0; j < userResult.interest.length; j++) {
+        for (let x = 0; x < postPromotionRes[i].interest.length; x++) {
+          if (
+            postPromotionRes[i].interest[x] == userResult.interest[j] &&
+            postPromotionRes[i].minAge <= diffDays &&
+            postPromotionRes[i].maxAge >= diffDays &&
+            userResult._id.toString() !=
+              postPromotionRes[i].userId._id.toString()
+          ) {
+            postPromotionfinalResult.push(postPromotionRes[i]);
+          } else if (
+            userResult._id.toString() ==
+            postPromotionRes[i].userId._id.toString()
+          ) {
+            postPromotionfinalResult.push(postPromotionRes[i]);
+          }
+        }
+      }
+    }
+    if (finaldataRes.length == 0) {
+      for (let i = 0; i < postPromotionfinalResult.length; i++) {
+        resultRes.push(postPromotionfinalResult[i]);
+      }
+    }
+    for (let i = 0; i < finaldataRes.length; i++) {
+      count++;
+      resultRes.push(finaldataRes[i]);
+      if (
+        count % 2 == 0 &&
+        postPromotionfinalResult[count / 2 - 1] &&
+        resultRes.includes(postPromotionfinalResult[count / 2 - 1]) == false
+      ) {
+        resultRes.push(postPromotionfinalResult[count / 2 - 1]);
+      }
+    }
+    let options2 = {
+      page: parseInt(req.query.page) || 1,
+      limit: parseInt(req.query.limit) || 10,
+    };
+    let properResult = {
+      docs: paginateGood(resultRes, options2.limit, options2.page),
+      total: resultRes.length,
+      limit: options2.limit,
+      page: options2.page,
+      pages: Math.ceil(resultRes.length / options2.limit),
+    };
+    if (properResult.docs.length == 0) {
+      throw apiError.notFound(responseMessage.POST_NOT_FOUND);
+    }
+    return res.json(new response(properResult, responseMessage.DATA_FOUND));
+  } catch (error) {
+    console.log("Catch error ==>", error);
+    return next(error);
+  }
+};
+/////////Project////////////
+
+/**
+ * @swagger
+ * /user/createProject:
+ *   post:
+ *     tags:
+ *       - USER PRODUCT
+ *     description: createProject
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: createProject
+ *         description: createProject
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/createProject'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const createProject = async (req, res, next) => {
+  try {
+    const validationSchema = {
+      projectName: Joi.string().required(),
+      companyName: Joi.string().required(),
+      details: Joi.string().required(),
+      mediaUrl: Joi.string().required(),
+      mail: Joi.string().required(),
+      mobileNumber: Joi.string().required(),
+      mediaType: Joi.string().required(),
+      budget: Joi.string().required(),
+    };
+    const validatedBody = await Joi.validate(req.body, validationSchema);
+    var userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      // let result = await findCollection({ _id: validatedBody.collectionId, userId: userResult._id, status: { $ne: status.DELETE } })
+      // if (!result) {
+      //     throw apiError.notFound(responseMessage.COLLECTION_NOT_FOUND)
+      // } else {
+      if (validatedBody.mediaUrl) {
+        validatedBody.mediaUrl = await commonFunction.getSecureUrl(
+          validatedBody.mediaUrl
+        );
+      }
+      validatedBody.type = "PROJECT";
+      validatedBody.userId = userResult._id;
+      var saveProject = await createUserProject(validatedBody);
+      await updateUserById({ _id: userResult._id }, { isProject: true });
+      await createActivity({
+        userId: userResult._id,
+        postId: saveProject._id,
+        // collectionId: result._id,
+        title: "Project create",
+        desctiption: "Project create successfully.",
+        type: "PROJECT",
+      });
+
+      let obj = {
+        message: "Please approve my Project",
+        userId: userResult._id,
+        productId: saveProject._id,
+        type: "CREATE",
+      };
+      let saveRequest = await createProjectRequest(obj);
+      // if (validatedBody.hashTagName.length != 0) {
+      //   for (let i = 0; i < validatedBody.hashTagName.length; i++) {
+      //     let hashTagRes = await findHashTag({
+      //       hashTagName: validatedBody.hashTagName[i],
+      //       status: { $ne: status.DELETE },
+      //     });
+      //     if (!hashTagRes) {
+      //       let obj = {
+      //         hashTagName: validatedBody.hashTagName[i],
+      //         postCount: 1,
+      //         userCount: 1,
+      //         postDetails: [
+      //           {
+      //             postId: savePost._id,
+      //           },
+      //         ],
+      //       };
+      //       let saveRes = await createHashTag(obj);
+      //       var updateRes = await updatePost(
+      //         { _id: savePost._id },
+      //         {
+      //           $addToSet: { hashTagId: saveRes._id },
+      //           $inc: { hashTagCount: 1 },
+      //         }
+      //       );
+      //     } else {
+      //       var updateRes = await updatePost(
+      //         { _id: savePost._id },
+      //         {
+      //           $addToSet: { hashTagId: hashTagRes._id },
+      //           $inc: { hashTagCount: 1 },
+      //         }
+      //       );
+      //       await updateHashTag(
+      //         { _id: hashTagRes._id },
+      //         {
+      //           $push: { postDetails: { $each: [{ postId: savePost._id }] } },
+      //           $inc: { postCount: 1, userCount: 1 },
+      //         }
+      //       );
+      //     }
+      //   }
+      //   return res.json(new response(updateRes, responseMessage.POST_CREATE));
+      // }
+      return res.json(
+        new response(
+          { saveProject, saveRequest },
+          responseMessage.PROJECT_CREATE
+        )
+      );
+      // }
+    }
+  } catch (error) {
+    console.log("====================>", error);
+    return next(error);
+  }
+};
+
+/**
+ * @swagger
+ * /user/updateUserProject:
+ *   put:
+ *     tags:
+ *       - USER POSTS
+ *     description: updateUserProject
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: updateUserProject
+ *         description: updateUserProject
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/updateUserProject'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const updateUserProject = async (req, res, next) => {
+  try {
+    const validationSchema = {
+      projectId: Joi.string().required(),
+      // collectionId: Joi.string().allow('').optional(),
+      projectName: Joi.string().allow("").optional(),
+      mediaUrl: Joi.string().allow("").optional(),
+      companyName: Joi.string().allow("").optional(),
+      // postType: Joi.string().allow('').optional(),
+      details: Joi.string().allow("").optional(),
+      mail: Joi.string().allow("").optional(),
+      mobileNumber: Joi.string().allow("").optional(),
+      // hashTagName: Joi.array().allow("").optional(),
+      // tag: Joi.array().allow("").optional(),
+      mediaType: Joi.string().allow("").optional(),
+      budget: Joi.string().allow("").optional(),
+    };
+    const validatedBody = await Joi.validate(req.body, validationSchema);
+    var userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let projectRes = await findOneProject({
+        _id: validatedBody.projectId,
+        userId: userResult._id,
+        status: { $ne: status.DELETE },
+      });
+      if (!projectRes) {
+        throw apiError.notFound(responseMessage.PROJECT_NOT_FOUND);
+      }
+      // let result = await findCollection({ _id: validatedBody.collectionId, userId: userResult._id, status: { $ne: status.DELETE } })
+      // if (!result) {
+      //     throw apiError.notFound(responseMessage.COLLECTION_NOT_FOUND)
+      // } else {
+      if (validatedBody.mediaUrl) {
+        validatedBody.mediaUrl = await commonFunction.getSecureUrl(
+          validatedBody.mediaUrl
+        );
+      }
+      validatedBody.type = "PROJECT";
+      validatedBody.userId = userResult._id;
+      var saveProject = await updateProject(
+        { _id: projectRes._id },
+        validatedBody
+      );
+      await updateUserById({ _id: userResult._id }, { isProject: true });
+      await createActivity({
+        userId: userResult._id,
+        productId: saveProject._id,
+        // collectionId: result._id,
+        title: "Project update",
+        desctiption: "Project update successfully.",
+        type: "PROJECT",
+      });
+      // if (validatedBody.hashTagName.length != 0) {
+      //     for (let i = 0; i < validatedBody.hashTagName.length; i++) {
+      //         let hashTagRes = await findHashTag({ hashTagName: validatedBody.hashTagName[i], status: { $ne: status.DELETE } })
+      //         if (!hashTagRes) {
+      //             let obj = {
+      //                 hashTagName: validatedBody.hashTagName[i],
+      //                 postCount: 1,
+      //                 userCount: 1,
+      //                 postDetails: [{
+      //                     postId: savePost._id,
+      //                 }]
+      //             }
+      //             let saveRes = await createHashTag(obj)
+      //             var updateRes = await updatePost({ _id: savePost._id }, { $addToSet: { hashTagId: saveRes._id }, $inc: { hashTagCount: 1 } })
+      //         } else {
+      //             var updateRes = await updatePost({ _id: savePost._id }, { $addToSet: { hashTagId: hashTagRes._id }, $inc: { hashTagCount: 1 } })
+      //             await updateHashTag({ _id: hashTagRes._id }, { $push: { postDetails: { $each: [{ postId: savePost._id }] } }, $inc: { postCount: 1, userCount: 1 } });
+      //         }
+      //     }
+      //     return res.json(new response(updateRes, responseMessage.POST_CREATE));
+      // }
+      return res.json(
+        new response(saveProject, responseMessage.PROJECT_UPDATED)
+      );
+      // }
+    }
+  } catch (error) {
+    console.log("====================>", error);
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /user/deleteUserProject:
+ *   put:
+ *     tags:
+ *       - USER POSTS
+ *     description: deleteUserProject
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: deleteUserProject
+ *         description: deleteUserProject
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/deleteUserProject'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const deleteUserProject = async (req, res, next) => {
+  try {
+    const validationSchema = {
+      projectId: Joi.string().required(),
+    };
+    const validatedBody = await Joi.validate(req.body, validationSchema);
+    var userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let projectRes = await findOneProject({
+        _id: validatedBody.projectId,
+        userId: userResult._id,
+        status: { $ne: status.DELETE },
+      });
+      if (!projectRes) {
+        throw apiError.notFound(responseMessage.JOB_NOT_FOUND);
+      }
+      validatedBody.creatorId = userResult._id;
+      validatedBody.status = status.DELETE;
+      var saveProject = await updateProject(
+        { _id: projectRes._id },
+        validatedBody
+      );
+      await updateUserById({ _id: userResult._id }, { isProject: true });
+      await createActivity({
+        userId: userResult._id,
+        postId: saveProject._id,
+        // collectionId: result._id,
+        title: "Project Delete",
+        desctiption: "Project Deleted successfully.",
+        type: "JOB",
+      });
+      return res.json(
+        new response(saveProject, responseMessage.PROJECT_DELETE)
+      );
+      // }
+    }
+  } catch (error) {
+    console.log("====================>", error);
+    return next(error);
+  }
+};
+
+/**
+ * @swagger
+ * /user/projectListPaginate:
+ *   get:
+ *     tags:
+ *       - USER projectListPaginate
+ *     description: projectListPaginate
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: search
+ *         description: search
+ *         in: query
+ *         required: false
+ *       - name: fromDate
+ *         description: fromDate
+ *         in: query
+ *         required: false
+ *       - name: toDate
+ *         description: toDate
+ *         in: query
+ *         required: false
+ *       - name: page
+ *         description: page
+ *         in: query
+ *         required: false
+ *       - name: limit
+ *         description: limit
+ *         in: query
+ *         required: false
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const projectListPaginate = async (req, res, next) => {
+  const validationSchema = {
+    search: Joi.string().optional(),
+    fromDate: Joi.string().optional(),
+    toDate: Joi.string().optional(),
+    page: Joi.string().optional(),
+    limit: Joi.string().optional(),
+  };
+  try {
+    const validatedBody = await Joi.validate(req.query, validationSchema);
+    const { search, fromDate, toDate, page, limit } = validatedBody;
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    validatedBody.userId = userResult._id;
+    let dataResults = await paginateProjectSearch(validatedBody);
+    if (dataResults.docs.length == 0) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    }
+    return res.json(new response(dataResults, responseMessage.DATA_FOUND));
+  } catch (error) {
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /user/projectView:
+ *   get:
+ *     tags:
+ *       - USER projectView
+ *     description: projectView
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: postId
+ *         description: projectId
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const projectView = async (req, res, next) => {
+  const validationSchema = {
+    projectId: Joi.string().optional(),
+  };
+  try {
+    const validatedBody = await Joi.validate(req.query, validationSchema);
+    const { projectId } = validatedBody;
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let dataResults = await findOneProject({
+      _id: projectId,
+      status: { $ne: status.DELETE },
+    });
+    let commentReportList = await findAllReport({
+      userId: userResult._id,
+      projectId: projectId,
+    });
+    // let [userCollection, collectionIdList] = await Promise.all([await userCollectionListAll({ userId: userResult._id, status: { $ne: status.DELETE } }), await collectionSubscriptionUserList({ userId: userResult._id, status: { $ne: status.DELETE } })]);
+    if (!dataResults) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    }
+    // for (let cObj of collectionIdList) {
+    //     if (cObj['collectionId'].toString() == dataResults.collectionId) {
+    //         dataResults['isSubscribed'] = true;
+    //     }
+    // }
+    // for (let uObj of userCollection) {
+    //     if (uObj['_id'].toString() == dataResults.collectionId) {
+    //         dataResults['isSubscribed'] = true;
+    //     }
+    // }
+    for (let commentObject of commentReportList) {
+      dataResults["comment"] = dataResults["comment"].filter(
+        (item) => !item["reportedId"].includes(commentObject._id)
+      );
+    }
+    return res.json(new response(dataResults, responseMessage.DATA_FOUND));
+  } catch (error) {
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /user/allProjectListPaginate:
+ *   get:
+ *     tags:
+ *       - USER Products
+ *     description: allProjectListPaginate
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: search
+ *         description: search
+ *         in: query
+ *         required: false
+ *       - name: fromDate
+ *         description: fromDate
+ *         in: query
+ *         required: false
+ *       - name: toDate
+ *         description: toDate
+ *         in: query
+ *         required: false
+ *       - name: page
+ *         description: page
+ *         in: query
+ *         required: false
+ *       - name: limit
+ *         description: limit
+ *         in: query
+ *         required: false
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const allProjectListPaginate = async (req, res, next) => {
+  const validationSchema = {
+    search: Joi.string().optional(),
+    fromDate: Joi.string().optional(),
+    toDate: Joi.string().optional(),
+    page: Joi.string().optional(),
+    limit: Joi.string().optional(),
+  };
+  try {
+    const paginateGood = (array, page_size, page_number) => {
+      return array.slice(
+        (page_number - 1) * page_size,
+        page_number * page_size
+      );
+    };
+    const validatedBody = await Joi.validate(req.query, validationSchema);
+    const { search, fromDate, toDate, page, limit } = validatedBody;
+    var userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    // let postPromotionResult = await postPromotionList({ status: status.ACTIVE })
+    validatedBody["status"] = status.ACTIVE;
+    // validatedBody['postType'] = { $in: ['PRIVATE', 'PUBLIC'] };
+    validatedBody["isSold"] = false;
+    validatedBody["isBuy"] = false;
+    let newDoc = [];
+    // let data = await paginateAllPostSearchPrivatePublicFind(validatedBody);
+    let [data, postPromotionResult, userCollection, collectionIdList] =
+      await Promise.all([
+        paginateAllPostSearchPrivatePublicFind(validatedBody),
+        // postPromotionList({ status: status.ACTIVE }),
+        // userCollectionListAll({ userId: userResult._id, status: { $ne: status.DELETE } }),
+        // collectionSubscriptionUserList({ userId: userResult._id, status: { $ne: status.DELETE } })
+      ]);
+
+    let postPromotionRes = [];
+    for (let i = 0; i < postPromotionResult.length; i++) {
+      if (!userResult.blockedUser.includes(postPromotionResult[i].userId._id)) {
+        postPromotionRes.push(postPromotionResult[i]);
+      }
+    }
+
+    let blockUserRes = [];
+    for (let i = 0; i < data.length; i++) {
+      if (!userResult.blockedUser.includes(data[i].userId._id)) {
+        blockUserRes.push(data[i]);
+      }
+    }
+
+    let dataResults = [];
+    for (let i = 0; i < blockUserRes.length; i++) {
+      if (!userResult.hidePost.includes(blockUserRes[i]._id)) {
+        dataResults.push(blockUserRes[i]);
+      }
+    }
+    for (let i in dataResults) {
+      for (let cObj of collectionIdList) {
+        if (
+          cObj["collectionId"]["_id"].toString() == dataResults[i].collectionId
+        ) {
+          dataResults[i]["isSubscribed"] = true;
+        }
+      }
+      for (let uObj of userCollection) {
+        if (uObj["_id"].toString() == dataResults[i].collectionId) {
+          dataResults[i]["isSubscribed"] = true;
+        }
+      }
+      if (userResult["myWatchlist"].includes(dataResults[i]._id) == true) {
+        dataResults[i]["isWatchList"] = true;
+      }
+      dataResults[i].reactOnPost = await dataResults[i].reactOnPost.find(
+        (o) => {
+          return o.userId.toString() == userResult._id.toString();
+        }
+      );
+    }
+    var finaldataRes = [];
+    for (let obj of dataResults) {
+      let findReportRes = await findAllReport({
+        userId: userResult._id,
+        postId: obj._id,
+      });
+      if (findReportRes.length == 0) {
+        finaldataRes.push(obj);
+      } else {
+        for (let commentObject of findReportRes) {
+          obj["comment"] = obj["comment"].filter(
+            (item) => !item["reportedId"].includes(commentObject._id)
+          );
+        }
+        if (!obj.reportedId.includes(findReportRes[0]._id)) {
+          finaldataRes.push(obj);
+        }
+      }
+    }
+    let resultRes = [];
+    let count = 0;
+    var userDob = new Date(userResult.dob);
+    var currentDate = new Date();
+    var diffDays = currentDate.getYear() - userDob.getYear();
+    var postPromotionfinalResult = [];
+    for (let i = 0; i < postPromotionRes.length; i++) {
+      for (let j = 0; j < userResult.interest.length; j++) {
+        for (let x = 0; x < postPromotionRes[i].interest.length; x++) {
+          if (
+            postPromotionRes[i].interest[x] == userResult.interest[j] &&
+            postPromotionRes[i].minAge <= diffDays &&
+            postPromotionRes[i].maxAge >= diffDays &&
+            userResult._id.toString() !=
+              postPromotionRes[i].userId._id.toString()
+          ) {
+            postPromotionfinalResult.push(postPromotionRes[i]);
+          } else if (
+            userResult._id.toString() ==
+            postPromotionRes[i].userId._id.toString()
+          ) {
+            postPromotionfinalResult.push(postPromotionRes[i]);
+          }
+        }
+      }
+    }
+    if (finaldataRes.length == 0) {
+      for (let i = 0; i < postPromotionfinalResult.length; i++) {
+        resultRes.push(postPromotionfinalResult[i]);
+      }
+    }
+    for (let i = 0; i < finaldataRes.length; i++) {
+      count++;
+      resultRes.push(finaldataRes[i]);
+      if (
+        count % 2 == 0 &&
+        postPromotionfinalResult[count / 2 - 1] &&
+        resultRes.includes(postPromotionfinalResult[count / 2 - 1]) == false
+      ) {
+        resultRes.push(postPromotionfinalResult[count / 2 - 1]);
+      }
+    }
+    let options2 = {
+      page: parseInt(req.query.page) || 1,
+      limit: parseInt(req.query.limit) || 10,
+    };
+    let properResult = {
+      docs: paginateGood(resultRes, options2.limit, options2.page),
+      total: resultRes.length,
+      limit: options2.limit,
+      page: options2.page,
+      pages: Math.ceil(resultRes.length / options2.limit),
+    };
+    if (properResult.docs.length == 0) {
+      throw apiError.notFound(responseMessage.POST_NOT_FOUND);
+    }
+    return res.json(new response(properResult, responseMessage.DATA_FOUND));
+  } catch (error) {
+    console.log("Catch error ==>", error);
+    return next(error);
+  }
+};
+
 /////////Services////////////
 
 /**
@@ -1825,7 +3166,6 @@ const createService = async (req, res, next) => {
       mediaType: Joi.string().required(),
       categorie: Joi.string().required(),
       // subCategorie: Joi.string().optional(),
-      
     };
     const validatedBody = await Joi.validate(req.body, validationSchema);
     var userResult = await findUser({
@@ -1910,7 +3250,10 @@ const createService = async (req, res, next) => {
       //   return res.json(new response(updateRes, responseMessage.POST_CREATE));
       // }
       return res.json(
-        new response({ saveService, saveRequest }, responseMessage.SERVICE_CREATE)
+        new response(
+          { saveService, saveRequest },
+          responseMessage.SERVICE_CREATE
+        )
       );
       // }
     }
@@ -1989,7 +3332,10 @@ const updateUserService = async (req, res, next) => {
       validatedBody.type = "SERVICE";
       validatedBody.userId = userResult._id;
       validatedBody.creatorId = userResult._id;
-      var saveService = await updateService({ _id: productRes._id }, validatedBody);
+      var saveService = await updateService(
+        { _id: productRes._id },
+        validatedBody
+      );
       await updateUserById({ _id: userResult._id }, { isService: true });
       await createActivity({
         userId: userResult._id,
@@ -2020,7 +3366,9 @@ const updateUserService = async (req, res, next) => {
       //     }
       //     return res.json(new response(updateRes, responseMessage.POST_CREATE));
       // }
-      return res.json(new response(saveService, responseMessage.SERVICE_UPDATED));
+      return res.json(
+        new response(saveService, responseMessage.SERVICE_UPDATED)
+      );
       // }
     }
   } catch (error) {
@@ -2075,7 +3423,10 @@ const deleteUserService = async (req, res, next) => {
       }
       validatedBody.creatorId = userResult._id;
       validatedBody.status = status.DELETE;
-      var saveService = await updateService({ _id: serviceRes._id }, validatedBody);
+      var saveService = await updateService(
+        { _id: serviceRes._id },
+        validatedBody
+      );
       await updateUserById({ _id: userResult._id }, { isService: true });
       await createActivity({
         userId: userResult._id,
@@ -2085,7 +3436,9 @@ const deleteUserService = async (req, res, next) => {
         desctiption: "Service Deleted successfully.",
         type: "SERVICE",
       });
-      return res.json(new response(saveService, responseMessage.SERVICE_DELETE));
+      return res.json(
+        new response(saveService, responseMessage.SERVICE_DELETE)
+      );
       // }
     }
   } catch (error) {
@@ -2449,5 +3802,15 @@ module.exports = {
   serviceListPaginate,
   deleteUserService,
   updateUserService,
-  createService
+  createService,
+  jobView,
+  createJob,
+  updateUserJob,
+  deleteUserJob,
+  jobListPaginate,
+  projectView,
+  createProject,
+  updateUserProject,
+  deleteUserProject,
+  projectListPaginate,
 };

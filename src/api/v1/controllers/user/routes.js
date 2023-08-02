@@ -20,6 +20,16 @@ const {
   deleteUserService,
   updateUserService,
   createService,
+  jobView,
+  createJob,
+  updateUserJob,
+  deleteUserJob,
+  jobListPaginate,
+  projectView,
+  createProject,
+  updateUserProject,
+  deleteUserProject,
+  projectListPaginate,
 } = require("./userController");
 const auth = require("../../../../helper/auth");
 // const upload = require("../../../../helper/uploadHandler");
@@ -53,5 +63,17 @@ router.post("/createService", auth.verifyToken, createService);
 router.post("/updateUserService", auth.verifyToken, updateUserService);
 router.post("/deleteUserService", auth.verifyToken, deleteUserService);
 router.get("/serviceListPaginate", auth.verifyToken, serviceListPaginate);
+//Job routes
+router.get("/jobView", auth.verifyToken, jobView);
+router.post("/createJob", auth.verifyToken, createJob);
+router.post("/updateUserJob", auth.verifyToken, updateUserJob);
+router.post("/deleteUserJob", auth.verifyToken, deleteUserJob);
+router.get("/jobListPaginate", auth.verifyToken, jobListPaginate);
+//Job routes
+router.get("/projectView", auth.verifyToken, projectView);
+router.post("/createProject", auth.verifyToken, createProject);
+router.post("/updateUserProject", auth.verifyToken, updateUserProject);
+router.post("/deleteUserProject", auth.verifyToken, deleteUserProject);
+router.get("/projectListPaginate", auth.verifyToken, projectListPaginate);
 
 module.exports = router;

@@ -1,3 +1,4 @@
+const apiError = require("./apiError.js");
 const errors = require("./error.js"); // Replace 'path_to_errors_file' with the correct path to your errors file
 const apiErrorHandler = (err, req, res, next) => {
   console.log("Request URL:", req.originalUrl);
@@ -5,7 +6,7 @@ const apiErrorHandler = (err, req, res, next) => {
   console.log("Request Body:", req.body);
 
   // Check if it's an API error (created using apiError class)
-  if (err.isApiError) {
+  if (err instanceof apiError) {
     console.error("API Error:", err);
     const errorDetails = {
       name: err.name,
@@ -120,6 +121,22 @@ const apiErrorHandler = (err, req, res, next) => {
     res.status(500).json({
       responseCode: 500,
       responseMessage: "Internal Error!: TypeError",
+      error: errorDetails,
+    });
+    return;
+  }
+  // Check for castError
+  if (err.name === "CastError") {
+    console.error("CastError:", err);
+    // Convert the error object to a JSON-serializable format
+    const errorDetails = {
+      name: err.name,
+      message: err.message,
+      stack: err.stack,
+    };
+    res.status(400).json({
+      responseCode: 400,
+      responseMessage: "Invalid Input! : Bad Request",
       error: errorDetails,
     });
     return;

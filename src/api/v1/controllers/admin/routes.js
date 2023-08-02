@@ -282,21 +282,63 @@ router.post(
 router.get(
   "/serviceRequestList",
   auth.verifyToken,
-  adminControllerInstance.productRequestList
+  adminControllerInstance.serviceRequestList
 );
 router.get(
   "/serviceRequestDetails",
   auth.verifyToken,
-  adminControllerInstance.productRequestDetails
+  adminControllerInstance.serviceRequestDetails
 );
 router.get(
   "/serviceRequestView",
   auth.verifyToken,
-  adminControllerInstance.productRequestView
+  adminControllerInstance.serviceRequestView
 );
 router.post(
   "/serviceRequestUpdate",
   auth.verifyToken,
-  adminControllerInstance.productRequestUpdate
+  adminControllerInstance.serviceRequestUpdate
+);
+//Job Request routes
+router.get(
+  "/jobRequestList",
+  auth.verifyToken,
+  adminControllerInstance.jobRequestList
+);
+router.get(
+  "/jobRequestDetails",
+  auth.verifyToken,
+  adminControllerInstance.jobRequestDetails
+);
+router.get(
+  "/jobRequestView",
+  auth.verifyToken,
+  adminControllerInstance.jobRequestView
+);
+router.post(
+  "/jobRequestUpdate",
+  auth.verifyToken,
+  adminControllerInstance.jobRequestUpdate
+);
+//Project Request routes
+router.get(
+  "/projectRequestList",
+  auth.verifyToken,
+  adminControllerInstance.projectRequestList
+);
+router.get(
+  "/projectRequestDetails",
+  auth.verifyToken,
+  adminControllerInstance.projectRequestDetails
+);
+router.get(
+  "/projectRequestView",
+  auth.verifyToken,
+  adminControllerInstance.projectRequestView
+);
+router.post(
+  "/projectRequestUpdate",
+  auth.verifyToken,
+  adminControllerInstance.projectRequestUpdate
 );
 module.exports = router;

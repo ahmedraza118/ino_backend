@@ -31,6 +31,8 @@ const { feeServices } = require("../../services/fee/fee.js");
 const { postServices } = require("../../services/post/post");
 const { productServices } = require("../../services/product/product");
 const { serviceServices } = require("../../services/service/service");
+const { jobServices } = require("../../services/job/job");
+const { projectServices } = require("../../services/project/project");
 
 
 const { requestServices } = require("../../services/request/request.js");
@@ -43,6 +45,12 @@ const {
 const {
   serviceRequestServices,
 } = require("../../services/serviceRequest/serviceRequest.js");
+const {
+  jobRequestServices,
+} = require("../../services/jobRequest/jobRequest.js");
+const {
+  projectRequestServices,
+} = require("../../services/projectRequest/projectRequest.js");
 
 // const { postServices } = require("../../services/post/post.js");
 const { durationServices } = require("../../services/duration/duration.js");
@@ -133,6 +141,38 @@ const {
   deleteServiceCommentReply,
   paginateAllServiceSearchPrivatePublicFind,
 } = serviceServices;
+const {
+  createUserJob,
+  findOneJob,
+  updateJob,
+  listJob,
+  paginateJobSearch,
+  paginateAllJobSearch,
+  paginateJobSearchBuy,
+  paginateAllJobSearchPrivatePublic,
+  allJobList,
+  paginateAllJobSearchPrivatePublicTrending,
+  tagJobbyuserlist,
+  deleteJobComment,
+  deleteJobCommentReply,
+  paginateAllJobSearchPrivatePublicFind,
+} = jobServices;
+const {
+  createUserProject,
+  findOneProject,
+  updateProject,
+  listProject,
+  paginateProjectSearch,
+  paginateAllProjectSearch,
+  paginateProjectSearchBuy,
+  paginateAllProjectSearchPrivatePublic,
+  allProjectList,
+  paginateAllProjectSearchPrivatePublicTrending,
+  tagProjectbyuserlist,
+  deleteProjectComment,
+  deleteProjectCommentReply,
+  paginateAllProjectSearchPrivatePublicFind,
+} = projectServices;
 
 const { createRequest, findRequest, updateRequestById, requestList } =
   requestServices;
@@ -158,6 +198,20 @@ const {
   serviceRequestList,
   viewServiceRequestDetails,
 } = serviceRequestServices;
+const {
+  createJobRequest,
+  findJobRequest,
+  updateJobRequestById,
+  jobRequestList,
+  viewJobRequestDetails,
+} = jobRequestServices;
+const {
+  createProjectRequest,
+  findProjectRequest,
+  updateProjectRequestById,
+  projectRequestList,
+  viewProjectRequestDetails,
+} = projectRequestServices;
 
 const { createFee, findFee, updateFee, feeList } = feeServices;
 const {
@@ -4197,6 +4251,405 @@ class adminController {
               new response(
                 { serviceRes, reqRes },
                 responseMessage.SERVICE_REQUEST_UPDATED
+              )
+            );
+          }
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+  //////////Job Requests ///////////////
+  /**
+   * @swagger
+   * /admin/jobRequestView:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: jobRequestView
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: jobRequestId
+   *         description: jobRequestId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async jobRequestView(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let resultRes = await findJobRequest({
+          _id: req.query.jobRequestId,
+          status: { $ne: status.DELETE },
+        });
+        if (!resultRes) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+// job request details shows user and the product details
+  async jobRequestDetails(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let resultRes = await viewJobRequestDetails({
+          _id: req.query.jobRequestId,
+          status: { $ne: status.DELETE },
+        });
+        if (!resultRes) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+
+  /**
+   * @swagger
+   * /admin/jobRequestList:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: jobRequestList
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async jobRequestList(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let resultRes = await jobRequestList({
+          status: { $ne: status.DELETE },
+        });
+        if (resultRes.length == 0) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+   /**
+   * @swagger
+   * /admin/jobRequestUpdate:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: jobRequestUpdate
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+
+  async jobRequestUpdate(req, res, next) {
+    const validationSchema = {
+      jobRequestId: Joi.string().required(),
+      status: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.body, validationSchema);
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let reqRes = await findJobRequest({
+          _id: validatedBody.jobRequestId,
+          status: { $ne: status.DELETE },
+        });
+        if (!reqRes) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          let jobRes = await findOneJob({
+            _id: reqRes.jobId,
+            status: { $ne: status.DELETE },
+          });
+
+          if (!jobRes) {
+            throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+          } else {
+            if (validatedBody.status === "ACTIVE") {
+              jobRes = await updateJob(
+                { _id: reqRes.jobId },
+                { status: status.ACTIVE }
+              );
+              reqRes = await updateJobRequestById(
+                { _id: validatedBody.jobRequestId },
+                { status: status.APPROVED }
+              );
+            } else {
+              jobRes = await updateJob(
+                { _id: reqRes.jobId },
+                { status: status.BLOCK }
+              );
+
+              reqRes = await updateJobRequestById(
+                { _id: validatedBody.jobRequestId },
+                { status: status.REGECTED }
+              );
+            }
+            return res.json(
+              new response(
+                { jobRes, reqRes },
+                responseMessage.JOB_REQUEST_UPDATED
+              )
+            );
+          }
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  //////////Project Requests ///////////////
+  /**
+   * @swagger
+   * /admin/projectRequestView:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: projectRequestView
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: projectRequestId
+   *         description: projectRequestId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async projectRequestView(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let resultRes = await findProjectRequest({
+          _id: req.query.projectRequestId,
+          status: { $ne: status.DELETE },
+        });
+        if (!resultRes) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+// Project request details shows user and the project details
+  async projectRequestDetails(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let resultRes = await viewProjectRequestDetails({
+          _id: req.query.projectRequestId,
+          status: { $ne: status.DELETE },
+        });
+        if (!resultRes) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+
+  /**
+   * @swagger
+   * /admin/projectRequestList:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: projectRequestList
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async projectRequestList(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let resultRes = await projectRequestList({
+          status: { $ne: status.DELETE },
+        });
+        if (resultRes.length == 0) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+   /**
+   * @swagger
+   * /admin/projectRequestUpdate:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: projectRequestUpdate
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+
+  async projectRequestUpdate(req, res, next) {
+    const validationSchema = {
+      projectRequestId: Joi.string().required(),
+      status: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.body, validationSchema);
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let reqRes = await findProjectRequest({
+          _id: validatedBody.projectRequestId,
+          status: { $ne: status.DELETE },
+        });
+        if (!reqRes) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          let projectRes = await findOneProject({
+            _id: reqRes.projectId,
+            status: { $ne: status.DELETE },
+          });
+
+          if (!projectRes) {
+            throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+          } else {
+            if (validatedBody.status === "ACTIVE") {
+              projectRes = await updateProject(
+                { _id: reqRes.projectId },
+                { status: status.ACTIVE }
+              );
+              reqRes = await updateProjectRequestById(
+                { _id: validatedBody.projectRequestId },
+                { status: status.APPROVED }
+              );
+            } else {
+              projectRes = await updateProject(
+                { _id: reqRes.projectId },
+                { status: status.BLOCK }
+              );
+
+              reqRes = await updateProjectRequestById(
+                { _id: validatedBody.projectRequestId },
+                { status: status.REGECTED }
+              );
+            }
+            return res.json(
+              new response(
+                { projectRes, reqRes },
+                responseMessage.PROJECT_REQUEST_UPDATED
               )
             );
           }
