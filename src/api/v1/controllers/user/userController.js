@@ -157,6 +157,13 @@ const {
   serviceRequestList,
   viewServiceRequestDetails,
 } = serviceRequestServices;
+const {
+  createProductRequest,
+  findProductRequest,
+  updateProductRequestById,
+  productRequestList,
+  viewProductRequestDetails,
+} = productRequestServices;
 
 const {
   createUser,
@@ -1312,7 +1319,7 @@ const createProduct = async (req, res, next) => {
       //   return res.json(new response(updateRes, responseMessage.POST_CREATE));
       // }
       return res.json(
-        new response({ saveProduct, saveRequest }, responseMessage.POST_CREATE)
+        new response({ saveProduct, saveRequest }, responseMessage.PRODUCT_CREATE)
       );
       // }
     }
