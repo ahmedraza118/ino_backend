@@ -9,7 +9,7 @@ const router = Express.Router();
 // router.post("/register", register);
 router.post("/login", adminControllerInstance.login);
 router.get("/profile", auth.verifyToken, adminControllerInstance.profile);
-router.get(
+router.post(
   "/updateProfile",
   auth.verifyToken,
   adminControllerInstance.updateProfile
@@ -33,11 +33,11 @@ router.post(
   auth.verifyToken,
   adminControllerInstance.deleteInterest
 );
-router.get(
-  "/paginateSearchInterest",
-  auth.verifyToken,
-  adminControllerInstance.paginateSearchInterest
-);
+// router.get(
+//   "/paginateSearchInterest",
+//   auth.verifyToken,
+//   adminControllerInstance.paginateSearchInterest
+// );
 router.get(
   "/getAllInterests",
   auth.verifyToken,
@@ -146,11 +146,11 @@ router.post(
   auth.verifyToken,
   adminControllerInstance.deleteIdentification
 );
-router.get(
-  "/paginateSearchIdentification",
-  auth.verifyToken,
-  adminControllerInstance.paginateSearchIdentification
-);
+// router.get(
+//   "/paginateSearchIdentification",
+//   auth.verifyToken,
+//   adminControllerInstance.paginateSearchIdentification
+// );
 router.get(
   "/getAllIdentifications",
   auth.verifyToken,
@@ -172,11 +172,11 @@ router.post(
   auth.verifyToken,
   adminControllerInstance.deleteProductCategorie
 );
-router.get(
-  "/SearchProductCategories",
-  auth.verifyToken,
-  adminControllerInstance.SearchProductCategories
-);
+// router.get(
+//   "/SearchProductCategories",
+//   auth.verifyToken,
+//   adminControllerInstance.SearchProductCategories
+// );
 router.get(
   "/getAllProdctCategories",
   auth.verifyToken,
@@ -198,11 +198,11 @@ router.post(
   auth.verifyToken,
   adminControllerInstance.deleteProductSubCategorie
 );
-router.get(
-  "/SearchProductSubCategories",
-  auth.verifyToken,
-  adminControllerInstance.SearchProductSubCategories
-);
+// router.get(
+//   "/SearchProductSubCategories",
+//   auth.verifyToken,
+//   adminControllerInstance.SearchProductSubCategories
+// );
 router.get(
   "/getAllProdctSubCategories",
   auth.verifyToken,
@@ -225,11 +225,11 @@ router.post(
   auth.verifyToken,
   adminControllerInstance.deleteServiceCategorie
 );
-router.get(
-  "/SearchServiceCategories",
-  auth.verifyToken,
-  adminControllerInstance.SearchServiceCategories
-);
+// router.get(
+//   "/SearchServiceCategories",
+//   auth.verifyToken,
+//   adminControllerInstance.SearchServiceCategories
+// );
 router.get(
   "/getAllServiceCategories",
   auth.verifyToken,

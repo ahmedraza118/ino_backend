@@ -47,7 +47,7 @@ const identificationServices = {
       page: parseInt(page) || 1,
       limit: parseInt(limit) || 15,
       sort: { createdAt: -1 },
-      populate: "postId",
+      populate: "identificationId",
     };
 
     return await identificationModel.paginate(query, options);
