@@ -291,11 +291,17 @@ const register = async (req, res, next) => {
         }
       }
 
+      
       result = await createUser(req.body);
+      const walletRes = await createWallet(result._id);
+      
+      req.body.walletId = walletRes._id;
+      
+      const updateRes = await updateUserById(result._id, req.body);
       console.log("Result:", result);
 
-      result = _.omit(JSON.parse(JSON.stringify(result)), "otp");
-      return res.json(new response(result, responseMessage.USER_CREATED));
+      result = _.omit(JSON.parse(JSON.stringify(updateRes)), "otp");
+      return res.json(new response(updateRes, responseMessage.USER_CREATED));
     }
   } catch (error) {
     console.log(error);
@@ -327,8 +333,6 @@ const verifyOTP = async (req, res, next) => {
       return res.status(400).json({ message: "OTP has expired" });
     }
 
-    const walletRes = await createWallet(userResult._id);
-
     // OTP is valid, generate a token for the user
     token = await getToken({
       id: userResult._id,
@@ -337,10 +341,9 @@ const verifyOTP = async (req, res, next) => {
     });
     // Update the user's login status and clear the OTP
     var updatedUser = await updateUserById(userResult._id, {
-      walletId: walletRes._id,
       isOnline: true,
       otp: null,
-      optVerification: true,
+      otpVerification: true,
     });
 
     // Return the token and user details
@@ -553,6 +556,7 @@ const profile = async (req, res, next) => {
     let userResult = await findUser({
       _id: req.userId,
       userType: { $in: [userType.USER] },
+      status: { $ne: status.DELETE },
     });
 
     console.log("in the profile api");

@@ -240,6 +240,12 @@ module.exports = {
 	ADMIN_LOW_BALANCE: "Admin balance is too low .",
 	REFERRAL: "Referral code not found.",
 	NFT_EXPORT: "Nft export successfully.",
+	FUND_DEPOSIT: "Funds deposited successfully.",
+	FUND_WITHDRAW: "Funds withdrawn successfully.",
+	FUND_TRANSFER: "Funds transfer successfully.",
+	WALLET_NOT_FOUND: "Wallet not found.",
+	WALLET_FOUND: "Wallet found Success.",
+	INSUFICIENT_FUNDS: "Insuficient funds.",
 
 	SMS_BODY: (otp) => `Your verification code is  ${otp}`,
 	REFER_SMS_BODY: (first_name, last_name, referral_code, iosLink, androidLink, webLink) => `${first_name} ${last_name} wants to refer you on PayPenny application. 

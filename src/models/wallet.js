@@ -10,7 +10,7 @@ const options = {
 const transactionSchema = new Schema(
   {
     amount: { type: Number, required: true },
-    type: { type: String, enum: ['deposit', 'withdraw', 'purchase'], required: true },
+    type: { type: String, enum: ['deposit', 'withdraw', 'purchase','transfer','receive'], required: true },
     // Add more fields relevant to your transaction history, like date, description, etc.
   },
   { timestamps: true }

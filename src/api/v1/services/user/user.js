@@ -16,7 +16,9 @@ async function createUser(userData) {
 async function getUserByPhoneNumber(mobileNumber) {
   try {
     const user = await User.findOne({
-      $or: [{ mobileNumber: mobileNumber }],
+      mobileNumber: mobileNumber,
+      userType: userType.USER,
+      status: { $ne: status.DELETE },
     });
     return user;
   } catch (error) {

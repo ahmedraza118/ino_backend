@@ -1,5 +1,8 @@
 const walletModel = require("../../../../models/wallet");
 const status = require("../../../../enums/status.js");
+const apiError = require("../../../../helper/apiError");
+const responseMessage = require("../../../../../assets/responseMessage");
+
 
 const walletServices = {
   createWallet: async (userId) => {
@@ -23,7 +26,7 @@ const walletServices = {
       const userWallet = await walletModel.findOne({ ownerId: userId });
 
       if (!userWallet) {
-        throw new Error("Wallet not found for the user.");
+        throw apiError.notFound(responseMessage.WALLET_NOT_FOUND);
       }
 
       // Update the balance and transaction history
@@ -46,11 +49,11 @@ const walletServices = {
       const userWallet = await walletModel.findOne({ ownerId: userId });
 
       if (!userWallet) {
-        throw new Error("Wallet not found for the user.");
+        throw apiError.notFound(responseMessage.WALLET_NOT_FOUND);
       }
 
       if (userWallet.balance < amount) {
-        throw new Error("Insufficient funds.");
+        throw apiError.forbidden(responseMessage.INSUFICIENT_FUNDS);
       }
 
       // Update the balance and transaction history
@@ -73,7 +76,7 @@ const walletServices = {
       const userWallet = await walletModel.findOne({ ownerId: userId });
 
       if (!userWallet) {
-        throw new Error("Wallet not found for the user.");
+        throw apiError.notFound(responseMessage.WALLET_NOT_FOUND);
       }
 
       return userWallet;
@@ -89,15 +92,15 @@ const walletServices = {
       const recipientWallet = await walletModel.findOne({ ownerId: recipientId });
   
       if (!senderWallet) {
-        throw new Error("Sender wallet not found.");
+        throw apiError.notFound(responseMessage.WALLET_NOT_FOUND);
       }
   
       if (!recipientWallet) {
-        throw new Error("Recipient wallet not found.");
+        throw apiError.notFound(responseMessage.WALLET_NOT_FOUND);
       }
   
       if (senderWallet.balance < amount) {
-        throw new Error("Insufficient funds in sender's wallet.");
+        throw apiError.forbidden(responseMessage.INSUFICIENT_FUNDS);
       }
   
       // Update sender's wallet balance and transaction history
@@ -112,7 +115,7 @@ const walletServices = {
       recipientWallet.balance += amount;
       recipientWallet.transactionHistory.push({
         amount: amount,
-        type: "transfer",
+        type: "receive",
         sender: senderId,
       });
   
