@@ -17,6 +17,7 @@ const { productServices } = require("../../services/product/product");
 const { serviceServices } = require("../../services/service/service");
 const { jobServices } = require("../../services/job/job");
 const { projectServices } = require("../../services/project/project");
+const { walletServices } = require("../../services/wallet/wallet");
 const {
   activityServices,
 } = require("../../services/userActivity/userActivity");
@@ -128,6 +129,8 @@ const {
   updateReportById,
   paginateSearchReport,
 } = reportServices;
+const { createWallet, deposit, withdraw, transferFunds, getWallet } =
+  walletServices;
 const { createRequest, findRequest, updateRequestById, requestList } =
   requestServices;
 const {
@@ -324,6 +327,8 @@ const verifyOTP = async (req, res, next) => {
       return res.status(400).json({ message: "OTP has expired" });
     }
 
+    const walletRes = await createWallet(userResult._id);
+
     // OTP is valid, generate a token for the user
     token = await getToken({
       id: userResult._id,
@@ -332,8 +337,10 @@ const verifyOTP = async (req, res, next) => {
     });
     // Update the user's login status and clear the OTP
     var updatedUser = await updateUserById(userResult._id, {
+      walletId: walletRes._id,
       isOnline: true,
       otp: null,
+      optVerification: true,
     });
 
     // Return the token and user details
@@ -1319,7 +1326,10 @@ const createProduct = async (req, res, next) => {
       //   return res.json(new response(updateRes, responseMessage.POST_CREATE));
       // }
       return res.json(
-        new response({ saveProduct, saveRequest }, responseMessage.PRODUCT_CREATE)
+        new response(
+          { saveProduct, saveRequest },
+          responseMessage.PRODUCT_CREATE
+        )
       );
       // }
     }

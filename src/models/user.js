@@ -5,8 +5,7 @@ const status = require("../enums/status");
 
 const mongoosePaginate = require("mongoose-paginate");
 const mongooseAggregatePaginate = require("mongoose-aggregate-paginate");
-const { Schema } = require('mongoose');
-
+const { Schema } = require("mongoose");
 
 // Define the user schema
 const userSchema = new mongoose.Schema({
@@ -54,6 +53,10 @@ const userSchema = new mongoose.Schema({
   isProduct: { type: Boolean, default: false },
   isService: { type: Boolean, default: false },
   emailVerification: { type: Boolean, default: false },
+  walletId: {
+    type: Schema.Types.ObjectId,
+    ref: "wallet",
+  },
   otpTime: {
     type: Date,
     default: null,
