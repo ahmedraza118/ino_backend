@@ -51,6 +51,9 @@ const {
 const {
   projectRequestServices,
 } = require("../../services/projectRequest/projectRequest.js");
+const {
+  storeRequestServices,
+} = require("../../services/storeRequest/storeRequest.js");
 
 // const { postServices } = require("../../services/post/post.js");
 const { durationServices } = require("../../services/duration/duration.js");
@@ -212,6 +215,13 @@ const {
   projectRequestList,
   viewProjectRequestDetails,
 } = projectRequestServices;
+const {
+  createStoreRequest,
+  findStoreRequest,
+  updateStoreRequestById,
+  storeRequestList,
+  viewStoreRequestDetails,
+} = storeRequestServices;
 
 const { createFee, findFee, updateFee, feeList } = feeServices;
 const {
@@ -312,6 +322,7 @@ const speakeasy = require("speakeasy");
 const axios = require("axios");
 const moment = require("moment");
 const ip = require("ip");
+const { findStore, updateStoreById } = require("../../services/store/store.js");
 // const { updateUserPost } = require("../user/userController.js");
 
 
@@ -6523,6 +6534,211 @@ class adminController {
       return next(error);
     }
   }
+
+
+   //////////Store Requests ///////////////
+  /**
+   * @swagger
+   * /admin/storeRequestView:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: storeRequestView
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: storeRequestId
+   *         description: storeRequestId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async storeRequestView(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let resultRes = await findStoreRequest({
+          _id: req.query.storeRequestId,
+          status: { $ne: status.DELETE },
+        });
+        if (!resultRes) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+// Project request details shows user and the project details
+  async storeRequestDetails(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let resultRes = await viewStoreRequestDetails({
+          _id: req.query.storeRequestId,
+          status: { $ne: status.DELETE },
+        });
+        if (!resultRes) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+
+  /**
+   * @swagger
+   * /admin/storeRequestList:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: storeRequestList
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async storeRequestList(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let resultRes = await storeRequestList({
+          status: { $ne: status.DELETE },
+        });
+        if (resultRes.length == 0) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+   /**
+   * @swagger
+   * /admin/storeRequestUpdate:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: storeRequestUpdate
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+
+  async storeRequestUpdate(req, res, next) {
+    const validationSchema = {
+      storeRequestId: Joi.string().required(),
+      status: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.body, validationSchema);
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let reqRes = await findStoreRequest({
+          _id: validatedBody.storeRequestId,
+          status: { $ne: status.DELETE },
+        });
+        if (!reqRes) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          let storeRes = await findStore({
+            _id: reqRes.storeId,
+            status: { $ne: status.DELETE },
+          });
+
+          if (!storeRes) {
+            throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+          } else {
+            if (validatedBody.status === "ACTIVE") {
+              storeRes = await updateStoreById(
+                { _id: reqRes.storeId },
+                { status: status.ACTIVE }
+              );
+              reqRes = await updateStoreRequestById(
+                { _id: validatedBody.storeRequestId },
+                { status: status.APPROVED }
+              );
+            } else {
+              storeRes = await updateProject(
+                { _id: reqRes.storeId },
+                { status: status.BLOCK }
+              );
+
+              reqRes = await updateStoreRequestById(
+                { _id: validatedBody.storeRequestId },
+                { status: status.REGECTED }
+              );
+            }
+            return res.json(
+              new response(
+                { storeRes, reqRes },
+                responseMessage.STORE_REQUEST_UPDATED
+              )
+            );
+          }
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+
+
+  ///////////////////////////////
 }
 
 module.exports = adminController;

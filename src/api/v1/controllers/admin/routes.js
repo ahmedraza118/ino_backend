@@ -341,4 +341,25 @@ router.post(
   auth.verifyToken,
   adminControllerInstance.projectRequestUpdate
 );
+//Store Request routes
+router.get(
+  "/storeRequestList",
+  auth.verifyToken,
+  adminControllerInstance.storeRequestList
+);
+router.get(
+  "/storeRequestDetails",
+  auth.verifyToken,
+  adminControllerInstance.storeRequestDetails
+);
+router.get(
+  "/storeRequestView",
+  auth.verifyToken,
+  adminControllerInstance.storeRequestView
+);
+router.post(
+  "/storeRequestUpdate",
+  auth.verifyToken,
+  adminControllerInstance.storeRequestUpdate
+);
 module.exports = router;

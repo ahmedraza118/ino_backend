@@ -227,14 +227,8 @@ const register = async (req, res, next) => {
     //   req.body.userName = req.body.userName.toLowerCase();
     // }
 
-    const { value, error } = Joi.object(validationSchema).validate(req.body);
-    const { mobileNumber } = value;
-
-    if (error) {
-      // Handle validation error
-      throw new Error(error.details[0].message);
-    }
-
+    const validatedBody = await Joi.validate(req.body, validationSchema);
+    const { mobileNumber, userType } = validatedBody;
     var userResult = await getUserByPhoneNumber(mobileNumber);
 
     if (userResult) {
@@ -256,7 +250,8 @@ const register = async (req, res, next) => {
         } catch (error) {
           // throw new Error("Failed to send OTP");
           // Or, if you want to include the original Twilio error message:
-          throw new Error("Failed to send OTP: " + error.message);
+          throw apiError.forbidden(responseMessage.INCORRECT_NUMBER);
+          // throw new Error("Failed to send OTP: " + error.message);
           return; // Stop the execution of the remaining code
         }
       }
@@ -286,17 +281,18 @@ const register = async (req, res, next) => {
         } catch (error) {
           // throw new Error("Failed to send OTP");
           // Or, if you want to include the original Twilio error message:
-          throw new Error("Failed to send OTP: " + error.message);
-          return; // Stop the execution of the remaining code
+          throw apiError.forbidden(responseMessage.INCORRECT_NUMBER);
+
+          // throw new Error("Failed to send OTP: " + error.message);
+          // return; // Stop the execution of the remaining code
         }
       }
 
-      
       result = await createUser(req.body);
       const walletRes = await createWallet(result._id);
-      
+
       req.body.walletId = walletRes._id;
-      
+
       const updateRes = await updateUserById(result._id, req.body);
       console.log("Result:", result);
 

@@ -17,7 +17,7 @@ const serviceRequestServices = {
     const request = await serviceRequestModel
       .findById(requestId)
       .populate("userId")
-      .populate("postId");
+      .populate("serviceId");
     return request;
   },
 

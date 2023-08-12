@@ -17,7 +17,7 @@ const productRequestServices = {
     const request = await productRequestModel
       .findById(requestId)
       .populate("userId")
-      .populate("postId");
+      .populate("productId");
     return request;
   },
 

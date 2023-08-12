@@ -1,5 +1,4 @@
 module.exports = Object.freeze({
-    BUYER: "Buyer",
-    SELLER: "Seller",
-  });
-  
+  BUYER: "Buyer",
+  SELLER: "Seller",
+});

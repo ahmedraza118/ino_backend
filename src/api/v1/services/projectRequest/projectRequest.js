@@ -17,7 +17,7 @@ const projectRequestServices = {
     const request = await projectRequestModel
       .findById(requestId)
       .populate("userId")
-      .populate("postId");
+      .populate("projectId");
     return request;
   },
 

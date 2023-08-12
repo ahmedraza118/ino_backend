@@ -84,6 +84,12 @@ const userSchema = new mongoose.Schema({
     },
   ],
   blockStatus: { type: Boolean, default: false },
+  store: [
+    {
+      type: Schema.Types.ObjectId,
+      ref: "store",
+    },
+  ],
   permissions: {
     promotionManagement: { type: Boolean, default: false },
     productManagement: { type: Boolean, default: false },

@@ -17,7 +17,7 @@ const jobRequestServices = {
     const request = await jobRequestModel
       .findById(requestId)
       .populate("userId")
-      .populate("postId");
+      .populate("jobId");
     return request;
   },
 
