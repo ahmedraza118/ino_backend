@@ -131,6 +131,7 @@ module.exports = {
 	NFT_UNLIKES: "Nft disliked successfully. ",
 	POST_CREATE: "Post created successfully. ",
 	STORE_CREATE: "Store created successfully. ",
+	STORE_DELETE: "Store deleted successfully. ",
 	JOB_CREATE: "Job created successfully. ",
 	PRODUCT_CREATE: "Product created successfully. ",
 	PROJECT_CREATE: "Project created successfully. ",

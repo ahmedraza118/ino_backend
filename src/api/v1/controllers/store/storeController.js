@@ -47,6 +47,7 @@ const {
   emailStoreNameExist,
   listAllStores,
   updateStoreCatalogueById,
+  deleteStoreCatalogueItem,
 } = require("../../services/store/store");
 
 const {
@@ -59,9 +60,6 @@ const {
   findUser,
   emailUserNameExist,
 } = require("../../services/user/user");
-
-
-
 
 class storeController {
   /**
@@ -105,14 +103,19 @@ class storeController {
         website: Joi.string().optional(),
         awards: Joi.array().items(Joi.string()), // Array of strings for awards
         certificates: Joi.array().items(Joi.string()), // Array of strings for certificates
-        catalogue: Joi.array().items(Joi.object({  // Define the array of objects schema
-          name: Joi.string().required(),
-          description: Joi.string().required(),
-          price: Joi.number().required(),
-        })).optional(),
+        catalogue: Joi.array()
+          .items(
+            Joi.object({
+              // Define the array of objects schema
+              name: Joi.string().required(),
+              description: Joi.string().required(),
+              price: Joi.number().required(),
+            })
+          )
+          .optional(),
         phoneNumber: Joi.string().optional(),
       };
-      
+
       const validatedBody = await Joi.validate(req.body, validationSchema);
       var userResult = await findUser({
         _id: req.userId,
@@ -134,41 +137,35 @@ class storeController {
         //     throw apiError.conflict(responseMessage.STORE_NAME_EXIST);
         //   }
         // } else {
-          if (validatedBody.banner) {
-            validatedBody.banner = await commonFunction.getSecureUrl(
-              validatedBody.banner
-            );
-          }
-          validatedBody.ownerId = userResult._id;
-          var saveStore = await createStore(validatedBody);
-          await updateUserById(
-            { _id: userResult._id },
-            { store: saveStore._id }
+        if (validatedBody.banner) {
+          validatedBody.banner = await commonFunction.getSecureUrl(
+            validatedBody.banner
           );
-          await createActivity({
-            userId: userResult._id,
-            storeId: saveStore._id,
-            // collectionId: result._id,
-            title: "Store create",
-            desctiption: "Store register successfully.",
-            type: "STORE",
-          });
-
-          let obj = {
-            message: "Please approve my Store",
-            userId: userResult._id,
-            storeId: saveStore._id,
-            type: "REGISTER",
-          };
-          let saveRequest = await createStoreRequest(obj);
-          return res.json(
-            new response(
-              { saveStore, saveRequest },
-              responseMessage.STORE_CREATE
-            )
-          );
-          // }
         }
+        validatedBody.ownerId = userResult._id;
+        var saveStore = await createStore(validatedBody);
+        await updateUserById({ _id: userResult._id }, { store: saveStore._id });
+        await createActivity({
+          userId: userResult._id,
+          storeId: saveStore._id,
+          // collectionId: result._id,
+          title: "Store create",
+          desctiption: "Store register successfully.",
+          type: "STORE",
+        });
+
+        let obj = {
+          message: "Please approve my Store",
+          userId: userResult._id,
+          storeId: saveStore._id,
+          type: "REGISTER",
+        };
+        let saveRequest = await createStoreRequest(obj);
+        return res.json(
+          new response({ saveStore, saveRequest }, responseMessage.STORE_CREATE)
+        );
+        // }
+      }
       // }
     } catch (error) {
       console.log("====================>", error);
@@ -177,35 +174,35 @@ class storeController {
   }
 
   /**
- * @swagger
- * /user/updateStore:
- *   put:
- *     tags:
- *       - USER POSTS
- *     description: updateStore
- *     produces:
- *       - application/json
- *     parameters:
- *       - name: token
- *         description: token
- *         in: header
- *         required: true
- *       - name: updateStore
- *         description: updateStore
- *         in: body
- *         required: true
- *         schema:
- *           $ref: '#/definitions/updateStore'
- *     responses:
- *       200:
- *         description: Returns success message
- */
-async updateUserStore (req, res, next) {
-  try {
-    const validationSchema = {
-       // collectionId: Joi.string().required(),
-       storeId: Joi.string().optional(),
-       name: Joi.string().optional(),
+   * @swagger
+   * /user/updateStore:
+   *   put:
+   *     tags:
+   *       - USER POSTS
+   *     description: updateStore
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: updateStore
+   *         description: updateStore
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/updateStore'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async updateUserStore(req, res, next) {
+    try {
+      const validationSchema = {
+        // collectionId: Joi.string().required(),
+        storeId: Joi.string().optional(),
+        name: Joi.string().optional(),
         mail: Joi.string().optional(),
         type: Joi.string().optional(),
         banner: Joi.string().optional(),
@@ -219,232 +216,373 @@ async updateUserStore (req, res, next) {
         website: Joi.string().optional(),
         awards: Joi.array().items(Joi.string()), // Array of strings for awards
         certificates: Joi.array().items(Joi.string()), // Array of strings for certificates
-        catalogue: Joi.array().items(Joi.object({  // Define the array of objects schema
-          name: Joi.string().optional(),
-          description: Joi.string().optional(),
-          price: Joi.number().optional(),
-        })).optional(),
+        catalogue: Joi.array()
+          .items(
+            Joi.object({
+              // Define the array of objects schema
+              name: Joi.string().optional(),
+              description: Joi.string().optional(),
+              price: Joi.number().optional(),
+            })
+          )
+          .optional(),
         phoneNumber: Joi.string().optional(),
-    };
-    const validatedBody = await Joi.validate(req.body, validationSchema);
-    var userResult = await findUser({
-      _id: req.userId,
-      status: { $ne: status.DELETE },
-    });
-    if (!userResult) {
-      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
-    } else {
-      let storeRes = await findStore({
-        _id: validatedBody.storeId,
-        userId: userResult._id,
+      };
+      const validatedBody = await Joi.validate(req.body, validationSchema);
+      var userResult = await findUser({
+        _id: req.userId,
         status: { $ne: status.DELETE },
       });
-      if (!storeRes) {
-        throw apiError.notFound(responseMessage.STORE_NOT_FOUND);
-      }
-      if (validatedBody.banner) {
-        validatedBody.banner = await commonFunction.getSecureUrl(
-          validatedBody.banner
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      } else {
+        let storeRes = await findStore({
+          _id: validatedBody.storeId,
+          userId: userResult._id,
+          status: { $ne: status.DELETE },
+        });
+        if (!storeRes) {
+          throw apiError.notFound(responseMessage.STORE_NOT_FOUND);
+        }
+        if (validatedBody.banner) {
+          validatedBody.banner = await commonFunction.getSecureUrl(
+            validatedBody.banner
+          );
+        }
+        var saveStore = await updateStoreById(
+          { _id: storeRes._id },
+          validatedBody
         );
+        await updateUserById({ _id: userResult._id }, { isPost: true });
+        await createActivity({
+          userId: userResult._id,
+          postId: saveStore._id,
+          title: "Store update",
+          desctiption: "Store updated successfully.",
+          type: "STORE",
+        });
+
+        return res.json(new response(saveStore, responseMessage.STORE_UPDATED));
       }
-      var saveStore = await updateStoreById({ _id: storeRes._id }, validatedBody);
-      await updateUserById({ _id: userResult._id }, { isPost: true });
-      await createActivity({
-        userId: userResult._id,
-        postId: saveStore._id,
-        title: "Store update",
-        desctiption: "Store updated successfully.",
-        type: "STORE",
-      });
-      
-      return res.json(new response(saveStore, responseMessage.STORE_UPDATED));
+    } catch (error) {
+      console.log("====================>", error);
+      return next(error);
     }
-  } catch (error) {
-    console.log("====================>", error);
-    return next(error);
   }
-};
-/**
- * @swagger
- * /user/deleteUserPost:
- *   put:
- *     tags:
- *       - USER POSTS
- *     description: updatePost
- *     produces:
- *       - application/json
- *     parameters:
- *       - name: token
- *         description: token
- *         in: header
- *         required: true
- *       - name: updatePost
- *         description: updatePost
- *         in: body
- *         required: true
- *         schema:
- *           $ref: '#/definitions/updatePost'
- *     responses:
- *       200:
- *         description: Returns success message
- */
-async deleteUserStore  (req, res, next) {
-  try {
-    const validationSchema = {
-      postId: Joi.string().required(),
-    };
-    const validatedBody = await Joi.validate(req.body, validationSchema);
-    var userResult = await findUser({
-      _id: req.userId,
-      status: { $ne: status.DELETE },
-    });
-    if (!userResult) {
-      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
-    } else {
-      let postRes = await findOnePost({
-        _id: validatedBody.postId,
-        userId: userResult._id,
+  /**
+   * @swagger
+   * /user/deleteUserPost:
+   *   put:
+   *     tags:
+   *       - USER POSTS
+   *     description: updatePost
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: updatePost
+   *         description: updatePost
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/updatePost'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async deleteUserStore(req, res, next) {
+    try {
+      const validationSchema = {
+        storeId: Joi.string().required(),
+      };
+      const validatedBody = await Joi.validate(req.body, validationSchema);
+      var userResult = await findUser({
+        _id: req.userId,
         status: { $ne: status.DELETE },
       });
-      if (!postRes) {
-        throw apiError.notFound(responseMessage.POST_NOT_FOUND);
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      } else {
+        let storeRes = await findStore({
+          _id: validatedBody.storeId,
+          ownerId: userResult._id,
+          status: { $ne: status.DELETE },
+        });
+        if (!storeRes) {
+          throw apiError.notFound(responseMessage.STORE_NOT_FOUND);
+        }
+        validatedBody.status = status.DELETE;
+        var savePost = await updateStoreById(
+          { _id: storeRes._id },
+          validatedBody
+        );
+        await updateUserById({ _id: userResult._id }, { isPost: true });
+        await createActivity({
+          userId: userResult._id,
+          postId: savePost._id,
+          // collectionId: result._id,
+          title: "Store Delete",
+          desctiption: "Store Deleted successfully.",
+          type: "STORE",
+        });
+        return res.json(new response(savePost, responseMessage.STORE_DELETE));
+        // }
       }
-      validatedBody.creatorId = userResult._id;
-      validatedBody.status = status.DELETE;
-      var savePost = await updatePost({ _id: postRes._id }, validatedBody);
-      await updateUserById({ _id: userResult._id }, { isPost: true });
-      await createActivity({
-        userId: userResult._id,
-        postId: savePost._id,
-        // collectionId: result._id,
-        title: "Post Delete",
-        desctiption: "Post Deleted successfully.",
-        type: "POST",
+    } catch (error) {
+      console.log("====================>", error);
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /listStoreByType:
+   *   get:
+   *     tags:
+   *       - All stores
+   *     description: listStoreByType
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *      no param
+   *         description: Returns success message
+   */
+  async listStoreByType(req, res, next) {
+    const validationSchema = {
+      type: Joi.string().required(),
+    };
+
+    try {
+      const validatedQuery = await Joi.validate(req.query, validationSchema);
+
+      let userResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
       });
-      return res.json(new response(savePost, responseMessage.POST_DELETE));
-      // }
-    }
-  } catch (error) {
-    console.log("====================>", error);
-    return next(error);
-  }
-};
 
-/**
- * @swagger
- * /user/postList:
- *   get:
- *     tags:
- *       - USER POSTS
- *     description: postList
- *     produces:
- *       - application/json
- *     parameters:
- *       - name: token
- *         description: token
- *         in: header
- *         required: true
- *       - name: search
- *         description: search
- *         in: query
- *         required: false
- *       - name: fromDate
- *         description: fromDate
- *         in: query
- *         required: false
- *       - name: toDate
- *         description: toDate
- *         in: query
- *         required: false
- *       - name: page
- *         description: page
- *         in: query
- *         required: false
- *       - name: limit
- *         description: limit
- *         in: query
- *         required: false
- *     responses:
- *       200:
- *         description: Returns success message
- */
-async postListPaginate  (req, res, next) {
-  const validationSchema = {
-    search: Joi.string().optional(),
-    fromDate: Joi.string().optional(),
-    toDate: Joi.string().optional(),
-    page: Joi.string().optional(),
-    limit: Joi.string().optional(),
-  };
-  try {
-    const validatedBody = await Joi.validate(req.query, validationSchema);
-    const { search, fromDate, toDate, page, limit } = validatedBody;
-    let userResult = await findUser({
-      _id: req.userId,
-      status: { $ne: status.DELETE },
-    });
-    if (!userResult) {
-      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
-    }
-    validatedBody.userId = userResult._id;
-    let dataResults = await paginatePostSearch(validatedBody);
-    if (dataResults.docs.length == 0) {
-      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
-    }
-    return res.json(new response(dataResults, responseMessage.DATA_FOUND));
-  } catch (error) {
-    return next(error);
-  }
-};
-/**
- * @swagger
- * /user/postView:
- *   get:
- *     tags:
- *       - USER POSTS
- *     description: postView
- *     produces:
- *       - application/json
- *     parameters:
- *       - name: token
- *         description: token
- *         in: header
- *         required: true
- *       - name: postId
- *         description: postId
- *         in: query
- *         required: true
- *     responses:
- *       200:
- *         description: Returns success message
- */
-async storeView  (req, res, next) {
-  const validationSchema = {
-    storeId: Joi.string().optional(),
-  };
-  try {
-    const validatedBody = await Joi.validate(req.query, validationSchema);
-    const { storeId } = validatedBody;
-    let userResult = await findUser({
-      _id: req.userId,
-      status: { $ne: status.DELETE },
-    });
-    if (!userResult) {
-      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
-    }
-    let dataResults = await findStore({
-      _id: storeId,
-      status: { $ne: status.DELETE },
-    });
-    if (!dataResults) {
-      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
-    }
-    return res.json(new response(dataResults, responseMessage.DATA_FOUND));
-  } catch (error) {
-    return next(error);
-  }
-}
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
 
+      let dataResults = await findStore({
+        status: status.ACTIVE,
+        type: validatedQuery.type,
+      });
+
+      if (dataResults.docs.length === 0) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+
+      return res.json(new response(dataResults, responseMessage.DATA_FOUND));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /listAllStore:
+   *   get:
+   *     tags:
+   *       - All stores
+   *     description: listAllStore
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *      no param
+   *         description: Returns success message
+   */
+  async listAllStore(req, res, next) {
+    try {
+      let userResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let dataResults = await listAllStores();
+      if (dataResults.docs.length == 0) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      return res.json(new response(dataResults, responseMessage.DATA_FOUND));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /listAllStore:
+   *   get:
+   *     tags:
+   *       - All stores
+   *     description: listAllStore
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *      no param
+   *         description: Returns success message
+   */
+  async listUserStores(req, res, next) {
+    try {
+      let userResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let dataResults = await listAllStores({
+        ownerId: userResult._id,
+        status: status.ACTIVE,
+      });
+      if (dataResults.docs.length == 0) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      return res.json(new response(dataResults, responseMessage.DATA_FOUND));
+    } catch (error) {
+      return next(error);
+    }
+  }
+  /**
+   * @swagger
+   * /user/storeView:
+   *   get:
+   *     tags:
+   *       - USER STORES
+   *     description: storeView
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: storeId
+   *         description: storeId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async storeView(req, res, next) {
+    const validationSchema = {
+      storeId: Joi.string().optional(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      const { storeId } = validatedBody;
+      let userResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let dataResults = await findStore({
+        _id: storeId,
+        status: { $ne: status.DELETE },
+      });
+      if (!dataResults) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      return res.json(new response(dataResults, responseMessage.DATA_FOUND));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  async addStoreCatalogueItem(req, res, next) {
+    try {
+      const validationSchema = {
+        storeId: Joi.string().required(),
+      };
+      const validatedBody = await Joi.validate(req.body, validationSchema);
+      var userResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      } else {
+        let storeRes = await findStore({
+          _id: validatedBody.storeId,
+          ownerId: userResult._id,
+          status: { $ne: status.DELETE },
+        });
+        if (!storeRes) {
+          throw apiError.notFound(responseMessage.STORE_NOT_FOUND);
+        }
+        var savePost = await updateStoreCatalogueById(
+          { _id: storeRes._id },
+          validatedBody
+        );
+        await updateUserById({ _id: userResult._id }, { isPost: true });
+        await createActivity({
+          userId: userResult._id,
+          postId: savePost._id,
+          // collectionId: result._id,
+          title: "Catalogue Updated",
+          desctiption: "User Store catalogue updated successfully.",
+          type: "STORE",
+        });
+        return res.json(new response(savePost, responseMessage.STORE_UPDATED));
+        // }
+      }
+    } catch (error) {
+      console.log("====================>", error);
+      return next(error);
+    }
+  }
+
+  async deleteStoreCatalogueItem(req, res, next) {
+    try {
+      const validationSchema = {
+        storeId: Joi.string().required(),
+        catalogueItemId: Joi.string().required(),
+      };
+      const validatedBody = await Joi.validate(req.body, validationSchema);
+      var userResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      } else {
+        let storeRes = await findStore({
+          _id: validatedBody.storeId,
+          ownerId: userResult._id,
+          status: { $ne: status.DELETE },
+        });
+        if (!storeRes) {
+          throw apiError.notFound(responseMessage.STORE_NOT_FOUND);
+        }
+        var saveStore = await deleteStoreCatalogueItem(
+          storeRes._id,
+          validatedBody.catalogueItemId
+        );
+        await updateUserById({ _id: userResult._id }, { isPost: true });
+        await createActivity({
+          userId: userResult._id,
+          postId: saveStore._id,
+          // collectionId: result._id,
+          title: "Catalogue Updated",
+          desctiption: "User Store catalogue updated successfully.",
+          type: "STORE",
+        });
+        return res.json(new response(saveStore, responseMessage.STORE_UPDATED));
+        // }
+      }
+    } catch (error) {
+      console.log("====================>", error);
+      return next(error);
+    }
+  }
 }
 
 module.exports = storeController;

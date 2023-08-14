@@ -1,3 +1,9 @@
+const userModel = require("../../../../models/user");
+const apiError = require("../../../../helper/apiError");
+const response = require("../../../../../assets/response");
+const bcrypt = require("bcryptjs");
+const responseMessage = require("../../../../../assets/responseMessage");
+const commonFunction = require("../../../../helper/util.js");
 const Store = require("../../../../models/store");
 const status = require("../../../../enums/status");
 const storeType = require("../../../../enums/storeType");
@@ -25,7 +31,6 @@ async function createStore(storeData) {
   }
 }
 
-
 // Function to find a user by their username
 async function findStoreByName(name) {
   try {
@@ -45,7 +50,7 @@ async function listAllStores() {
   } catch (error) {
     // Handle the error and provide a meaningful error message
     console.error("Error while fetching all stores:", error);
-    throw new Error("Failed to fetch all stores. Please try again later.");
+    throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
   }
 }
 
@@ -65,10 +70,9 @@ async function emailStoreNameExist(email, name) {
   } catch (error) {
     // Handle the error gracefully (e.g., log or throw a custom error)
     console.error("Error in emailOrStoreNameExists:", error);
-    throw new Error("An error occurred while checking store existence.");
+    throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
   }
 }
-
 
 // Function to update a user by their ID
 async function updateStoreById(userId, updateData) {
@@ -82,24 +86,60 @@ async function updateStoreById(userId, updateData) {
   }
 }
 
-async function updateStoreCatalogueById(userId, updateData) {
+async function updateStoreCatalogueById(storeId, updateData) {
   try {
     // Check if the updateData includes an array of items to add to the catalog
     if (updateData.catalogue && Array.isArray(updateData.catalogue)) {
-      // If so, we'll use $push to add each item to the catalogue array
-      await Promise.all(
-        updateData.catalogue.map(async (item) => {
-          const newItem = new Item(item); // Create a new item based on the item schema
-          await newItem.save(); // Save the new item to the database
-          updateData.catalogue = updateData.catalogue.map((item) => item._id); // Replace item objects with their IDs
-          updateData.catalogue.push(newItem._id); // Push the new item's ID to the updateData
-        })
+      const updatedCatalogue = updateData.catalogue.map((item) => ({
+        name: item.name,
+        description: item.description,
+        price: item.price,
+      }));
+
+      // Update the store's catalogue array
+      const updatedStore = await Store.findByIdAndUpdate(
+        storeId,
+        { $push: { catalogue: { $each: updatedCatalogue } } },
+        { new: true }
       );
+
+      return updatedStore;
     }
 
-    const updatedStore = await Store.findByIdAndUpdate(userId, updateData, {
+    // If there are no updates to the catalogue, simply update the store
+    const updatedStore = await Store.findByIdAndUpdate(storeId, updateData, {
       new: true,
     });
+
+    return updatedStore;
+  } catch (error) {
+    throw error;
+  }
+}
+
+async function deleteStoreCatalogueItem(storeId, catalogueItemId) {
+  try {
+    // Find the store by storeId
+    const store = await Store.findById(storeId);
+
+    if (!store) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    }
+
+    // Find the index of the catalogue item in the catalogue array
+    const catalogueItemIndex = store.catalogue.findIndex(
+      (item) => item._id.toString() === catalogueItemId
+    );
+
+    if (catalogueItemIndex === -1) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    }
+
+    // Remove the item from the catalogue array
+    store.catalogue.splice(catalogueItemIndex, 1);
+
+    // Save the updated store
+    const updatedStore = await store.save();
 
     return updatedStore;
   } catch (error) {
@@ -142,4 +182,5 @@ module.exports = {
   emailStoreNameExist,
   listAllStores,
   updateStoreCatalogueById,
+  deleteStoreCatalogueItem,
 };

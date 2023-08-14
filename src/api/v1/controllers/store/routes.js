@@ -7,20 +7,50 @@ const storeControllerInstance = new storeController();
 const router = Express.Router();
 
 router.get("/storeView", auth.verifyToken, storeControllerInstance.storeView);
+router.get(
+  "/listAllStore",
+  auth.verifyToken,
+  storeControllerInstance.listAllStore
+);
+router.get(
+  "/listUserStores",
+  auth.verifyToken,
+  storeControllerInstance.listUserStores
+);
+router.get(
+  "/listStoreByType",
+  auth.verifyToken,
+  storeControllerInstance.listStoreByType
+);
 router.post(
-  "/registerStore",
+  "user/registerStore",
   auth.verifyToken,
   storeControllerInstance.registerStore
 );
 router.post(
-  "/updateUserStore",
+  "user/updateUserStore",
   auth.verifyToken,
   storeControllerInstance.updateUserStore
 );
+// router.post(
+//   "/deleteUserStore",
+//   auth.verifyToken,
+//   storeControllerInstance.deleteUserStore
+// );
 router.post(
-  "/deleteUserStore",
+  "/user/deleteUserStore",
   auth.verifyToken,
   storeControllerInstance.deleteUserStore
+);
+router.post(
+  "/user/deleteStoreCatalogueItem",
+  auth.verifyToken,
+  storeControllerInstance.deleteStoreCatalogueItem
+);
+router.post(
+  "/user/addStoreCatalogueItem",
+  auth.verifyToken,
+  storeControllerInstance.addStoreCatalogueItem
 );
 
 module.exports = router;
