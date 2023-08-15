@@ -23,12 +23,12 @@ router.get(
   storeControllerInstance.listStoreByType
 );
 router.post(
-  "user/registerStore",
+  "/user/registerStore",
   auth.verifyToken,
   storeControllerInstance.registerStore
 );
 router.post(
-  "user/updateUserStore",
+  "/user/updateUserStore",
   auth.verifyToken,
   storeControllerInstance.updateUserStore
 );
