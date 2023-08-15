@@ -372,7 +372,7 @@ class storeController {
         type: validatedQuery.type,
       });
 
-      if (dataResults.docs.length === 0) {
+      if (!dataResultsbug) {
         throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
       }
 
