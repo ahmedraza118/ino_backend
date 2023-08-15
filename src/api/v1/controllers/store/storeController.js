@@ -440,7 +440,7 @@ class storeController {
         ownerId: userResult._id,
         status: status.ACTIVE,
       });
-      if (dataResults.docs.length == 0) {
+      if (!dataResults) {
         throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
       }
       return res.json(new response(dataResults, responseMessage.DATA_FOUND));
