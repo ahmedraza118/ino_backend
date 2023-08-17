@@ -1,4 +1,6 @@
 const mongoose = require("mongoose");
+const status = require("../enums/status");
+
 const { Schema } = mongoose;
 
 const options = {
@@ -19,6 +21,7 @@ const transactionSchema = new Schema(
 const walletSchema = new Schema(
   {
     balance: { type: Number, default: 0 },
+    status: {type: String, default: status.ACTIVE},
     ownerId: {
       type: Schema.Types.ObjectId,
       ref: "user", // Reference to the associated User model

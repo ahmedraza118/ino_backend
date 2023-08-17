@@ -362,4 +362,31 @@ router.post(
   auth.verifyToken,
   adminControllerInstance.storeRequestUpdate
 );
+
+// post management APIs
+router.get("/postView", auth.verifyToken, adminControllerInstance.postView);
+router.get("/deletePost", auth.verifyToken, adminControllerInstance.deletePost);
+router.get("/ignorePost", auth.verifyToken, adminControllerInstance.ignorePost);
+router.get("/allPostList", auth.verifyToken, adminControllerInstance.allPostList);
+// post management APIs
+router.get("/projectView", auth.verifyToken, adminControllerInstance.projectView);
+router.get("/deleteProject", auth.verifyToken, adminControllerInstance.deleteProject);
+router.get("/ignoreProject", auth.verifyToken, adminControllerInstance.ignoreProject);
+router.get("/allProjectList", auth.verifyToken, adminControllerInstance.allProjectList);
+// post management APIs
+router.get("/productView", auth.verifyToken, adminControllerInstance.productView);
+router.get("/deleteProduct", auth.verifyToken, adminControllerInstance.deleteProduct);
+router.get("/ignoreProduct", auth.verifyToken, adminControllerInstance.ignoreProduct);
+router.get("/allProductList", auth.verifyToken, adminControllerInstance.allProductList);
+// post management APIs
+router.get("/serviceView", auth.verifyToken, adminControllerInstance.serviceView);
+router.get("/deleteService", auth.verifyToken, adminControllerInstance.deleteService);
+router.get("/ignoreService", auth.verifyToken, adminControllerInstance.ignoreService);
+router.get("/allServiceList", auth.verifyToken, adminControllerInstance.allServiceList);
+// post management APIs
+router.get("/jobView", auth.verifyToken, adminControllerInstance.jobView);
+router.get("/deleteJob", auth.verifyToken, adminControllerInstance.deleteJob);
+router.get("/ignoreJob", auth.verifyToken, adminControllerInstance.ignoreJob);
+router.get("/allJobList", auth.verifyToken, adminControllerInstance.allJobList);
+
 module.exports = router;

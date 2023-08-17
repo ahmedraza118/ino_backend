@@ -13,6 +13,21 @@ router.get(
   storeControllerInstance.listAllStore
 );
 router.get(
+  "/admin/deleteUserStoreByAdmin",
+  auth.verifyToken,
+  storeControllerInstance.deleteUserStoreByAdmin
+);
+router.get(
+  "/admin/blockUserStoreByAdmin",
+  auth.verifyToken,
+  storeControllerInstance.blockUserStoreByAdmin
+);
+router.get(
+  "/admin/unblockUserStoreByAdmin",
+  auth.verifyToken,
+  storeControllerInstance.unblockUserStoreByAdmin
+);
+router.get(
   "/listUserStores",
   auth.verifyToken,
   storeControllerInstance.listUserStores

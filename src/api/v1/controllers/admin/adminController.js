@@ -34,7 +34,6 @@ const { serviceServices } = require("../../services/service/service");
 const { jobServices } = require("../../services/job/job");
 const { projectServices } = require("../../services/project/project");
 
-
 const { requestServices } = require("../../services/request/request.js");
 const {
   postRequestServices,
@@ -324,7 +323,6 @@ const moment = require("moment");
 const ip = require("ip");
 const { findStore, updateStoreById } = require("../../services/store/store.js");
 // const { updateUserPost } = require("../user/userController.js");
-
 
 class adminController {
   /**
@@ -1013,7 +1011,7 @@ class adminController {
 
   ////////////////////////////////////////////
 
-    /**
+  /**
    * @swagger
    * /user/createProductSubCategorie:
    *   post:
@@ -1035,197 +1033,197 @@ class adminController {
    *       200:
    *         description: Returns success message
    */
-    async createProductSubCategorie(req, res, next) {
-      const validationSchema = {
-        name: Joi.string().required(),
-        description: Joi.string().required(),
-      };
-      try {
-        const { value, error } = Joi.object(validationSchema).validate(req.body);
-        if (error) {
-          throw error;
-        }
-  
-        let userResult = await findUser({
-          _id: req.userId,
-          userType: userType.ADMIN,
-          status: { $ne: status.DELETE },
-        });
-        if (!userResult) {
-          throw apiError.notFound(responseMessage.USER_NOT_FOUND);
-        }
-        let categorieRes = await findProductSubCategorie({
-          name: req.body.name,
-          status: { $ne: status.DELETE },
-        });
-        if (categorieRes) {
-          throw apiError.conflict(responseMessage.CATEGORIE_EXIST);
-        }
-        value.userId = userResult._id;
-        let saveRes = await createProductSubCategorie(value);
-        return res.json(new response(saveRes, responseMessage.CREATE_CATEGORIE));
-      } catch (error) {
-        return next(error);
+  async createProductSubCategorie(req, res, next) {
+    const validationSchema = {
+      name: Joi.string().required(),
+      description: Joi.string().required(),
+    };
+    try {
+      const { value, error } = Joi.object(validationSchema).validate(req.body);
+      if (error) {
+        throw error;
       }
-    }
-  
-    /**
-     * @swagger
-     * /user/viewProductSubCategorie:
-     *   get:
-     *     tags:
-     *       - viewProductSubCategorie
-     *     description: viewProductSubCategorie
-     *     produces:
-     *       - application/json
-     *     parameters:
-     *       - name: product name
-     *         description: description
-     *         in: query
-     *         required: true
-     *     responses:
-     *       200:
-     *         description: Returns success message
-     */
-    async viewProductSubCategorie(req, res, next) {
-      const validationSchema = {
-        categorieId: Joi.string().required(),
-      };
-      try {
-        const validatedBody = await Joi.validate(req.query, validationSchema);
-        let resultRes = await findProductSubCategorie({
-          _id: validatedBody.categorieId,
-          status: { $ne: status.DELETE },
-        });
-        if (!resultRes) {
-          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
-        }
-        return res.json(new response(resultRes, responseMessage.DATA_FOUND));
-      } catch (error) {
-        return next(error);
-      }
-    }
-  
-    /**
-     * @swagger
-     * /user/deleteProductSubCategorie:
-     *   delete:
-     *     tags:
-     *       - deleteProductCategorie
-     *     description: deleteProductSubCategorie
-     *     produces:
-     *       - application/json
-     *     parameters:
-     *       - name: token
-     *         description: token
-     *         in: header
-     *         required: true
-     *       - name: name
-     *         description: description
-     *         in: query
-     *         required: true
-     *     responses:
-     *       200:
-     *         description: Returns success message
-     */
-    async deleteProductSubCategorie(req, res, next) {
-      const validationSchema = {
-        categorieId: Joi.string().required(),
-      };
-      try {
-        const validatedBody = await Joi.validate(req.query, validationSchema);
-        let userResult = await findUser({
-          _id: req.userId,
-          userType: userType.ADMIN,
-          status: { $ne: status.DELETE },
-        });
-        if (!userResult) {
-          throw apiError.notFound(responseMessage.USER_NOT_FOUND);
-        }
-        let resultRes = await findProductSubCategorie({
-          _id: validatedBody.categorieId,
-          status: { $ne: status.DELETE },
-        });
-        if (!resultRes) {
-          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
-        }
-        let updateRes = await updateProductSubCategorie(
-          { _id: resultRes._id },
-          { status: status.DELETE }
-        );
-        return res.json(
-          new response(updateRes, responseMessage.CATEGORIE_DELETE)
-        );
-      } catch (error) {
-        return next(error);
-      }
-    }
-  
-    /**
-     * @swagger
-     * /user/SearchProductSubCategories:
-     *   get:
-     *     tags:
-     *       - Search
-     *     description: SearchProductSubCategories
-     *     produces:
-     *       - application/json
-     *     parameters:
-     *       - name: fromDate
-     *         description: fromDate
-     *         in: query
-     *         required: false
-     *       - name: toDate
-     *         description: toDate
-     *         in: query
-     *         required: false
-     *       - name: page
-     *         description: page
-     *         in: query
-     *         required: false
-     *       - name: limit
-     *         description: limit
-     *         in: query
-     *         required: false
-     *     responses:
-     *       200:
-     *         description: Returns success message
-     */
-    async SearchProductSubCategories(req, res, next) {
-      const validationSchema = {
-        fromDate: Joi.string().optional(),
-        toDate: Joi.string().optional(),
-        page: Joi.string().optional(),
-        limit: Joi.string().optional(),
-      };
-      try {
-        const validatedBody = await Joi.validate(req.query, validationSchema);
-        let resultRes = await paginateSearchProductSubCategorie(validatedBody);
-        if (resultRes.docs.length == 0) {
-          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
-        }
-        return res.json(new response(resultRes, responseMessage.DATA_FOUND));
-      } catch (error) {
-        return next(error);
-      }
-    }
-  
-    // get All Product Sub Categories
-  
-    async getAllProdctSubCategories(req, res, next) {
-      try {
-        const categorieRes = await productSubCategorieList();
-        return res.json(new response(categorieRes, responseMessage.DATA_FOUND));
-      } catch (error) {
-        // Handle the error gracefully (e.g., log or throw a custom error)
-        console.error("Error in getAllproductCategories:", error);
-        return next(error);
-      }
-    }
-  
-    ////////////////////////////////////////////
 
-//////////////////////
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let categorieRes = await findProductSubCategorie({
+        name: req.body.name,
+        status: { $ne: status.DELETE },
+      });
+      if (categorieRes) {
+        throw apiError.conflict(responseMessage.CATEGORIE_EXIST);
+      }
+      value.userId = userResult._id;
+      let saveRes = await createProductSubCategorie(value);
+      return res.json(new response(saveRes, responseMessage.CREATE_CATEGORIE));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/viewProductSubCategorie:
+   *   get:
+   *     tags:
+   *       - viewProductSubCategorie
+   *     description: viewProductSubCategorie
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: product name
+   *         description: description
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async viewProductSubCategorie(req, res, next) {
+    const validationSchema = {
+      categorieId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let resultRes = await findProductSubCategorie({
+        _id: validatedBody.categorieId,
+        status: { $ne: status.DELETE },
+      });
+      if (!resultRes) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/deleteProductSubCategorie:
+   *   delete:
+   *     tags:
+   *       - deleteProductCategorie
+   *     description: deleteProductSubCategorie
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: name
+   *         description: description
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async deleteProductSubCategorie(req, res, next) {
+    const validationSchema = {
+      categorieId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let resultRes = await findProductSubCategorie({
+        _id: validatedBody.categorieId,
+        status: { $ne: status.DELETE },
+      });
+      if (!resultRes) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      let updateRes = await updateProductSubCategorie(
+        { _id: resultRes._id },
+        { status: status.DELETE }
+      );
+      return res.json(
+        new response(updateRes, responseMessage.CATEGORIE_DELETE)
+      );
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/SearchProductSubCategories:
+   *   get:
+   *     tags:
+   *       - Search
+   *     description: SearchProductSubCategories
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: fromDate
+   *         description: fromDate
+   *         in: query
+   *         required: false
+   *       - name: toDate
+   *         description: toDate
+   *         in: query
+   *         required: false
+   *       - name: page
+   *         description: page
+   *         in: query
+   *         required: false
+   *       - name: limit
+   *         description: limit
+   *         in: query
+   *         required: false
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async SearchProductSubCategories(req, res, next) {
+    const validationSchema = {
+      fromDate: Joi.string().optional(),
+      toDate: Joi.string().optional(),
+      page: Joi.string().optional(),
+      limit: Joi.string().optional(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let resultRes = await paginateSearchProductSubCategorie(validatedBody);
+      if (resultRes.docs.length == 0) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  // get All Product Sub Categories
+
+  async getAllProdctSubCategories(req, res, next) {
+    try {
+      const categorieRes = await productSubCategorieList();
+      return res.json(new response(categorieRes, responseMessage.DATA_FOUND));
+    } catch (error) {
+      // Handle the error gracefully (e.g., log or throw a custom error)
+      console.error("Error in getAllproductCategories:", error);
+      return next(error);
+    }
+  }
+
+  ////////////////////////////////////////////
+
+  //////////////////////
   /**
    * @swagger
    * /user/createServiceCategorie:
@@ -1437,7 +1435,6 @@ class adminController {
   }
 
   ////////////////////////////////////////////
-
 
   /**
    * @swagger
@@ -3917,7 +3914,7 @@ class adminController {
     }
   }
 
-// product request details shows user and the product details
+  // product request details shows user and the product details
   async productRequestDetails(req, res, next) {
     try {
       let adminResult = await findUser({
@@ -3942,7 +3939,6 @@ class adminController {
       return next(error);
     }
   }
-
 
   /**
    * @swagger
@@ -3986,7 +3982,7 @@ class adminController {
     }
   }
 
-   /**
+  /**
    * @swagger
    * /admin/productRequestUpdate:
    *   get:
@@ -4069,8 +4065,6 @@ class adminController {
     }
   }
 
-
-
   ///////////////////////////////
   //////////Service Requests ///////////////
   /**
@@ -4120,7 +4114,7 @@ class adminController {
     }
   }
 
-// service request details shows user and the product details
+  // service request details shows user and the product details
   async serviceRequestDetails(req, res, next) {
     try {
       let adminResult = await findUser({
@@ -4145,7 +4139,6 @@ class adminController {
       return next(error);
     }
   }
-
 
   /**
    * @swagger
@@ -4189,7 +4182,7 @@ class adminController {
     }
   }
 
-   /**
+  /**
    * @swagger
    * /admin/serviceRequestUpdate:
    *   get:
@@ -4319,7 +4312,7 @@ class adminController {
     }
   }
 
-// job request details shows user and the product details
+  // job request details shows user and the product details
   async jobRequestDetails(req, res, next) {
     try {
       let adminResult = await findUser({
@@ -4344,7 +4337,6 @@ class adminController {
       return next(error);
     }
   }
-
 
   /**
    * @swagger
@@ -4388,7 +4380,7 @@ class adminController {
     }
   }
 
-   /**
+  /**
    * @swagger
    * /admin/jobRequestUpdate:
    *   get:
@@ -4519,7 +4511,7 @@ class adminController {
     }
   }
 
-// Project request details shows user and the project details
+  // Project request details shows user and the project details
   async projectRequestDetails(req, res, next) {
     try {
       let adminResult = await findUser({
@@ -4544,7 +4536,6 @@ class adminController {
       return next(error);
     }
   }
-
 
   /**
    * @swagger
@@ -4588,7 +4579,7 @@ class adminController {
     }
   }
 
-   /**
+  /**
    * @swagger
    * /admin/projectRequestUpdate:
    *   get:
@@ -4671,8 +4662,6 @@ class adminController {
     }
   }
 
-
-
   ///////////////////////////////
 
   /**
@@ -4751,6 +4740,51 @@ class adminController {
     }
   }
 
+  //post management APIs
+  /**
+   * @swagger
+   * /admin/allPostList:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: allPostList
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: postId
+   *         description: postId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async allPostList(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      }
+      let data = await listPost({
+        status: { $ne: status.DELETE },
+      });
+      if (!data) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      } else {
+        return res.json(new response(data, responseMessage.DATA_FOUND));
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
   /**
    * @swagger
    * /admin/postView:
@@ -4803,11 +4837,11 @@ class adminController {
 
   /**
    * @swagger
-   * /admin/blockpost:
+   * /admin/deletePost:
    *   delete:
    *     tags:
    *       - ADMIN
-   *     description: blockpost
+   *     description: deletePost
    *     produces:
    *       - application/json
    *     parameters:
@@ -4823,7 +4857,7 @@ class adminController {
    *       200:
    *         description: Returns success message
    */
-  async blockpost(req, res, next) {
+  async deletePost(req, res, next) {
     const validationSchema = {
       postId: Joi.string().required(),
     };
@@ -4844,12 +4878,12 @@ class adminController {
       if (!data) {
         throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
       } else {
-        await updateManyReport({ postId: data._id }, { status: status.DELETE });
+        // await updateManyReport({ postId: data._id }, { status: status.DELETE });
         let updateRes = await updatePost(
           { _id: data._id },
           { status: status.DELETE }
         );
-        return res.json(new response(updateRes, responseMessage.DATA_FOUND));
+        return res.json(new response(updateRes, responseMessage.POST_DELETED));
       }
     } catch (error) {
       return next(error);
@@ -4858,11 +4892,11 @@ class adminController {
 
   /**
    * @swagger
-   * /admin/postIngore:
+   * /admin/ignorePost:
    *   delete:
    *     tags:
    *       - ADMIN
-   *     description: postIngore
+   *     description: ignorePost
    *     produces:
    *       - application/json
    *     parameters:
@@ -4878,7 +4912,7 @@ class adminController {
    *       200:
    *         description: Returns success message
    */
-  async postIngore(req, res, next) {
+  async ignorePost(req, res, next) {
     const validationSchema = {
       postId: Joi.string().required(),
     };
@@ -4899,8 +4933,830 @@ class adminController {
       if (!data) {
         throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
       } else {
-        await updateManyReport({ postId: data._id }, { status: status.DELETE });
+        // await updateManyReport({ postId: data._id }, { status: status.DELETE });
         let updateRes = await updatePost(
+          { _id: data._id },
+          { $set: { reportedId: [] } }
+        );
+        return res.json(new response(updateRes, responseMessage.DATA_FOUND));
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+  //Project management APIs
+  /**
+   * @swagger
+   * /admin/allProjectList:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: allProjectList
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: postId
+   *         description: postId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async allProjectList(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      }
+      let data = await listProject({
+        status: { $ne: status.DELETE },
+      });
+      if (!data) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      } else {
+        return res.json(new response(data, responseMessage.DATA_FOUND));
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+  /**
+   * @swagger
+   * /admin/projectView:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: projectView
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: postId
+   *         description: postId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async projectView(req, res, next) {
+    const validationSchema = {
+      projectId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      }
+      let data = await findOneProject({
+        _id: validatedBody.projectId,
+        status: { $ne: status.DELETE },
+      });
+      if (!data) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      } else {
+        return res.json(new response(data, responseMessage.DATA_FOUND));
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /admin/deleteProject:
+   *   delete:
+   *     tags:
+   *       - ADMIN
+   *     description: deleteProject
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: postId
+   *         description: postId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async deleteProject(req, res, next) {
+    const validationSchema = {
+      projectId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      }
+      let data = await findOneProject({
+        _id: validatedBody.projectId,
+        status: { $ne: status.DELETE },
+      });
+      if (!data) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      } else {
+        // await updateManyReport({ postId: data._id }, { status: status.DELETE });
+        let updateRes = await updateProject(
+          { _id: data._id },
+          { status: status.DELETE }
+        );
+        return res.json(
+          new response(updateRes, responseMessage.PROJECT_DELETE)
+        );
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /admin/ignoreProject:
+   *   delete:
+   *     tags:
+   *       - ADMIN
+   *     description: ignoreProject
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: postId
+   *         description: postId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async ignoreProject(req, res, next) {
+    const validationSchema = {
+      projectId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      }
+      let data = await findOneProject({
+        _id: validatedBody.projectId,
+        status: { $ne: status.DELETE },
+      });
+      if (!data) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      } else {
+        // await updateManyReport({ postId: data._id }, { status: status.DELETE });
+        let updateRes = await updateProject(
+          { _id: data._id },
+          { $set: { reportedId: [] } }
+        );
+        return res.json(new response(updateRes, responseMessage.DATA_FOUND));
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+  //Product management APIs
+  /**
+   * @swagger
+   * /admin/allProductList:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: allProductList
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: postId
+   *         description: postId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async allProductList(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      }
+      let data = await listProduct({
+        status: { $ne: status.DELETE },
+      });
+      if (!data) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      } else {
+        return res.json(new response(data, responseMessage.DATA_FOUND));
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+  /**
+   * @swagger
+   * /admin/productView:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: productView
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: postId
+   *         description: postId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async productView(req, res, next) {
+    const validationSchema = {
+      productId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      }
+      let data = await findOneProduct({
+        _id: validatedBody.productId,
+        status: { $ne: status.DELETE },
+      });
+      if (!data) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      } else {
+        return res.json(new response(data, responseMessage.DATA_FOUND));
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /admin/deleteProduct:
+   *   delete:
+   *     tags:
+   *       - ADMIN
+   *     description: deleteProduct
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: postId
+   *         description: postId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async deleteProduct(req, res, next) {
+    const validationSchema = {
+      productId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      }
+      let data = await findOneProduct({
+        _id: validatedBody.productId,
+        status: { $ne: status.DELETE },
+      });
+      if (!data) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      } else {
+        // await updateManyReport({ postId: data._id }, { status: status.DELETE });
+        let updateRes = await updateProduct(
+          { _id: data._id },
+          { status: status.DELETE }
+        );
+        return res.json(
+          new response(updateRes, responseMessage.PRODUCT_DELETE)
+        );
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /admin/ignoreProduct:
+   *   delete:
+   *     tags:
+   *       - ADMIN
+   *     description: ignoreProduct
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: postId
+   *         description: postId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async ignoreProduct(req, res, next) {
+    const validationSchema = {
+      productId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      }
+      let data = await findOneProduct({
+        _id: validatedBody.productId,
+        status: { $ne: status.DELETE },
+      });
+      if (!data) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      } else {
+        // await updateManyReport({ postId: data._id }, { status: status.DELETE });
+        let updateRes = await updateProduct(
+          { _id: data._id },
+          { $set: { reportedId: [] } }
+        );
+        return res.json(new response(updateRes, responseMessage.DATA_FOUND));
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+  //Product management APIs
+  /**
+   * @swagger
+   * /admin/allServiceList:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: allServiceList
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: postId
+   *         description: postId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async allServiceList(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      }
+      let data = await listService({
+        status: { $ne: status.DELETE },
+      });
+      if (!data) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      } else {
+        return res.json(new response(data, responseMessage.DATA_FOUND));
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+  /**
+   * @swagger
+   * /admin/serviceView:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: serviceView
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: postId
+   *         description: postId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async serviceView(req, res, next) {
+    const validationSchema = {
+      serviceId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      }
+      let data = await findOneService({
+        _id: validatedBody.serviceId,
+        status: { $ne: status.DELETE },
+      });
+      if (!data) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      } else {
+        return res.json(new response(data, responseMessage.DATA_FOUND));
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /admin/deleteService:
+   *   delete:
+   *     tags:
+   *       - ADMIN
+   *     description: deleteService
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: postId
+   *         description: postId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async deleteService(req, res, next) {
+    const validationSchema = {
+      serviceId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      }
+      let data = await findOneService({
+        _id: validatedBody.serviceId,
+        status: { $ne: status.DELETE },
+      });
+      if (!data) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      } else {
+        // await updateManyReport({ postId: data._id }, { status: status.DELETE });
+        let updateRes = await updateService(
+          { _id: data._id },
+          { status: status.DELETE }
+        );
+        return res.json(
+          new response(updateRes, responseMessage.SERVICE_DELETE)
+        );
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /admin/ignoreService:
+   *   delete:
+   *     tags:
+   *       - ADMIN
+   *     description: ignoreService
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: postId
+   *         description: postId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async ignoreService(req, res, next) {
+    const validationSchema = {
+      serviceId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      }
+      let data = await findOneService({
+        _id: validatedBody.serviceId,
+        status: { $ne: status.DELETE },
+      });
+      if (!data) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      } else {
+        // await updateManyReport({ postId: data._id }, { status: status.DELETE });
+        let updateRes = await updateService(
+          { _id: data._id },
+          { $set: { reportedId: [] } }
+        );
+        return res.json(new response(updateRes, responseMessage.DATA_FOUND));
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+  //Product management APIs
+  /**
+   * @swagger
+   * /admin/allJobList:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: allJobList
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: postId
+   *         description: postId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async allJobList(req, res, next) {
+    try {
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      }
+      let data = await listJob({
+        status: { $ne: status.DELETE },
+      });
+      if (!data) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      } else {
+        return res.json(new response(data, responseMessage.DATA_FOUND));
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+  /**
+   * @swagger
+   * /admin/jobView:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: jobView
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: postId
+   *         description: postId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async jobView(req, res, next) {
+    const validationSchema = {
+      jobId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      }
+      let data = await findOneJob({
+        _id: validatedBody.jobId,
+        status: { $ne: status.DELETE },
+      });
+      if (!data) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      } else {
+        return res.json(new response(data, responseMessage.DATA_FOUND));
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /admin/deleteJob:
+   *   delete:
+   *     tags:
+   *       - ADMIN
+   *     description: deleteJob
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: postId
+   *         description: postId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async deleteJob(req, res, next) {
+    const validationSchema = {
+      jobId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      }
+      let data = await findOneJob({
+        _id: validatedBody.jobId,
+        status: { $ne: status.DELETE },
+      });
+      if (!data) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      } else {
+        // await updateManyReport({ postId: data._id }, { status: status.DELETE });
+        let updateRes = await updateJob(
+          { _id: data._id },
+          { status: status.DELETE }
+        );
+        return res.json(new response(updateRes, responseMessage.JOB_DELETE));
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /admin/ignoreJob:
+   *   delete:
+   *     tags:
+   *       - ADMIN
+   *     description: ignoreJob
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: postId
+   *         description: postId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async ignoreJob(req, res, next) {
+    const validationSchema = {
+      jobId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let adminResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: { $in: [userType.ADMIN, userType.SUBADMIN] },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      }
+      let data = await findOneJob({
+        _id: validatedBody.ignoreJob,
+        status: { $ne: status.DELETE },
+      });
+      if (!data) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      } else {
+        // await updateManyReport({ postId: data._id }, { status: status.DELETE });
+        let updateRes = await updateJob(
           { _id: data._id },
           { $set: { reportedId: [] } }
         );
@@ -6535,8 +7391,7 @@ class adminController {
     }
   }
 
-
-   //////////Store Requests ///////////////
+  //////////Store Requests ///////////////
   /**
    * @swagger
    * /admin/storeRequestView:
@@ -6584,7 +7439,7 @@ class adminController {
     }
   }
 
-// Project request details shows user and the project details
+  // Project request details shows user and the project details
   async storeRequestDetails(req, res, next) {
     try {
       let adminResult = await findUser({
@@ -6609,7 +7464,6 @@ class adminController {
       return next(error);
     }
   }
-
 
   /**
    * @swagger
@@ -6653,7 +7507,7 @@ class adminController {
     }
   }
 
-   /**
+  /**
    * @swagger
    * /admin/storeRequestUpdate:
    *   get:
@@ -6735,8 +7589,6 @@ class adminController {
       return next(error);
     }
   }
-
-
 
   ///////////////////////////////
 }

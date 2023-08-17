@@ -339,6 +339,184 @@ class storeController {
 
   /**
    * @swagger
+   * /user/deleteUserStoreByAdmin:
+   *   put:
+   *     tags:
+   *       - USER POSTS
+   *     description: deleteUserStoreByAdmin
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: deleteUserStoreByAdmin
+   *         description: deleteUserStoreByAdmin
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/deleteUserStoreByAdmin'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async deleteUserStoreByAdmin(req, res, next) {
+    try {
+      const validationSchema = {
+        userId: Joi.string().required(),
+        storeId: Joi.string().required(),
+      };
+      const validatedBody = await Joi.validate(req.body, validationSchema);
+      var userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      } else {
+        let storeRes = await findStore({
+          _id: validatedBody.storeId,
+          ownerId: validatedBody.userId,
+          status: { $ne: status.DELETE },
+        });
+        if (!storeRes) {
+          throw apiError.notFound(responseMessage.STORE_NOT_FOUND);
+        }
+        validatedBody.status = status.DELETE;
+        var savePost = await updateStoreById(storeRes._id, validatedBody);
+        await updateUserById({ _id: userResult._id }, { isPost: true });
+        await createActivity({
+          userId: userResult._id,
+          postId: savePost._id,
+          // collectionId: result._id,
+          title: "Store Delete",
+          desctiption: "Store Deleted successfully.",
+          type: "STORE",
+        });
+        return res.json(new response(savePost, responseMessage.STORE_DELETE));
+        // }
+      }
+    } catch (error) {
+      console.log("====================>", error);
+      return next(error);
+    }
+  }
+  /**
+   * @swagger
+   * /user/blockUserStoreByAdmin:
+   *   put:
+   *     tags:
+   *       - USER POSTS
+   *     description: blockUserStoreByAdmin
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: blockUserStoreByAdmin
+   *         description: blockUserStoreByAdmin
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/blockUserStoreByAdmin'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async blockUserStoreByAdmin(req, res, next) {
+    try {
+      const validationSchema = {
+        userId: Joi.string().required(),
+        storeId: Joi.string().required(),
+      };
+      const validatedBody = await Joi.validate(req.body, validationSchema);
+      var userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      } else {
+        let storeRes = await findStore({
+          _id: validatedBody.storeId,
+          ownerId: validatedBody.userId,
+          status: { $ne: status.DELETE },
+        });
+        if (!storeRes) {
+          throw apiError.notFound(responseMessage.STORE_NOT_FOUND);
+        }
+        validatedBody.status = status.BLOCK;
+        var savePost = await updateStoreById(storeRes._id, validatedBody);
+        await updateUserById({ _id: userResult._id }, { isPost: true });
+        await createActivity({
+          userId: userResult._id,
+          postId: savePost._id,
+          // collectionId: result._id,
+          title: "Store Delete",
+          desctiption: "Store Deleted successfully.",
+          type: "STORE",
+        });
+        return res.json(new response(savePost, responseMessage.STORE_DELETE));
+        // }
+      }
+    } catch (error) {
+      console.log("====================>", error);
+      return next(error);
+    }
+  }
+
+  //unblock user store
+
+  async unblockUserStoreByAdmin(req, res, next) {
+    try {
+      const validationSchema = {
+        userId: Joi.string().required(),
+        storeId: Joi.string().required(),
+      };
+      const validatedBody = await Joi.validate(req.body, validationSchema);
+      var userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      } else {
+        let storeRes = await findStore({
+          _id: validatedBody.storeId,
+          ownerId: validatedBody.userId,
+          status: { $ne: status.DELETE },
+        });
+        if (!storeRes) {
+          throw apiError.notFound(responseMessage.STORE_NOT_FOUND);
+        }
+        validatedBody.status = status.ACTIVE;
+        var savePost = await updateStoreById(storeRes._id, validatedBody);
+        await updateUserById({ _id: userResult._id }, { isPost: true });
+        await createActivity({
+          userId: userResult._id,
+          postId: savePost._id,
+          // collectionId: result._id,
+          title: "Store Delete",
+          desctiption: "Store Deleted successfully.",
+          type: "STORE",
+        });
+        return res.json(new response(savePost, responseMessage.STORE_DELETE));
+        // }
+      }
+    } catch (error) {
+      console.log("====================>", error);
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
    * /listStoreByType:
    *   get:
    *     tags:
@@ -372,7 +550,7 @@ class storeController {
         type: validatedQuery.type,
       });
 
-      if (!dataResultsbug) {
+      if (!dataResults) {
         throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
       }
 

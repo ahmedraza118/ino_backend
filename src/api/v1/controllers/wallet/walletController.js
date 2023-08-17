@@ -25,8 +25,14 @@ const {
   emailUserNameExist,
 } = require("../../services/user/user");
 
-const { createWallet, deposit, withdraw, transferFunds, getWallet } =
-  walletServices;
+const {
+  createWallet,
+  deposit,
+  withdraw,
+  transferFunds,
+  getWallet,
+  listAllWallets,
+} = walletServices;
 
 class walletController {
   /**
@@ -67,6 +73,110 @@ class walletController {
         throw apiError.notFound(responseMessage.USER_NOT_FOUND);
       }
       let updateRes = await deposit(userResult._id, validatedBody.amount);
+      return res.json(new response(updateRes, responseMessage.FUND_DEPOSIT));
+    } catch (error) {
+      return next(error);
+    }
+  }
+  /**
+   * @swagger
+   * /wallet/blockWalletById:
+   *   post:
+   *     tags:
+   *       - ADMIN
+   *     description: block
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: block
+   *         description: blockWalletById
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/blockWalletById'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async blockWalletById(req, res, next) {
+    try {
+      const validationSchema = {
+        walletId: Joi.number().required(),
+      };
+
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: { $in: [userType.ADMIN] },
+        status: { $ne: status.DELETE },
+      });
+
+      if (!userResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      }
+      let walletRes = await getWallet(validatedBody.walletId);
+      if (!walletRes) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+
+      validatedBody.status = status.BLOCK;
+      let updateRes = await updateWalletById(walletRes._id, {
+        data: validatedBody,
+      });
+
+      return res.json(new response(updateRes, responseMessage.FUND_DEPOSIT));
+    } catch (error) {
+      return next(error);
+    }
+  }
+  /**
+   * @swagger
+   * /wallet/unblockWalletById:
+   *   post:
+   *     tags:
+   *       - ADMIN
+   *     description: unblock
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: block
+   *         description: unblockWalletById
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/unblockWalletById'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async unblockWalletById(req, res, next) {
+    try {
+      const validationSchema = {
+        walletId: Joi.number().required(),
+      };
+
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: { $in: [userType.ADMIN] },
+        status: { $ne: status.DELETE },
+      });
+
+      if (!userResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      }
+      let walletRes = await getWallet(validatedBody.walletId);
+      if (!walletRes) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+
+      validatedBody.status = status.ACTIVE;
+      let updateRes = await updateWalletById(walletRes._id, {
+        data: validatedBody,
+      });
+
       return res.json(new response(updateRes, responseMessage.FUND_DEPOSIT));
     } catch (error) {
       return next(error);
@@ -139,7 +249,7 @@ class walletController {
   async transferFunds(req, res, next) {
     try {
       const validationSchema = {
-        recipient: Joi.string().required(), 
+        recipient: Joi.string().required(),
         amount: Joi.number().required(),
       };
 
@@ -154,7 +264,11 @@ class walletController {
       if (!userResult) {
         throw apiError.notFound(responseMessage.USER_NOT_FOUND);
       }
-      let updateRes = await transferFunds(userResult._id, validatedBody.recipient, validatedBody.amount);
+      let updateRes = await transferFunds(
+        userResult._id,
+        validatedBody.recipient,
+        validatedBody.amount
+      );
       return res.json(new response(updateRes, responseMessage.FUND_TRANSFER));
     } catch (error) {
       return next(error);
@@ -192,6 +306,43 @@ class walletController {
         throw apiError.notFound(responseMessage.USER_NOT_FOUND);
       }
       let walletRes = await getWallet(userResult._id);
+      return res.json(new response(walletRes, responseMessage.WALLET_FOUND));
+    } catch (error) {
+      return next(error);
+    }
+  }
+  /**
+   * @swagger
+   * /wallet/listAllWallets:
+   *   post:
+   *     tags:
+   *       - USER
+   *     description: listAllWallets
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: login
+   *         description: login
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/listAllWallets'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async listAllWallets(req, res, next) {
+    try {
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: { $in: [userType.ADMIN] },
+        status: { $ne: status.DELETE },
+      });
+
+      if (!userResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      }
+      let walletRes = await listAllWallets();
       return res.json(new response(walletRes, responseMessage.WALLET_FOUND));
     } catch (error) {
       return next(error);

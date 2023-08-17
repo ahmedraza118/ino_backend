@@ -7,10 +7,21 @@ const walletControllerInstance = new walletController();
 const router = Express.Router();
 
 router.get("/getWallet", auth.verifyToken, walletControllerInstance.getWallet);
+  
 router.post(
   "/depositFunds",
   auth.verifyToken,
   walletControllerInstance.depositFunds
+);
+router.post(
+  "admin/blockWalletById",
+  auth.verifyToken,
+  walletControllerInstance.blockWalletById
+);
+router.post(
+  "admin/unblockWalletById",
+  auth.verifyToken,
+  walletControllerInstance.unblockWalletById
 );
 router.post(
   "/withdrawFunds",

@@ -3,7 +3,6 @@ const status = require("../../../../enums/status.js");
 const apiError = require("../../../../helper/apiError");
 const responseMessage = require("../../../../../assets/responseMessage");
 
-
 const walletServices = {
   createWallet: async (userId) => {
     try {
@@ -85,24 +84,46 @@ const walletServices = {
       throw error;
     }
   },
+  listAllWallets: async () => {
+    try {
+      const allWallets = await walletModel.find();
+
+      return allWallets;
+    } catch (error) {
+      console.error("Error listing all wallets:", error.message);
+      throw apiError.notFound(responseMessage.WALLET_NOT_FOUND);
+    }
+  },
+  updateWalletById: async (walletId, updateData) => {
+    try {
+      const updatedUser = await walletModel.findByIdAndUpdate(walletId, updateData, {
+        new: true,
+      });
+      return updatedUser;
+    } catch (error) {
+      throw error;
+    }
+  },
 
   transferFunds: async (senderId, recipientId, amount) => {
     try {
       const senderWallet = await walletModel.findOne({ ownerId: senderId });
-      const recipientWallet = await walletModel.findOne({ ownerId: recipientId });
-  
+      const recipientWallet = await walletModel.findOne({
+        ownerId: recipientId,
+      });
+
       if (!senderWallet) {
         throw apiError.notFound(responseMessage.WALLET_NOT_FOUND);
       }
-  
+
       if (!recipientWallet) {
         throw apiError.notFound(responseMessage.WALLET_NOT_FOUND);
       }
-  
+
       if (senderWallet.balance < amount) {
         throw apiError.forbidden(responseMessage.INSUFICIENT_FUNDS);
       }
-  
+
       // Update sender's wallet balance and transaction history
       senderWallet.balance -= amount;
       senderWallet.transactionHistory.push({
@@ -110,7 +131,7 @@ const walletServices = {
         type: "transfer",
         recipient: recipientId,
       });
-  
+
       // Update recipient's wallet balance and transaction history
       recipientWallet.balance += amount;
       recipientWallet.transactionHistory.push({
@@ -118,18 +139,17 @@ const walletServices = {
         type: "receive",
         sender: senderId,
       });
-  
+
       // Save both wallet documents
       await senderWallet.save();
       await recipientWallet.save();
-  
+
       return { senderWallet, recipientWallet };
     } catch (error) {
       console.error("Error transferring funds:", error.message);
       throw error;
     }
   },
-
-}
+};
 
 module.exports = { walletServices };
