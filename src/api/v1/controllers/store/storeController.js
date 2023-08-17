@@ -635,7 +635,7 @@ class storeController {
    */
   async storeView(req, res, next) {
     const validationSchema = {
-      storeId: Joi.string().optional(),
+      storeId: Joi.string().required(),
     };
     try {
       const validatedBody = await Joi.validate(req.query, validationSchema);

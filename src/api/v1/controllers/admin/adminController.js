@@ -3697,7 +3697,11 @@ class adminController {
   }
 
   async postRequestDetails(req, res, next) {
+    const validationSchema = {
+      postRequestId: Joi.string().required()
+    };
     try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
       let adminResult = await findUser({
         _id: req.userId,
         status: { $ne: status.DELETE },
@@ -3707,7 +3711,7 @@ class adminController {
         throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
       } else {
         let resultRes = await viewRequestDetails({
-          _id: req.query.postRequestId,
+          _id: validatedBody.postRequestId,
           status: { $ne: status.DELETE },
         });
         if (!resultRes) {
