@@ -1926,7 +1926,7 @@ const createJob = async (req, res, next) => {
       let obj = {
         message: "Please approve my Job",
         userId: userResult._id,
-        productId: saveJob._id,
+        jobId: saveJob._id,
         type: "CREATE",
       };
       let saveRequest = await createJobRequest(obj);
@@ -2565,7 +2565,7 @@ const createProject = async (req, res, next) => {
       let obj = {
         message: "Please approve my Project",
         userId: userResult._id,
-        productId: saveProject._id,
+        projectId: saveProject._id,
         type: "CREATE",
       };
       let saveRequest = await createProjectRequest(obj);
@@ -3218,7 +3218,7 @@ const createService = async (req, res, next) => {
       let obj = {
         message: "Please approve my Service",
         userId: userResult._id,
-        productId: saveService._id,
+        serviceId: saveService._id,
         type: "CREATE",
       };
       let saveRequest = await createServiceRequest(obj);
@@ -3329,12 +3329,12 @@ const updateUserService = async (req, res, next) => {
     if (!userResult) {
       throw apiError.notFound(responseMessage.USER_NOT_FOUND);
     } else {
-      let productRes = await findOneService({
-        _id: validatedBody.productId,
+      let serviceRes = await findOneService({
+        _id: validatedBody.serviceId,
         userId: userResult._id,
         status: { $ne: status.DELETE },
       });
-      if (!productRes) {
+      if (!serviceRes) {
         throw apiError.notFound(responseMessage.SERVICE_NOT_FOUND);
       }
       // let result = await findCollection({ _id: validatedBody.collectionId, userId: userResult._id, status: { $ne: status.DELETE } })
@@ -3350,7 +3350,7 @@ const updateUserService = async (req, res, next) => {
       validatedBody.userId = userResult._id;
       validatedBody.creatorId = userResult._id;
       var saveService = await updateService(
-        { _id: productRes._id },
+        { _id: serviceRes._id },
         validatedBody
       );
       await updateUserById({ _id: userResult._id }, { isService: true });

@@ -3672,7 +3672,11 @@ class adminController {
    *         description: Returns success message
    */
   async postRequestView(req, res, next) {
+    const validationSchema = {
+      postRequestId: Joi.string().required(),
+    };
     try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
       let adminResult = await findUser({
         _id: req.userId,
         status: { $ne: status.DELETE },
@@ -3682,7 +3686,7 @@ class adminController {
         throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
       } else {
         let resultRes = await findPostRequest({
-          _id: req.query.postRequestId,
+          _id: validatedBody.postRequestId,
           status: { $ne: status.DELETE },
         });
         if (!resultRes) {
@@ -3698,7 +3702,7 @@ class adminController {
 
   async postRequestDetails(req, res, next) {
     const validationSchema = {
-      postRequestId: Joi.string().required()
+      postRequestId: Joi.string().required(),
     };
     try {
       const validatedBody = await Joi.validate(req.query, validationSchema);
@@ -4094,7 +4098,11 @@ class adminController {
    *         description: Returns success message
    */
   async serviceRequestView(req, res, next) {
+    const validationSchema = {
+      serviceRequestId: Joi.string().required(),
+    };
     try {
+      const validatedBody = await Joi.validate(req.body, validationSchema);
       let adminResult = await findUser({
         _id: req.userId,
         status: { $ne: status.DELETE },
@@ -4104,7 +4112,7 @@ class adminController {
         throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
       } else {
         let resultRes = await findServiceRequest({
-          _id: req.query.serviceRequestId,
+          _id: validatedBody.serviceRequestId,
           status: { $ne: status.DELETE },
         });
         if (!resultRes) {
@@ -4120,7 +4128,11 @@ class adminController {
 
   // service request details shows user and the product details
   async serviceRequestDetails(req, res, next) {
+    const validationSchema = {
+      serviceRequestId: Joi.string().required(),
+    };
     try {
+      const validatedBody = await Joi.validate(req.body, validationSchema);
       let adminResult = await findUser({
         _id: req.userId,
         status: { $ne: status.DELETE },
@@ -4130,7 +4142,7 @@ class adminController {
         throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
       } else {
         let resultRes = await viewServiceRequestDetails({
-          _id: req.query.serviceRequestId,
+          _id: validatedBody.serviceRequestId,
           status: { $ne: status.DELETE },
         });
         if (!resultRes) {
@@ -4227,6 +4239,7 @@ class adminController {
         if (!reqRes) {
           throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
         } else {
+          console.log("reqRes: ", reqRes);
           let serviceRes = await findOneService({
             _id: reqRes.serviceId,
             status: { $ne: status.DELETE },
@@ -7419,7 +7432,11 @@ class adminController {
    *         description: Returns success message
    */
   async storeRequestView(req, res, next) {
+    const validationSchema = {
+      storeRequestId: Joi.string().required(),
+    };
     try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
       let adminResult = await findUser({
         _id: req.userId,
         status: { $ne: status.DELETE },
@@ -7429,7 +7446,7 @@ class adminController {
         throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
       } else {
         let resultRes = await findStoreRequest({
-          _id: req.query.storeRequestId,
+          _id: validatedBody.storeRequestId,
           status: { $ne: status.DELETE },
         });
         if (!resultRes) {
@@ -7445,7 +7462,11 @@ class adminController {
 
   // Project request details shows user and the project details
   async storeRequestDetails(req, res, next) {
+    const validationSchema = {
+      storeRequestId: Joi.string().required(),
+    };
     try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
       let adminResult = await findUser({
         _id: req.userId,
         status: { $ne: status.DELETE },
@@ -7455,7 +7476,7 @@ class adminController {
         throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
       } else {
         let resultRes = await viewStoreRequestDetails({
-          _id: req.query.storeRequestId,
+          _id: validatedBody.storeRequestId,
           status: { $ne: status.DELETE },
         });
         if (!resultRes) {

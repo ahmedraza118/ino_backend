@@ -126,8 +126,7 @@ const schemaDefination = new Schema(
 
     // New attributes for the product schema
     categorie: {
-      type: Schema.Types.ObjectId,
-      ref: "serviceCategorie", // Replace "category" with the actual model name for categories
+      type: String, // Replace "category" with the actual model name for categories
     },
     // subCategorie: {
     //   type: Schema.Types.ObjectId,
@@ -143,7 +142,7 @@ const schemaDefination = new Schema(
   },
   { timestamps: true }
 );
- 
+
 schemaDefination.plugin(mongoosePaginate);
 schemaDefination.plugin(mongooseAggregatePaginate);
 
