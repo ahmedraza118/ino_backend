@@ -124,19 +124,6 @@ class storeController {
       if (!userResult) {
         throw apiError.notFound(responseMessage.USER_NOT_FOUND);
       } else {
-        // var userInfo = await emailStoreNameExist(
-        //   validatedBody.mail,
-        //   validatedBody.name
-        // );
-
-        // if (userInfo) {
-        //   if (userInfo.email == validatedBody.email) {
-        //     throw apiError.conflict(responseMessage.EMAIL_EXIST);
-        //   }
-        //   if (userInfo.name == validatedBody.name) {
-        //     throw apiError.conflict(responseMessage.STORE_NAME_EXIST);
-        //   }
-        // } else {
         if (validatedBody.banner) {
           validatedBody.banner = await commonFunction.getSecureUrl(
             validatedBody.banner
@@ -164,9 +151,7 @@ class storeController {
         return res.json(
           new response({ saveStore, saveRequest }, responseMessage.STORE_CREATE)
         );
-        // }
       }
-      // }
     } catch (error) {
       console.log("====================>", error);
       return next(error);
@@ -238,7 +223,7 @@ class storeController {
       } else {
         let storeRes = await findStore({
           _id: validatedBody.storeId,
-          userId: userResult._id,
+          ownerId: userResult._id,
           status: { $ne: status.DELETE },
         });
         if (!storeRes) {
