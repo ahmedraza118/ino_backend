@@ -30,6 +30,8 @@ const {
   updateUserProject,
   deleteUserProject,
   projectListPaginate,
+  sendOtpToMail,
+  verifyMailOtp,
 } = require("./userController");
 const auth = require("../../../../helper/auth");
 // const upload = require("../../../../helper/uploadHandler");
@@ -40,6 +42,8 @@ const router = Express.Router();
 router.post("/register", register);
 router.post("/login", login);
 router.post("/verifyOTP", verifyOTP);
+router.post("/sendOtpToMail", auth.verifyToken, sendOtpToMail);
+router.post("/verifyMailOtp", auth.verifyToken, verifyMailOtp);
 
 //profile routes
 router.post("/updateProfile", auth.verifyToken, updateProfile);

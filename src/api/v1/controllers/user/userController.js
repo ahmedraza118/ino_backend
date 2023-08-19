@@ -263,7 +263,7 @@ const register = async (req, res, next) => {
 
       userResult = _.omit(JSON.parse(JSON.stringify(userResult)), "otp");
 
-      return res.json(new response(userResult, responseMessage.USER_CREATED));
+      return res.json(new response(userResult, responseMessage.OTP_SEND));
     } else {
       let result;
       // const saltRounds = 10;
@@ -349,6 +349,92 @@ const verifyOTP = async (req, res, next) => {
       user: updatedUser,
       message: "OTP verification successful",
     });
+  } catch (error) {
+    console.log(error);
+    return next(error);
+  }
+};
+const sendOtpToMail = async (req, res, next) => {
+  const validationSchema = {
+    email: Joi.string().required(),
+  };
+  try {
+    const validatedBody = await Joi.validate(req.body, validationSchema);
+    const { email } = validatedBody;
+    var userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+      userType: userType.USER,
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let otp = await getOTP();
+
+      if (email) {
+        try {
+          // await commonFunction.sendMailWithTemplateNodemailer(email, otp);
+          var mailUrl = await commonFunction.sendEmailOtp(email, otp);
+          // console.log("url: ", url);
+        } catch (error) {
+          console.log(error);
+          throw apiError.forbidden(responseMessage.INCORRECT_MAIL);
+        }
+      }
+      req.body.otpTime = new Date().getTime();
+      req.body.otp = otp;
+      userResult = await updateUserById(userResult._id, req.body);
+      console.log("Result:", userResult);
+      userResult = _.omit(JSON.parse(JSON.stringify(userResult)), "otp");
+      return res.json(
+        new response({ mailUrl, userResult }, responseMessage.OTP_SEND)
+      );
+    }
+  } catch (error) {
+    console.log("====================>", error);
+    return next(error);
+  }
+};
+const verifyMailOtp = async (req, res, next) => {
+  const validationSchema = {
+    email: Joi.string().required(),
+    otp: Joi.string().required(),
+  };
+  try {
+    const validatedBody = await Joi.validate(req.body, validationSchema);
+    const { email, otp } = validatedBody;
+
+    // Retrieve the user based on the phone number
+    var userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+      userType: userType.USER,
+    });
+
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+
+    // Check if the OTP matches
+    if (userResult.otp !== otp) {
+      throw apiError.invalid(responseMessage.INCORRECT_OTP);
+    }
+    // Check if the OTP has expired (e.g., within 5 minutes)
+    const otpExpirationTime = 5 * 60 * 1000;
+    const currentTime = new Date().getTime();
+
+    if (currentTime - userResult.otpTime > otpExpirationTime) {
+      throw apiError.badRequest(responseMessage.OTP_EXPIRED);
+    }
+    var updatedUser = await updateUserById(userResult._id, {
+      isOnline: true,
+      otp: null,
+      otpVerification: true,
+      emailVerification: true,
+      email: email,
+    });
+    updatedUser = _.omit(JSON.parse(JSON.stringify(updatedUser)), "otp");
+    return res.json(new response(updatedUser, responseMessage.OTP_VIRIFIED));
   } catch (error) {
     console.log(error);
     return next(error);
@@ -3830,4 +3916,6 @@ module.exports = {
   updateUserProject,
   deleteUserProject,
   projectListPaginate,
+  sendOtpToMail,
+  verifyMailOtp,
 };

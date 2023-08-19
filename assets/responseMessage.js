@@ -53,6 +53,7 @@ module.exports = {
 	TWO_FA_GENERATED: 'Two factor authentication url generated successfully.',
 	INCORRECT_CODE: 'Code expired, Please provide another one.',
 	INCORRECT_NUMBER: 'Incorrect Phone Number!.',
+	INCORRECT_MAIL: 'Incorrect MAIL ID!.',
 	FILE_NOT_FOUND: 'Random file not found.',
 	METADATA_UPLOADED: 'Successfully uploaded and transferred.',
 	COLLECTION_EXIST: 'Collection already exist.',

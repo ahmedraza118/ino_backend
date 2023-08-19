@@ -18,5 +18,12 @@
     "cloud_name": "dthzsu1fh",
     "api_key": "524739972345275",
     "api_secret": "_IOBT_-sCepVoMVHsljye7Kz4Gs"
-  }
+  },
+  "nodemailer": {
+    "service": "gmail",
+    "name": "Adolf Homenick",
+    "email": "adolf.homenick@ethereal.email",
+    "password": "fhhdxT6UkXrnaCXnNz"
+  },
+  "logo": "http://res.cloudinary.com/dytxy932u/image/upload/v1649153755/e4gqdqnfkqzubyjhu95q.png"
 }
