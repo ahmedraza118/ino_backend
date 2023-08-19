@@ -21,9 +21,8 @@
   },
   "nodemailer": {
     "service": "gmail",
-    "name": "Adolf Homenick",
-    "email": "adolf.homenick@ethereal.email",
-    "password": "fhhdxT6UkXrnaCXnNz"
+    "email": "ahmedrazach118@gmail.com",
+    "password": "nagsrxbxqcditvdk"
   },
   "logo": "http://res.cloudinary.com/dytxy932u/image/upload/v1649153755/e4gqdqnfkqzubyjhu95q.png"
 }

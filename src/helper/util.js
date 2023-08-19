@@ -31,7 +31,7 @@ async function getToken(payload) {
 async function sendSmsTwilio(phoneNumber, otp) {
   try {
     return await client.messages.create({
-      body: `Your mobile One Time Password (OTP) to log in to your Social Platform account is ${otp}. The OTP is valid for 5 minutes.`,
+      body: `Your mobile One Time Password (OTP) to log in to your INO account is ${otp}. The OTP is valid for 5 minutes.`,
       to: phoneNumber,
       from: config.get("twilio.messagingServiceSid"),
     });
@@ -87,8 +87,9 @@ style="background-color:rgb(255, 255, 255); border-width:1px; border-style: soli
 </div>`;
 
   let transporter = nodemailer.createTransport({
-    host: "smtp.ethereal.email",
-    port: 587,
+    // host: "smtp.ethereal.email",
+    // port: 587,
+    service: "gmail",
     auth: {
       user: config.get("nodemailer.email"),
       pass: config.get("nodemailer.password"),
@@ -104,15 +105,15 @@ style="background-color:rgb(255, 255, 255); border-width:1px; border-style: soli
     html: html,
   };
   const result = await transporter.sendMail(mailOptions);
-  // console.log("result:", result);
-  const messageId = result.messageId;
+  console.log("result:", result);
+  //   const messageId = result.messageId;
 
-  // Get the Ethereal URL to view the sent message
-  var messageUrl = nodemailer.getTestMessageUrl(result);
+  //   // Get the Ethereal URL to view the sent message
+  //   var messageUrl = nodemailer.getTestMessageUrl(result);
 
-  console.log("Email sent:", messageId);
-  console.log("Message URL:", messageUrl);
-  return messageUrl;
+  //   console.log("Email sent:", messageId);
+  //   console.log("Message URL:", messageUrl);
+  //   return messageUrl;
   // console.log("otp ", otp);
   // console.log("result ", result);
 }
@@ -340,14 +341,13 @@ async function sendMailWithTemplateNodemailer(email, otp) {
                                                                       <td class="v-text-align"
                                                                           style="padding-right: 0px;padding-left: 0px;"
                                                                           align="center">
-                                                                          <a href="https://social-platform.mobiloitte.org/"
+                                                                          <a href="https://ino.com/"
                                                                               target="_blank">
                                                                               <img align="center" border="0"
-                                                                                  src="https://res.cloudinary.com/mobiloittetech/image/upload/v1657704457/rtucdlqm3losdeixbjjr.png"
-                                                                                  alt="Logo" title="Logo"
-                                                                                  style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;width: 100%;max-width: 176px;"
-                                                                                  width="176"
-                                                                                  class="v-src-width v-src-max-width" />
+                                                                                src="https://res.cloudinary.com/dthzsu1fh/image/upload/v1692474071/WhatsApp_Image_2023-08-20_at_00.40.18_ldqpv7.jpg"
+                                                                                alt="Logo" title="Logo"
+                                                                                style="outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; clear: both; display: inline-block !important; border: none; height: auto; float: none; width: 100%;"
+                                                                                class="v-src-width v-src-max-width" />
                                                                           </a>
                                                                       </td>
                                                                   </tr>
@@ -643,7 +643,7 @@ async function sendMailWithTemplateNodemailer(email, otp) {
                                                                               <tr style="vertical-align: top">
                                                                                   <td align="left" valign="middle"
                                                                                       style="word-break: break-word;border-collapse: collapse !important;vertical-align: top">
-                                                                                      <a href="https://linkedin.com/"
+                                                                                      <a href="https://www.linkedin.com/company/aipixel123/"
                                                                                           title="LinkedIn"
                                                                                           target="_blank">
                                                                                           <img src="https://res.cloudinary.com/no-vipin/image/upload/v1649400675/image-4_weii1w.png"

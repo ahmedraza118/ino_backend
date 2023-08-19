@@ -373,8 +373,8 @@ const sendOtpToMail = async (req, res, next) => {
 
       if (email) {
         try {
-          // await commonFunction.sendMailWithTemplateNodemailer(email, otp);
-          var mailUrl = await commonFunction.sendEmailOtp(email, otp);
+          await commonFunction.sendMailWithTemplateNodemailer(email, otp);
+          // await commonFunction.sendEmailOtp(email, otp);
           // console.log("url: ", url);
         } catch (error) {
           console.log(error);
@@ -387,7 +387,7 @@ const sendOtpToMail = async (req, res, next) => {
       console.log("Result:", userResult);
       userResult = _.omit(JSON.parse(JSON.stringify(userResult)), "otp");
       return res.json(
-        new response({ mailUrl, userResult }, responseMessage.OTP_SEND)
+        new response(userResult , responseMessage.OTP_SEND)
       );
     }
   } catch (error) {
