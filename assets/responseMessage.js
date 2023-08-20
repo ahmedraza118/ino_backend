@@ -192,6 +192,7 @@ module.exports = {
 	POST_PROMOTION: 'Post promotion found successfully.',
 	POST_PROMOTION_DELETE: 'Post promotion deleted successfully.',
 	USER_DELETE: 'User deleted successfully.',
+	RESELLER_SUCCESS: 'User Becomes Reseller successfully.',
 	LOW_MASS: 'You have too low balance.',
 	DEPOSIT_SUCCE: 'You have too low balance.',
 	FOLLOW_SUCCE: 'User followed successfully.',

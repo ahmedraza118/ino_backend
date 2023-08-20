@@ -128,6 +128,7 @@ var userActivityModel = new schema(
         "STORYCOMMENT",
         "REELS",
         "SHARE",
+        "RESELLER",
       ],
     },
     status: {

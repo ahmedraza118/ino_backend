@@ -386,9 +386,7 @@ const sendOtpToMail = async (req, res, next) => {
       userResult = await updateUserById(userResult._id, req.body);
       console.log("Result:", userResult);
       userResult = _.omit(JSON.parse(JSON.stringify(userResult)), "otp");
-      return res.json(
-        new response(userResult , responseMessage.OTP_SEND)
-      );
+      return res.json(new response(userResult, responseMessage.OTP_SEND));
     }
   } catch (error) {
     console.log("====================>", error);
@@ -3885,6 +3883,157 @@ const allServiceListPaginate = async (req, res, next) => {
   }
 };
 
+/////////Reseller////////////
+
+/**
+ * @swagger
+ * /user/becomeReseller:
+ *   post:
+ *     tags:
+ *       - USER RESELLER
+ *     description: becomeReseller
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: createPost
+ *         description: becomeReseller
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/becomeReseller'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const becomeReseller = async (req, res, next) => {
+  const validationSchema = {
+    // amount: Joi.string().required(),
+  };
+  try {
+    const validatedBody = await Joi.validate(req.body, validationSchema);
+    var userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      const referralCode = await commonFunction.getReferralCode();
+      console.log("referral code ", referralCode);
+      validatedBody.referralCode = referralCode;
+      validatedBody.isReseller = true;
+      var updatedUser = await updateUserById(
+        { _id: userResult._id },
+        validatedBody
+      );
+      await createActivity({
+        userId: userResult._id,
+        title: "Become Reseller",
+        desctiption: "Become Reseller successfully.",
+        type: "RESELLER",
+      });
+
+      // let obj = {
+      //   message: "Please approve my Service",
+      //   userId: userResult._id,
+      //   serviceId: saveService._id,
+      //   type: "CREATE",
+      // };
+      // let saveRequest = await createServiceRequest(obj);
+      return res.json(
+        new response(updatedUser, responseMessage.RESELLER_SUCCESS)
+      );
+      // }
+    }
+  } catch (error) {
+    console.log("====================>", error);
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /user/addReferral:
+ *   post:
+ *     tags:
+ *       - USER RESELLER
+ *     description: addReferral
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: createPost
+ *         description: addReferral
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/addReferral'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const addReferral = async (req, res, next) => {
+  const validationSchema = {
+    referralCode: Joi.string().required(),
+  };
+  try {
+    const validatedBody = await Joi.validate(req.body, validationSchema);
+    const { referralCode } = validatedBody;
+    var userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      var referral = await findUser({
+        referralCode: referralCode,
+        status: { $ne: status.DELETE },
+        userType: userType.USER,
+        isReseller: true,
+      });
+      if (!referral) {
+        throw apiError.notFound(responseMessage.REFERRAL_NOT_FOUND);
+      } else {
+        referral = await updateUserById(
+          { _id: referral._id },
+          { referredUsers: userResult._id }
+        );
+        var updatedUser = await updateUserById(
+          { _id: userResult._id },
+          { referredBy: referral._id }
+        );
+
+        await createActivity({
+          userId: updatedUser._id,
+          title: "Referral Add",
+          desctiption: " Referral added successfully.",
+          type: "RESELLER",
+        });
+        await createActivity({
+          userId: referral._id,
+          title: "Referred Users Update",
+          desctiption: "Referred Users updated successfully.",
+          type: "RESELLER",
+        });
+
+        return res.json(
+          new response({ updatedUser }, responseMessage.RESELLER_SUCCESS)
+        );
+      }
+    }
+  } catch (error) {
+    console.log("====================>", error);
+    return next(error);
+  }
+};
+
 module.exports = {
   register,
   verifyOTP,
@@ -3918,4 +4067,6 @@ module.exports = {
   projectListPaginate,
   sendOtpToMail,
   verifyMailOtp,
+  becomeReseller,
+  addReferral,
 };

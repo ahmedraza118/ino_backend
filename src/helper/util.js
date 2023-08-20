@@ -322,7 +322,7 @@ async function sendMailWithTemplateNodemailer(email, otp) {
                                   <div class="u-col u-col-100"
                                       style="max-width: 320px;min-width: 600px;display: table-cell;vertical-align: top;">
                                       <div class="v-col-background-color"
-                                          style="background-color: #242526;width: 100% !important;">
+                                          style="background-color: #D5F5E3;width: 100% !important;">
                                           <div
                                               style="padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;">
   
@@ -344,9 +344,10 @@ async function sendMailWithTemplateNodemailer(email, otp) {
                                                                           <a href="https://ino.com/"
                                                                               target="_blank">
                                                                               <img align="center" border="0"
-                                                                                src="https://res.cloudinary.com/dthzsu1fh/image/upload/v1692474071/WhatsApp_Image_2023-08-20_at_00.40.18_ldqpv7.jpg"
+                                                                                src="https://res.cloudinary.com/dthzsu1fh/image/upload/v1692534061/removal.ai__2b8a2441-b7ea-4349-93d5-cf2a4af0f823-whatsapp-image-2023-08-20-at-5-05-34-pm_fvtwfa.png"
                                                                                 alt="Logo" title="Logo"
-                                                                                style="outline: none; text-decoration: none; -ms-interpolation-mode: bicubic; clear: both; display: inline-block !important; border: none; height: auto; float: none; width: 100%;"
+                                                                                style="outline: none;text-decoration: none;-ms-interpolation-mode: bicubic;clear: both;display: inline-block !important;border: none;height: auto;float: none;width: 100%;max-width: 176px;"
+                                                                                width="176"
                                                                                 class="v-src-width v-src-max-width" />
                                                                           </a>
                                                                       </td>
@@ -463,7 +464,7 @@ async function sendMailWithTemplateNodemailer(email, otp) {
                                   <div id="u_column_5" class="u-col u-col-100"
                                       style="max-width: 320px;min-width: 600px;display: table-cell;vertical-align: top;">
                                       <div class="v-col-background-color"
-                                          style="background-color: #e8fce5;width: 100% !important;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;">
+                                          style="background-color: #D5F5E3;width: 100% !important;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;">
                                           <!--[if (!mso)&(!IE)]><!-->
                                           <div
                                               style="padding: 0px;border-top: 0px solid transparent;border-left: 0px solid transparent;border-right: 0px solid transparent;border-bottom: 0px solid transparent;border-radius: 0px;-webkit-border-radius: 0px; -moz-border-radius: 0px;">
@@ -747,6 +748,16 @@ async function sendMailWithTemplateNodemailer(email, otp) {
   return await transporter.sendMail(mailOptions);
 }
 
+async function getReferralCode() {
+  var x = "";
+  var characters =
+    "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
+  for (var i = 0; i < 8; i++) {
+    x += characters.charAt(Math.floor(Math.random() * characters.length));
+  }
+  return x;
+}
+
 module.exports = {
   getToken,
   sendSmsTwilio,
@@ -757,4 +768,5 @@ module.exports = {
   genBase64,
   sendMailWithTemplateNodemailer,
   sendEmailOtp,
+  getReferralCode,
 };

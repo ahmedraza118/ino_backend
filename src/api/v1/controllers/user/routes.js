@@ -32,6 +32,8 @@ const {
   projectListPaginate,
   sendOtpToMail,
   verifyMailOtp,
+  becomeReseller,
+  addReferral,
 } = require("./userController");
 const auth = require("../../../../helper/auth");
 // const upload = require("../../../../helper/uploadHandler");
@@ -79,5 +81,9 @@ router.post("/createProject", auth.verifyToken, createProject);
 router.post("/updateUserProject", auth.verifyToken, updateUserProject);
 router.post("/deleteUserProject", auth.verifyToken, deleteUserProject);
 router.get("/projectListPaginate", auth.verifyToken, projectListPaginate);
+
+//Reseller routes
+router.get("/becomeReseller", auth.verifyToken, becomeReseller);
+router.post("/addReferral", auth.verifyToken, addReferral);
 
 module.exports = router;

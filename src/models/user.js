@@ -53,6 +53,7 @@ const userSchema = new mongoose.Schema({
   isProduct: { type: Boolean, default: false },
   isService: { type: Boolean, default: false },
   emailVerification: { type: Boolean, default: false },
+  isReseller: { type: Boolean, default: false },
   walletId: {
     type: Schema.Types.ObjectId,
     ref: "wallet",
@@ -84,6 +85,9 @@ const userSchema = new mongoose.Schema({
     },
   ],
   blockStatus: { type: Boolean, default: false },
+  referralCode: { type: String, unique: true }, // Unique referral code for the user
+  referredBy: { type: mongoose.Schema.Types.ObjectId, ref: "user" }, // Referring user ID
+  referredUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }], // Array of referred users
   store: [
     {
       type: Schema.Types.ObjectId,
@@ -99,6 +103,7 @@ const userSchema = new mongoose.Schema({
     userManagement: { type: Boolean, default: false },
   },
   userType: { type: String, default: userType.USER },
+
   createdAt: {
     type: Date,
     default: Date.now,
