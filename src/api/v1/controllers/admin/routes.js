@@ -388,5 +388,10 @@ router.get("/jobView", auth.verifyToken, adminControllerInstance.jobView);
 router.get("/deleteJob", auth.verifyToken, adminControllerInstance.deleteJob);
 router.get("/ignoreJob", auth.verifyToken, adminControllerInstance.ignoreJob);
 router.get("/allJobList", auth.verifyToken, adminControllerInstance.allJobList);
+// post management APIs
+router.get("/viewBusinessCard", auth.verifyToken, adminControllerInstance.viewBusinessCard);
+router.get("/listBusinessCard", auth.verifyToken, adminControllerInstance.listAllBusinessCard);
+router.get("/blockBusinessCard", auth.verifyToken, adminControllerInstance.blockBusinessCard);
+router.get("/unblockBusinessCard", auth.verifyToken, adminControllerInstance.unblockBusinessCard);
 
 module.exports = router;

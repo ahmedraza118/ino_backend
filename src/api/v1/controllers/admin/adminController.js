@@ -60,6 +60,9 @@ const { durationServices } = require("../../services/duration/duration.js");
 const {
   logHistoryServices,
 } = require("../../services/logHistory/logHistory.js");
+const {
+  businessCardServices,
+} = require("../../services/businessCard/businessCard.js");
 
 const {
   createUser,
@@ -311,6 +314,15 @@ const {
   productSubCategorieList,
   paginateSearchProductSubCategorie,
 } = productSubCategorieServices;
+
+const {
+  createBusinessCard,
+  findBusinessCard,
+  findAllBusinessCard,
+  updateBusinessCard,
+  updateBusinessCardById,
+  paginateSearchBusinessCard,
+} = businessCardServices;
 
 const responseMessage = require("../../../../../assets/responseMessage.js");
 const commonFunction = require("../../../../helper/util.js");
@@ -4528,7 +4540,7 @@ class adminController {
       projectRequestId: Joi.string().required(),
     };
     try {
-      const validatedBody = await Joi.validate(req.query, validationSchema);  
+      const validatedBody = await Joi.validate(req.query, validationSchema);
       let adminResult = await findUser({
         _id: req.userId,
         status: { $ne: status.DELETE },
@@ -4558,7 +4570,7 @@ class adminController {
       projectRequestId: Joi.string().required(),
     };
     try {
-      const validatedBody = await Joi.validate(req.query, validationSchema);  
+      const validatedBody = await Joi.validate(req.query, validationSchema);
       let adminResult = await findUser({
         _id: req.userId,
         status: { $ne: status.DELETE },
@@ -7643,7 +7655,226 @@ class adminController {
     }
   }
 
-  ///////////////////////////////
+  ///////////////////////////////Business card APIs////////////////
+
+  /**
+   * @swagger
+   * /admin/viewBusinessCard:
+   *   get:
+   *     tags:
+   *       - USER MANAGEMENT
+   *     description: viewBusinessCard
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: bannerId
+   *         description: _id of banner
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Data Found.
+   *       404:
+   *         description: Data not Found.
+   *       500:
+   *         description: Internal server error.
+   *       501:
+   *         description: Something went wrong.
+   */
+  async viewBusinessCard(req, res, next) {
+    const validSchema = {
+      businessCardId: Joi.string().required(),
+    };
+    try {
+      const validBody = await Joi.validate(req.query, validSchema);
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let find = await findBusinessCard({
+        _id: validBody.businessCardId,
+        status: { $ne: status.DELETE },
+      });
+      if (!find) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      return res.json(new response(find, responseMessage.DATA_FOUND));
+    } catch (error) {
+      return next(error);
+    }
+  }
+  /**
+   * @swagger
+   * /admin/listAllBusinessCard:
+   *   get:
+   *     tags:
+   *       - USER MANAGEMENT
+   *     description: listAllBusinessCard
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: bannerId
+   *         description: _id of banner
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Data Found.
+   *       404:
+   *         description: Data not Found.
+   *       500:
+   *         description: Internal server error.
+   *       501:
+   *         description: Something went wrong.
+   */
+  async listAllBusinessCard(req, res, next) {
+
+    try {
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let find = await findAllBusinessCard({
+        _id: validBody.businessCardId,
+        status: { $ne: status.DELETE },
+      });
+      if (!find) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      return res.json(new response(find, responseMessage.DATA_FOUND));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /admin/blockBusinessCard:
+   *   delete:
+   *     tags:
+   *       - ADMIN MANAGEMENT
+   *     description: blockBusinessCard
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: admin token
+   *         in: header
+   *         required: true
+   *       - name: bannerId
+   *         description: _id of banner
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Card is Removed.
+   *       404:
+   *         description: Data not Found.
+   *       401:
+   *         description: Unauthorized token.
+   *       500:
+   *         description: Internal server error.
+   *       501:
+   *         description: Something went wrong.
+   */
+  async blockBusinessCard(req, res, next) {
+    const validSchema = {
+      businessCardId: Joi.string().required(),
+    };
+    try {
+      const validBody = await Joi.validate(req.body, validSchema);
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let data = await findBusinessCard({
+        _id: validBody.businessCardId,
+        status: { $ne: status.DELETE },
+      });
+      if (!data) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      let up = await updateBusinessCardById(
+        { _id: data._id },
+        { $set: { status: status.BLOCK } }
+      );
+      return res.json(new response(up, responseMessage.DELETE_BUSINESS_CARD));
+    } catch (error) {
+      return next(error);
+    }
+  }
+  /**
+   * @swagger
+   * /admin/unblockBusinessCard:
+   *   delete:
+   *     tags:
+   *       - ADMIN MANAGEMENT
+   *     description: unblockBusinessCard
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: admin token
+   *         in: header
+   *         required: true
+   *       - name: bannerId
+   *         description: _id of banner
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Card is Removed.
+   *       404:
+   *         description: Data not Found.
+   *       401:
+   *         description: Unauthorized token.
+   *       500:
+   *         description: Internal server error.
+   *       501:
+   *         description: Something went wrong.
+   */
+  async unblockBusinessCard(req, res, next) {
+    const validSchema = {
+      businessCardId: Joi.string().required(),
+    };
+    try {
+      const validBody = await Joi.validate(req.body, validSchema);
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let data = await findBusinessCard({
+        _id: validBody.businessCardId,
+        status: { $ne: status.DELETE },
+      });
+      if (!data) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      let up = await updateBusinessCardById(
+        { _id: data._id },
+        { $set: { status: status.ACTIVE } }
+      );
+      return res.json(new response(up, responseMessage.DELETE_BUSINESS_CARD));
+    } catch (error) {
+      return next(error);
+    }
+  }
 }
 
 module.exports = adminController;

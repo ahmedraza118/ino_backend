@@ -18,6 +18,11 @@ const { serviceServices } = require("../../services/service/service");
 const { jobServices } = require("../../services/job/job");
 const { projectServices } = require("../../services/project/project");
 const { walletServices } = require("../../services/wallet/wallet");
+const { bannerServices } = require("../../services/banner/banner.js");
+const {
+  businessCardServices,
+} = require("../../services/businessCard/businessCard.js");
+
 const {
   activityServices,
 } = require("../../services/userActivity/userActivity");
@@ -129,6 +134,23 @@ const {
   updateReportById,
   paginateSearchReport,
 } = reportServices;
+const {
+  createBanner,
+  findBanner,
+  findAllBanner,
+  updateBanner,
+  updateBannerById,
+  paginateSearchBanner,
+} = bannerServices;
+const {
+  createBusinessCard,
+  findBusinessCard,
+  findAllBusinessCard,
+  updateBusinessCard,
+  updateBusinessCardById,
+  paginateSearchBusinessCard,
+} = businessCardServices;
+
 const { createWallet, deposit, withdraw, transferFunds, getWallet } =
   walletServices;
 const { createRequest, findRequest, updateRequestById, requestList } =
@@ -4034,6 +4056,241 @@ const addReferral = async (req, res, next) => {
   }
 };
 
+/**
+   * @swagger
+   * /user/createUserBusinessCard:
+   *   post:
+   *     tags:
+   *       - user MANAGEMENT
+   *     description: createUserBusinessCard
+   *     produces:
+   *       - application/json
+   *     parameters:
+  
+   *     responses:
+   *       200:
+   *         description: Data Saved.
+   *       409:
+   *         description: Already exist.
+   *       401:
+   *         description: Unauthorized token.
+   *       500:
+   *         description: Internal server error.
+   *       501:
+   *         description: Something went wrong.
+   */
+const createUserBusinessCard = async (req, res, next) => {
+  const validSchema = {
+    name: Joi.string().required(),
+    identification: Joi.string().required(),
+    location: Joi.string().required(),
+    email: Joi.string().required(),
+    phoneNumber: Joi.string().required(),
+    companyName: Joi.string().optional(),
+    position: Joi.string().optional(),
+    website: Joi.string().optional(),
+    socialLink: Joi.string().optional(),
+  };
+  try {
+    const validBody = await Joi.validate(req.body, validSchema);
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: { $in: [userType.USER, userType.ADMIN] },
+    });
+    if (!userResult) {
+      throw apiError.invalid(responseMessage.USER_NOT_FOUND);
+    }
+    let find = await findBusinessCard({
+      userId: req.userId,
+      email: validBody.email,
+      status: status.ACTIVE,
+    });
+    if (find) {
+      throw apiError.conflict(responseMessage.ALREADY_EXITS);
+    }
+    validBody.userId = req.userId;
+    let resCard = await createBusinessCard(validBody);
+    await updateUserById(userResult._id, { businessCardId: resCard._id });
+    return res.json(new response(resCard, responseMessage.CREATED_CARD));
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/**
+ * @swagger
+ * /admin/viewBusinessCard:
+ *   get:
+ *     tags:
+ *       - USER MANAGEMENT
+ *     description: viewBusinessCard
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: bannerId
+ *         description: _id of banner
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Data Found.
+ *       404:
+ *         description: Data not Found.
+ *       500:
+ *         description: Internal server error.
+ *       501:
+ *         description: Something went wrong.
+ */
+const viewBusinessCard = async (req, res, next) => {
+  const validSchema = {
+    businessCardId: Joi.string().required(),
+  };
+  try {
+    const validBody = await Joi.validate(req.query, validSchema);
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: { $in: [userType.USER, userType.ADMIN] },
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.invalid(responseMessage.USER_NOT_FOUND);
+    }
+    let find = await findBusinessCard({
+      _id: validBody.businessCardId,
+      status: { $ne: status.DELETE },
+    });
+    if (!find) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    }
+    return res.json(new response(find, responseMessage.DATA_FOUND));
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/**
+ * @swagger
+ * /admin/editBusinessCard:
+ *   put:
+ *     tags:
+ *       - USER MANAGEMENT
+ *     description: editBusinessCard
+ *     produces:
+ *       - application/json
+ *     responses:
+ *       200:
+ *         description: Update sucdess.
+ *       404:
+ *         description: Data not Found.
+ *       401:
+ *         description: Unauthorized token.
+ *       500:
+ *         description: Internal server error.
+ *       501:
+ *         description: Something went wrong.
+ */
+const editBusinessCard = async (req, res, next) => {
+  const validSchema = {
+    businessCardId: Joi.string().required(),
+    name: Joi.string().optional(),
+    identification: Joi.string().optional(),
+    location: Joi.string().optional(),
+    email: Joi.string().optional(),
+    phoneNumber: Joi.string().optional(),
+    companyName: Joi.string().optional(),
+    position: Joi.string().optional(),
+    website: Joi.string().optional(),
+    socialLink: Joi.string().optional(),
+  };
+  try {
+    const validBody = await Joi.validate(req.body, validSchema);
+    const { businessCardId, ...updateFields } = validBody;
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: { $in: [userType.USER, userType.ADMIN] },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let data = await findBusinessCard({
+      _id: businessCardId,
+      status: { $ne: status.DELETE },
+    });
+    if (!data) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    }
+    let update = await updateBusinessCardById(
+      { _id: data._id },
+      { $set: validBody }
+    );
+    return res.json(new response(update, responseMessage.EDIT_BUSINESS_CARD));
+  } catch (error) {
+    return next(error);
+  }
+};
+
+/**
+ * @swagger
+ * /admin/deleteBusinessCard:
+ *   delete:
+ *     tags:
+ *       - USER MANAGEMENT
+ *     description: deleteBusinessCard
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: admin token
+ *         in: header
+ *         required: true
+ *       - name: bannerId
+ *         description: _id of banner
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Card is Removed.
+ *       404:
+ *         description: Data not Found.
+ *       401:
+ *         description: Unauthorized token.
+ *       500:
+ *         description: Internal server error.
+ *       501:
+ *         description: Something went wrong.
+ */
+const deleteBusinessCard = async (req, res, next) => {
+  const validSchema = {
+    businessCardId: Joi.string().required(),
+  };
+  try {
+    const validBody = await Joi.validate(req.body, validSchema);
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: { $in: [userType.USER, userType.ADMIN] },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let data = await findBusinessCard({
+      _id: validBody.businessCardId,
+      userId: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!data) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    }
+    let up = await updateBusinessCardById(
+      { _id: data._id },
+      { $set: { status: status.DELETE } }
+    );
+    await updateUserById(userResult._id, { businessCardId: null });
+    return res.json(new response(up, responseMessage.DELETE_BUSINESS_CARD));
+  } catch (error) {
+    return next(error);
+  }
+};
+
 module.exports = {
   register,
   verifyOTP,
@@ -4069,4 +4326,8 @@ module.exports = {
   verifyMailOtp,
   becomeReseller,
   addReferral,
+  createUserBusinessCard,
+  editBusinessCard,
+  viewBusinessCard,
+  deleteBusinessCard,
 };

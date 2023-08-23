@@ -34,6 +34,10 @@ const {
   verifyMailOtp,
   becomeReseller,
   addReferral,
+  createUserBusinessCard,
+  editBusinessCard,
+  viewBusinessCard,
+  deleteBusinessCard,
 } = require("./userController");
 const auth = require("../../../../helper/auth");
 // const upload = require("../../../../helper/uploadHandler");
@@ -85,5 +89,11 @@ router.get("/projectListPaginate", auth.verifyToken, projectListPaginate);
 //Reseller routes
 router.get("/becomeReseller", auth.verifyToken, becomeReseller);
 router.post("/addReferral", auth.verifyToken, addReferral);
+
+//Business card routes
+router.post("/createUserBusinessCard", auth.verifyToken, createUserBusinessCard);
+router.post("/editBusinessCard", auth.verifyToken, editBusinessCard);
+router.post("/deleteBusinessCard", auth.verifyToken, deleteBusinessCard);
+router.get("/viewBusinessCard", auth.verifyToken, viewBusinessCard);
 
 module.exports = router;

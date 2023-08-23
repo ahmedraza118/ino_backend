@@ -58,6 +58,10 @@ const userSchema = new mongoose.Schema({
     type: Schema.Types.ObjectId,
     ref: "wallet",
   },
+  businessCardId: {
+    type: Schema.Types.ObjectId,
+    ref: "businessCard",
+  },
   otpTime: {
     type: Date,
     default: null,
