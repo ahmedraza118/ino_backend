@@ -1,5 +1,8 @@
 const productModel = require("../../../../models/post");
 const status = require("../../../../enums/status");
+const apiError = require("../../../../helper/apiError");
+const responseMessage = require("../../../../../assets/responseMessage");
+
 
 const productServices = {
   createUserProduct: async (insertObj) => {
@@ -14,6 +17,42 @@ const productServices = {
 
   updateProduct: async (query, updateObj) => {
     return await productModel.findOneAndUpdate(query, updateObj, { new: true });
+  },
+
+  rateProduct: async (userId, productId, rating) => {
+    try {
+      // Fetch the product by its ID
+      const product = await productModel.findById(productId);
+      if (!product) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+
+      // Check if the user has already rated the product
+      const userRatingIndex = product.userRatings.findIndex((userRating) =>
+        userRating.userId.equals(userId)
+      );
+      if (userRatingIndex !== -1) {
+        throw apiError.badRequest(responseMessage.ALREADY_RATED);
+      } 
+      product.userRatings.push({ userId: userId, rating });
+      // Update the average rating
+      const totalRatings = product.userRatings.length;
+      const sumRatings = product.userRatings.reduce(
+        (sum, userRating) => sum + userRating.rating,
+        0
+      );
+      const averageRating = sumRatings / totalRatings;
+
+      // Update the product
+      const updatedProduct = await productModel.findOneAndUpdate(
+        { _id: productId },
+        { $set: { userRatings: product.userRatings, rating: averageRating } }
+      );
+
+      return updatedProduct;
+    } catch (error) {
+      throw error;
+    }
   },
 
   listProduct: async (query) => {

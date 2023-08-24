@@ -66,6 +66,7 @@ const {
   findOneProduct,
   updateProduct,
   listProduct,
+  rateProduct,
   paginateProductSearch,
   paginateAllProductSearch,
   paginateProductSearchBuy,
@@ -114,6 +115,7 @@ const {
   findOneService,
   updateService,
   listService,
+  rateService,
   paginateServiceSearch,
   paginateAllServiceSearch,
   paginateServiceSearchBuy,
@@ -4290,6 +4292,120 @@ const deleteBusinessCard = async (req, res, next) => {
     return next(error);
   }
 };
+/**
+ * @swagger
+ * /admin/rateUserProduct:
+ *   delete:
+ *     tags:
+ *       - USER Ratings
+ *     description: rateUserProduct
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: admin token
+ *         in: header
+ *         required: true
+ *       - name: bannerId
+ *         description: _id of banner
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Card is Removed.
+ *       404:
+ *         description: Data not Found.
+ *       401:
+ *         description: Unauthorized token.
+ *       500:
+ *         description: Internal server error.
+ *       501:
+ *         description: Something went wrong.
+ */
+const rateUserProduct = async (req, res, next) => {
+  const validSchema = {
+    productId: Joi.string().required(),
+    rating: Joi.number().required(),
+  };
+  try {
+    const validBody = await Joi.validate(req.body, validSchema);
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: { $in: [userType.USER, userType.ADMIN] },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let rateRes = await rateProduct({
+      userId: userResult._id,
+      productId: validBody.productId,
+      rating: validBody.rating,
+    });
+    if (!rateRes) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    }
+    return res.json(new response(rateRes, responseMessage.RATED));
+  } catch (error) {
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /admin/rateUserService:
+ *   delete:
+ *     tags:
+ *       - USER Ratings
+ *     description: rateUserService
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: admin token
+ *         in: header
+ *         required: true
+ *       - name: bannerId
+ *         description: _id of banner
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Card is Removed.
+ *       404:
+ *         description: Data not Found.
+ *       401:
+ *         description: Unauthorized token.
+ *       500:
+ *         description: Internal server error.
+ *       501:
+ *         description: Something went wrong.
+ */
+const rateUserService = async (req, res, next) => {
+  const validSchema = {
+    serviceId: Joi.string().required(),
+    rating: Joi.number().required(),
+  };
+  try {
+    const validBody = await Joi.validate(req.body, validSchema);
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: { $in: [userType.USER, userType.ADMIN] },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let rateRes = await rateService(
+      userResult._id,
+      validBody.serviceId,
+      validBody.rating
+    );
+    if (!rateRes) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    }
+    return res.json(new response(rateRes, responseMessage.RATED));
+  } catch (error) {
+    return next(error);
+  }
+};
 
 module.exports = {
   register,
@@ -4330,4 +4446,6 @@ module.exports = {
   editBusinessCard,
   viewBusinessCard,
   deleteBusinessCard,
+  rateUserProduct,
+  rateUserService,
 };

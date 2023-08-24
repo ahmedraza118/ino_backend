@@ -258,6 +258,8 @@ module.exports = {
 	WALLET_NOT_FOUND: "Wallet not found.",
 	WALLET_FOUND: "Wallet found Success.",
 	INSUFICIENT_FUNDS: "Insuficient funds.",
+	ALREADY_RATED: "Rating Already Exist.",
+	RATED: "Rated Success.",
 
 	SMS_BODY: (otp) => `Your verification code is  ${otp}`,
 	REFER_SMS_BODY: (first_name, last_name, referral_code, iosLink, androidLink, webLink) => `${first_name} ${last_name} wants to refer you on PayPenny application. 

@@ -131,7 +131,20 @@ const schemaDefination = new Schema(
     subCategorie: {
       type: String
     },
-
+    userRatings: [
+      {
+        userId: {
+          type: Schema.Types.ObjectId,
+          ref: 'user',
+        },
+        rating: {
+          type: Number,
+          default: 0,
+          min: 1,
+          max: 5,
+        },
+      },
+    ],
     rating: {
       type: Number,
       default: 0,

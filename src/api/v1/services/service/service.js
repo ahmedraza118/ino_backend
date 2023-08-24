@@ -1,6 +1,7 @@
 const serviceModel = require("../../../../models/service");
 const status = require("../../../../enums/status");
-
+const apiError = require("../../../../helper/apiError");
+const responseMessage = require("../../../../../assets/responseMessage");
 const serviceServices = {
   createUserService: async (insertObj) => {
     return await serviceModel.create(insertObj);
@@ -14,6 +15,48 @@ const serviceServices = {
 
   updateService: async (query, updateObj) => {
     return await serviceModel.findOneAndUpdate(query, updateObj, { new: true });
+  },
+  rateService: async (userId,serviceId , rating) => {
+    // console.log("service: ", serviceId)
+    // console.log("user: ", userId)
+    // console.log("rating: ", rating)
+    try {
+      // Fetch the service by its ID
+      const service = await serviceModel.findOne({
+        _id: serviceId,
+        status: { $ne: status.DELETE },
+      });
+      if (!service) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+
+      // Check if the user has already rated the service
+      const userRatingIndex = service.userRatings.findIndex((userRating) =>
+        userRating.userId.equals(userId)
+      );
+      if (userRatingIndex !== -1) {
+        throw apiError.badRequest(responseMessage.ALREADY_RATED);
+      }
+      service.userRatings.push({ userId: userId, rating });
+      // Update the average rating
+      const totalRatings = service.userRatings.length;
+      const sumRatings = service.userRatings.reduce(
+        (sum, userRating) => sum + userRating.rating,
+        0
+      );
+      const averageRating = sumRatings / totalRatings;
+
+      // Update the service
+      const updatedProduct = await serviceModel.findOneAndUpdate(
+        { _id: serviceId },
+        { $set: { userRatings: service.userRatings, rating: averageRating } }
+      );
+
+      return updatedProduct;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   },
 
   listService: async (query) => {

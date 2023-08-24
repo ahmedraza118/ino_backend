@@ -133,6 +133,20 @@ const schemaDefination = new Schema(
     //   ref: "productSubCategorie", // Replace "subCategory" with the actual model name for categories
     // },
 
+    userRatings: [
+      {
+        userId: {
+          type: Schema.Types.ObjectId,
+          ref: 'user',
+        },
+        rating: {
+          type: Number,
+          default: 0,
+          min: 1,
+          max: 5,
+        },
+      },
+    ],
     rating: {
       type: Number,
       default: 0,
