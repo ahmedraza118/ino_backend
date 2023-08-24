@@ -13,12 +13,6 @@ const feeModel = new Schema(
   {
     amount: { type: String },
     type: { type: String, enum: ["POST", "SUBCRIPTION", "SIGNUP", "REFERREL", "EXPORT", "DEPOSIT_MONEY", "WITHDRAW_MONEY"] },
-    coins: [
-      {
-        coinName: { type: String },
-        fee: { type: String },
-      },
-    ],
     status: { type: String, default: status.ACTIVE },
   },
   options

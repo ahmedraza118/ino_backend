@@ -15,7 +15,7 @@ const schemaDefinition = new Schema(
       ref: "user",
     },
     type: { type: String }, // Added field to differentiate request type
-    productId: {
+    jobId: {
       type: Schema.Types.ObjectId,
       ref: "job", // Reference to the associated product ID
     },

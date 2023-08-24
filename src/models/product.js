@@ -126,12 +126,10 @@ const schemaDefination = new Schema(
 
     // New attributes for the product schema
     categorie: {
-      type: Schema.Types.ObjectId,
-      ref: "productCategorie", // Replace "category" with the actual model name for categories
+      type: String
     },
     subCategorie: {
-      type: Schema.Types.ObjectId,
-      ref: "productSubCategorie", // Replace "subCategory" with the actual model name for categories
+      type: String
     },
 
     rating: {

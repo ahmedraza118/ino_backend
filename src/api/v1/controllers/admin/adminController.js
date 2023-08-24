@@ -2978,7 +2978,7 @@ class adminController {
       faqId: Joi.string().required(),
     };
     try {
-      const validBody = await Joi.validate(req.query);
+      const validBody = await Joi.validate(req.query, validSchema);
       let admin = await findUser({
         _id: req.userId,
         userType: { $in: [userType.ADMIN] },
@@ -3485,7 +3485,6 @@ class adminController {
   async feeUpdate(req, res, next) {
     const validationSchema = {
       feeId: Joi.string().required(),
-      coinName: Joi.string().allow("").optional(),
       amount: Joi.string().allow("").optional(),
     };
     try {
@@ -3506,17 +3505,10 @@ class adminController {
           throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
         } else {
           let updateRes;
-          if (validatedBody.coinName) {
-            updateRes = await updateFee(
-              { _id: resultRes._id, "coins.coinName": validatedBody.coinName },
-              { $set: { "coins.$.fee": validatedBody.amount } }
-            );
-          } else {
             updateRes = await updateFee(
               { _id: resultRes._id },
               { amount: validatedBody.amount }
             );
-          }
           return res.json(new response(updateRes, responseMessage.FEE_UPDATE));
         }
       }
