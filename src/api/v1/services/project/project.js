@@ -1,5 +1,7 @@
 const projectModel = require("../../../../models/project.js");
 const status = require("../../../../enums/status");
+const apiError = require("../../../../helper/apiError");
+const responseMessage = require("../../../../../assets/responseMessage");
 
 const projectServices = {
   createUserProject: async (insertObj) => {
@@ -14,6 +16,48 @@ const projectServices = {
 
   updateProject: async (query, updateObj) => {
     return await projectModel.findOneAndUpdate(query, updateObj, { new: true });
+  },
+  rateProject: async (userId,projectId , rating) => {
+    // console.log("project: ", projectId)
+    // console.log("user: ", userId)
+    // console.log("rating: ", rating)
+    try {
+      // Fetch the project by its ID
+      const project = await projectModel.findOne({
+        _id: projectId,
+        status: { $ne: status.DELETE },
+      });
+      if (!project) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+
+      // Check if the user has already rated the project
+      const userRatingIndex = project.userRatings.findIndex((userRating) =>
+        userRating.userId.equals(userId)
+      );
+      if (userRatingIndex !== -1) {
+        throw apiError.badRequest(responseMessage.ALREADY_RATED);
+      }
+      project.userRatings.push({ userId: userId, rating });
+      // Update the average rating
+      const totalRatings = project.userRatings.length;
+      const sumRatings = project.userRatings.reduce(
+        (sum, userRating) => sum + userRating.rating,
+        0
+      );
+      const averageRating = sumRatings / totalRatings;
+
+      // Update the project
+      const updatedProduct = await projectModel.findOneAndUpdate(
+        { _id: projectId },
+        { $set: { userRatings: project.userRatings, rating: averageRating } }
+      );
+
+      return updatedProduct;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   },
 
   listProject: async (query) => {

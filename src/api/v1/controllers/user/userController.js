@@ -50,6 +50,7 @@ const {
   findOnePost,
   updatePost,
   listPost,
+  ratePost,
   paginatePostSearch,
   paginateAllPostSearch,
   paginatePostSearchBuy,
@@ -83,6 +84,7 @@ const {
   findOneJob,
   updateJob,
   listJob,
+  rateJob,
   paginateJobSearch,
   paginateAllJobSearch,
   paginateJobSearchBuy,
@@ -99,6 +101,7 @@ const {
   findOneProject,
   updateProject,
   listProject,
+  rateProject,
   paginateProjectSearch,
   paginateAllProjectSearch,
   paginateProjectSearchBuy,
@@ -4406,6 +4409,177 @@ const rateUserService = async (req, res, next) => {
     return next(error);
   }
 };
+/**
+ * @swagger
+ * /admin/rateUserProject:
+ *   delete:
+ *     tags:
+ *       - USER Ratings
+ *     description: rateUserProject
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: admin token
+ *         in: header
+ *         required: true
+ *       - name: bannerId
+ *         description: _id of banner
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Card is Removed.
+ *       404:
+ *         description: Data not Found.
+ *       401:
+ *         description: Unauthorized token.
+ *       500:
+ *         description: Internal server error.
+ *       501:
+ *         description: Something went wrong.
+ */
+const rateUserProject = async (req, res, next) => {
+  const validSchema = {
+    projectId: Joi.string().required(),
+    rating: Joi.number().required(),
+  };
+  try {
+    const validBody = await Joi.validate(req.body, validSchema);
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: { $in: [userType.USER, userType.ADMIN] },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let rateRes = await rateProject(
+      userResult._id,
+      validBody.projectId,
+      validBody.rating
+    );
+    if (!rateRes) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    }
+    return res.json(new response(rateRes, responseMessage.RATED));
+  } catch (error) {
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /admin/rateUserJob:
+ *   delete:
+ *     tags:
+ *       - USER Ratings
+ *     description: rateUserJob
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: admin token
+ *         in: header
+ *         required: true
+ *       - name: bannerId
+ *         description: _id of banner
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Card is Removed.
+ *       404:
+ *         description: Data not Found.
+ *       401:
+ *         description: Unauthorized token.
+ *       500:
+ *         description: Internal server error.
+ *       501:
+ *         description: Something went wrong.
+ */
+const rateUserJob = async (req, res, next) => {
+  const validSchema = {
+    jobId: Joi.string().required(),
+    rating: Joi.number().required(),
+  };
+  try {
+    const validBody = await Joi.validate(req.body, validSchema);
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: { $in: [userType.USER, userType.ADMIN] },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let rateRes = await rateJob(
+      userResult._id,
+      validBody.jobId,
+      validBody.rating
+    );
+    if (!rateRes) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    }
+    return res.json(new response(rateRes, responseMessage.RATED));
+  } catch (error) {
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /admin/rateUserPost:
+ *   delete:
+ *     tags:
+ *       - USER Ratings
+ *     description: rateUserPost
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: admin token
+ *         in: header
+ *         required: true
+ *       - name: bannerId
+ *         description: _id of banner
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Card is Removed.
+ *       404:
+ *         description: Data not Found.
+ *       401:
+ *         description: Unauthorized token.
+ *       500:
+ *         description: Internal server error.
+ *       501:
+ *         description: Something went wrong.
+ */
+const rateUserPost = async (req, res, next) => {
+  const validSchema = {
+    postId: Joi.string().required(),
+    rating: Joi.number().required(),
+  };
+  try {
+    const validBody = await Joi.validate(req.body, validSchema);
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: { $in: [userType.USER, userType.ADMIN] },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let rateRes = await ratePost(
+      userResult._id,
+      validBody.postId,
+      validBody.rating
+    );
+    if (!rateRes) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    }
+    return res.json(new response(rateRes, responseMessage.RATED));
+  } catch (error) {
+    return next(error);
+  }
+};
 
 module.exports = {
   register,
@@ -4448,4 +4622,7 @@ module.exports = {
   deleteBusinessCard,
   rateUserProduct,
   rateUserService,
+  rateUserProject,
+  rateUserJob,
+  rateUserPost,
 };

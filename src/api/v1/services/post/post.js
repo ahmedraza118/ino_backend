@@ -1,5 +1,7 @@
 const postModel = require("../../../../models/post");
 const status = require("../../../../enums/status");
+const apiError = require("../../../../helper/apiError");
+const responseMessage = require("../../../../../assets/responseMessage");
 
 const postServices = {
   createUserPost: async (insertObj) => {
@@ -14,6 +16,48 @@ const postServices = {
 
   updatePost: async (query, updateObj) => {
     return await postModel.findOneAndUpdate(query, updateObj, { new: true });
+  },
+  ratePost: async (userId,postId , rating) => {
+    // console.log("post: ", postId)
+    // console.log("user: ", userId)
+    // console.log("rating: ", rating)
+    try {
+      // Fetch the post by its ID
+      const post = await postModel.findOne({
+        _id: postId,
+        status: { $ne: status.DELETE },
+      });
+      if (!post) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+
+      // Check if the user has already rated the post
+      const userRatingIndex = post.userRatings.findIndex((userRating) =>
+        userRating.userId.equals(userId)
+      );
+      if (userRatingIndex !== -1) {
+        throw apiError.badRequest(responseMessage.ALREADY_RATED);
+      }
+      post.userRatings.push({ userId: userId, rating });
+      // Update the average rating
+      const totalRatings = post.userRatings.length;
+      const sumRatings = post.userRatings.reduce(
+        (sum, userRating) => sum + userRating.rating,
+        0
+      );
+      const averageRating = sumRatings / totalRatings;
+
+      // Update the post
+      const updatedProduct = await postModel.findOneAndUpdate(
+        { _id: postId },
+        { $set: { userRatings: post.userRatings, rating: averageRating } }
+      );
+
+      return updatedProduct;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   },
 
   listPost: async (query) => {

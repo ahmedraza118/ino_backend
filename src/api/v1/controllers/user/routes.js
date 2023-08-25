@@ -40,6 +40,9 @@ const {
   deleteBusinessCard,
   rateUserProduct,
   rateUserService,
+  rateUserProject,
+  rateUserJob,
+  rateUserPost,
 } = require("./userController");
 const auth = require("../../../../helper/auth");
 // const upload = require("../../../../helper/uploadHandler");
@@ -102,8 +105,18 @@ router.post("/editBusinessCard", auth.verifyToken, editBusinessCard);
 router.post("/deleteBusinessCard", auth.verifyToken, deleteBusinessCard);
 router.get("/viewBusinessCard", auth.verifyToken, viewBusinessCard);
 
-// Rating APIs
+// Post Rating APIs
 router.post("/rateUserProduct", auth.verifyToken, rateUserProduct);
 router.post("/rateUserService", auth.verifyToken, rateUserService);
+router.post("/rateUserProject", auth.verifyToken, rateUserProject);
+router.post("/rateUserJob", auth.verifyToken, rateUserJob);
+router.post("/rateUserPost", auth.verifyToken, rateUserPost);
+
+// // Get Rating APIs
+// router.get("/getProductRating", auth.verifyToken, rateUserProduct);
+// router.post("/rateUserService", auth.verifyToken, rateUserService);
+// router.post("/rateUserProject", auth.verifyToken, rateUserProject);
+// router.post("/rateUserJob", auth.verifyToken, rateUserJob);
+// router.post("/rateUserPost", auth.verifyToken, rateUserPost);
 
 module.exports = router;

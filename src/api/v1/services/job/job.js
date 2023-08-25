@@ -1,5 +1,7 @@
 const jobModel = require("../../../../models/job.js");
 const status = require("../../../../enums/status");
+const apiError = require("../../../../helper/apiError");
+const responseMessage = require("../../../../../assets/responseMessage");
 
 const jobServices = {
   createUserJob: async (insertObj) => {
@@ -14,6 +16,48 @@ const jobServices = {
 
   updateJob: async (query, updateObj) => {
     return await jobModel.findOneAndUpdate(query, updateObj, { new: true });
+  },
+  rateJob: async (userId,jobId , rating) => {
+    // console.log("job: ", jobId)
+    // console.log("user: ", userId)
+    // console.log("rating: ", rating)
+    try {
+      // Fetch the job by its ID
+      const job = await jobModel.findOne({
+        _id: jobId,
+        status: { $ne: status.DELETE },
+      });
+      if (!job) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+
+      // Check if the user has already rated the job
+      const userRatingIndex = job.userRatings.findIndex((userRating) =>
+        userRating.userId.equals(userId)
+      );
+      if (userRatingIndex !== -1) {
+        throw apiError.badRequest(responseMessage.ALREADY_RATED);
+      }
+      job.userRatings.push({ userId: userId, rating });
+      // Update the average rating
+      const totalRatings = job.userRatings.length;
+      const sumRatings = job.userRatings.reduce(
+        (sum, userRating) => sum + userRating.rating,
+        0
+      );
+      const averageRating = sumRatings / totalRatings;
+
+      // Update the job
+      const updatedProduct = await jobModel.findOneAndUpdate(
+        { _id: jobId },
+        { $set: { userRatings: job.userRatings, rating: averageRating } }
+      );
+
+      return updatedProduct;
+    } catch (error) {
+      console.log(error);
+      throw error;
+    }
   },
 
   listJob: async (query) => {
