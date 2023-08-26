@@ -63,6 +63,8 @@ const {
 const {
   businessCardServices,
 } = require("../../services/businessCard/businessCard.js");
+const { promotionServices } = require("../../services/promotion/promotion.js");
+
 
 const {
   createUser,
@@ -323,6 +325,13 @@ const {
   updateBusinessCardById,
   paginateSearchBusinessCard,
 } = businessCardServices;
+const {
+  createPromotion,
+  findPromotion,
+  findAllPromotion,
+  updatePromotion,
+  updatePromotionById,
+} = promotionServices;
 
 const responseMessage = require("../../../../../assets/responseMessage.js");
 const commonFunction = require("../../../../helper/util.js");

@@ -4707,6 +4707,7 @@ const createPostPromotion =  async (req, res, next) => {
     let validatedBody = await Joi.validate(req.body, validationSchema);
     let userResult = await findUser({
       _id: req.userId,
+      userType: userType.USER,
       status: { $ne: status.DELETE },
     });
     if (!userResult) {
@@ -4728,28 +4729,706 @@ const createPostPromotion =  async (req, res, next) => {
         let obj = {
           ownerId: userResult._id,
           postId: postRes._id,
-          message: validatedBody.message,
+          duration: validatedBody.duration,
+          bidAmount: validatedBody.bidAmount,
           type: "POST",
         };
-        let result = await createReport(obj);
+        let result = await createPromotion(obj);
         let activityobj = {
-          title: "Post report.",
+          title: "Post Promotion.",
           postId: postRes._id,
-          desctiption: `Your post are reported by user.`,
-          type: "REPORT",
+          desctiption: `Your post are promotion created.`,
+          type: "PROMOTION",
           userId: userResult._id,
         };
         await createActivity(activityobj);
-        let update = await updatePost(
-          { _id: validatedBody.postId },
-          {
-            $addToSet: { reportedId: result._id },
-            $inc: { likesReportCount: 1 },
-          }
-        );
-        return res.json(new response(result, responseMessage.REPORTED));
+        return res.json(new response(result, responseMessage.CREATE_POST_PROMOTION));
       } else {
-        throw apiError.conflict(responseMessage.ALREADY_REPORTED);
+        throw apiError.conflict(responseMessage.ALREADY_EXITS);
+      }
+    }
+  } catch (error) {
+    console.log("===error====", error);
+    return next(error);
+  }
+}
+/**
+   * @swagger
+   * /user/createProjectPromotion:
+   *   post:
+   *     tags:
+   *       - USER PROJECT PROMOTION
+   *     description: createProjectPromotion
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: createProjectPromotion
+   *         description: createProjectPromotion
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/createReport'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+const createProjectPromotion =  async (req, res, next) => {
+  const validationSchema = {
+    projectId: Joi.string().required(),
+    duration: Joi.string().required(),
+    bidAmount: Joi.string().required(),
+  };
+  try {
+    let validatedBody = await Joi.validate(req.body, validationSchema);
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: userType.USER,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let projectRes = await findOneProject({
+        _id: validatedBody.projectId,
+        status: { $ne: status.DELETE },
+      });
+      if (!projectRes) {
+        throw apiError.notFound(responseMessage.PROJECT_NOT_FOUND);
+      }
+      let promotionCheck = await findPromotion({
+        ownerId: userResult._id,
+        projectId: projectRes._id,
+        status: status.ACTIVE,
+      });
+      if (!promotionCheck) {
+        let obj = {
+          ownerId: userResult._id,
+          projectId: projectRes._id,
+          duration: validatedBody.duration,
+          bidAmount: validatedBody.bidAmount,
+          type: "PROJECT",
+        };
+        let result = await createPromotion(obj);
+        let activityobj = {
+          title: "Project Promotion.",
+          projectId: projectRes._id,
+          desctiption: `Your project  promotion created.`,
+          type: "PROMOTION",
+          userId: userResult._id,
+        };
+        await createActivity(activityobj);
+        return res.json(new response(result, responseMessage.PROMOTION_CREATED));
+      } else {
+        throw apiError.conflict(responseMessage.ALREADY_EXITS);
+      }
+    }
+  } catch (error) {
+    console.log("===error====", error);
+    return next(error);
+  }
+}
+/**
+   * @swagger
+   * /user/createJobPromotion:
+   *   post:
+   *     tags:
+   *       - USER JOB PROMOTION
+   *     description: createJobPromotion
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: createJobPromotion
+   *         description: createJobPromotion
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/createReport'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+const createJobPromotion =  async (req, res, next) => {
+  const validationSchema = {
+    jobId: Joi.string().required(),
+    duration: Joi.string().required(),
+    bidAmount: Joi.string().required(),
+  };
+  try {
+    let validatedBody = await Joi.validate(req.body, validationSchema);
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: userType.USER,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let jobRes = await findOneJob({
+        _id: validatedBody.jobId,
+        status: { $ne: status.DELETE },
+      });
+      if (!jobRes) {
+        throw apiError.notFound(responseMessage.JOB_NOT_FOUND);
+      }
+      let promotionCheck = await findPromotion({
+        ownerId: userResult._id,
+        jobId: jobRes._id,
+        status: status.ACTIVE,
+      });
+      if (!promotionCheck) {
+        let obj = {
+          ownerId: userResult._id,
+          jobId: jobRes._id,
+          duration: validatedBody.duration,
+          bidAmount: validatedBody.bidAmount,
+          type: "JOB",
+        };
+        let result = await createPromotion(obj);
+        let activityobj = {
+          title: "Job Promotion.",
+          jobId: jobRes._id,
+          desctiption: `Your job promotion created.`,
+          type: "PROMOTION",
+          userId: userResult._id,
+        };
+        await createActivity(activityobj);
+        return res.json(new response(result, responseMessage.PROMOTION_CREATED));
+      } else {
+        throw apiError.conflict(responseMessage.ALREADY_EXITS);
+      }
+    }
+  } catch (error) {
+    console.log("===error====", error);
+    return next(error);
+  }
+}
+/**
+   * @swagger
+   * /user/createProductPromotion:
+   *   post:
+   *     tags:
+   *       - USER PRODUCT PROMOTION
+   *     description: createProductPromotion
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: createProductPromotion
+   *         description: createProductPromotion
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/createReport'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+const createProductPromotion =  async (req, res, next) => {
+  const validationSchema = {
+    productId: Joi.string().required(),
+    duration: Joi.string().required(),
+    bidAmount: Joi.string().required(),
+  };
+  try {
+    let validatedBody = await Joi.validate(req.body, validationSchema);
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: userType.USER,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let productRes = await findOneProduct({
+        _id: validatedBody.productId,
+        status: { $ne: status.DELETE },
+      });
+      if (!productRes) {
+        throw apiError.notFound(responseMessage.PRODUCT_NOT_FOUND);
+      }
+      let promotionCheck = await findPromotion({
+        ownerId: userResult._id,
+        productId: productRes._id,
+        status: status.ACTIVE,
+      });
+      if (!promotionCheck) {
+        let obj = {
+          ownerId: userResult._id,
+          productId: productRes._id,
+          duration: validatedBody.duration,
+          bidAmount: validatedBody.bidAmount,
+          type: "PRODUCT",
+        };
+        let result = await createPromotion(obj);
+        let activityobj = {
+          title: "P roductPromotion.",
+          productId: productRes._id,
+          desctiption: `Your product promotion created.`,
+          type: "PROMOTION",
+          userId: userResult._id,
+        };
+        await createActivity(activityobj);
+        return res.json(new response(result, responseMessage.PROMOTION_CREATED));
+      } else {
+        throw apiError.conflict(responseMessage.ALREADY_EXITS);
+      }
+    }
+  } catch (error) {
+    console.log("===error====", error);
+    return next(error);
+  }
+}
+/**
+   * @swagger
+   * /user/createServicePromotion:
+   *   post:
+   *     tags:
+   *       - USER SERVICE PROMOTION
+   *     description: createServicePromotion
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: createServicePromotion
+   *         description: createServicePromotion
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/createReport'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+const createServicePromotion =  async (req, res, next) => {
+  const validationSchema = {
+    serviceId: Joi.string().required(),
+    duration: Joi.string().required(),
+    bidAmount: Joi.string().required(),
+  };
+  try {
+    let validatedBody = await Joi.validate(req.body, validationSchema);
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: userType.USER,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let serviceRes = await findOneService({
+        _id: validatedBody.serviceId,
+        status: { $ne: status.DELETE },
+      });
+      if (!serviceRes) {
+        throw apiError.notFound(responseMessage.SERVICE_NOT_FOUND);
+      }
+      let promotionCheck = await findPromotion({
+        ownerId: userResult._id,
+        serviceId: serviceRes._id,
+        status: status.ACTIVE,
+      });
+      if (!promotionCheck) {
+        let obj = {
+          ownerId: userResult._id,
+          serviceId: serviceRes._id,
+          duration: validatedBody.duration,
+          bidAmount: validatedBody.bidAmount,
+          type: "SERVICE",
+        };
+        let result = await createPromotion(obj);
+        let activityobj = {
+          title: "Service Promotion.",
+          serviceId: serviceRes._id,
+          desctiption: `Your Service promotion created.`,
+          type: "PROMOTION",
+          userId: userResult._id,
+        };
+        await createActivity(activityobj);
+        return res.json(new response(result, responseMessage.PROMOTION_CREATED));
+      } else {
+        throw apiError.conflict(responseMessage.ALREADY_EXITS);
+      }
+    }
+  } catch (error) {
+    console.log("===error====", error);
+    return next(error);
+  }
+}
+
+/**
+   * @swagger
+   * /user/viewPostPromotionById:
+   *   post:
+   *     tags:
+   *       - USER VIEW
+   *     description: viewPostPromotionById
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: viewPostPromotionById
+   *         description: viewPostPromotionById
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/viewPostPromotionById'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+const viewPostPromotionById =  async (req, res, next) => {
+  const validationSchema = {
+    postId: Joi.string().required(),
+  };
+  try {
+    let validatedBody = await Joi.validate(req.query, validationSchema);
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: userType.USER,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let promotionCheck = await findPromotion({
+        postId: validatedBody.postId,
+        status: status.ACTIVE,
+        type: "POST"
+      });
+      if (promotionCheck) {
+        return res.json(new response(promotionCheck, responseMessage.PROMOTION_FOUND));
+      } else {
+        throw apiError.notFound(responseMessage.PRODUCT_NOT_FOUND);
+      }
+    }
+  } catch (error) {
+    console.log("===error====", error);
+    return next(error);
+  }
+}
+/**
+   * @swagger
+   * /user/viewProductPromotionById:
+   *   post:
+   *     tags:
+   *       - USER VIEW
+   *     description: viewProductPromotionById
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: viewProductPromotionById
+   *         description: viewProductPromotionById
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/viewProductPromotionById'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+const viewProductPromotionById =  async (req, res, next) => {
+  const validationSchema = {
+    productId: Joi.string().required(),
+  };
+  try {
+    let validatedBody = await Joi.validate(req.query, validationSchema);
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: userType.USER,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let promotionCheck = await findPromotion({
+        productId: validatedBody.productId,
+        status: status.ACTIVE,
+        type: "PRODUCT"
+      });
+      if (promotionCheck) {
+        return res.json(new response(promotionCheck, responseMessage.PROMOTION_FOUND));
+      } else {
+        throw apiError.notFound(responseMessage.PRODUCT_NOT_FOUND);
+      }
+    }
+  } catch (error) {
+    console.log("===error====", error);
+    return next(error);
+  }
+}
+/**
+   * @swagger
+   * /user/viewProjectPromotionById:
+   *   post:
+   *     tags:
+   *       - USER VIEW
+   *     description: viewProjectPromotionById
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: viewProjectPromotionById
+   *         description: viewProjectPromotionById
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/viewProjectPromotionById'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+const viewProjectPromotionById =  async (req, res, next) => {
+  const validationSchema = {
+    projectId: Joi.string().required(),
+  };
+  try {
+    let validatedBody = await Joi.validate(req.query, validationSchema);
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: userType.USER,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let promotionCheck = await findPromotion({
+        projectId: validatedBody.projectId,
+        status: status.ACTIVE,
+        type: "PROJECT"
+      });
+      if (promotionCheck) {
+        return res.json(new response(promotionCheck, responseMessage.PROMOTION_FOUND));
+      } else {
+        throw apiError.notFound(responseMessage.PRODUCT_NOT_FOUND);
+      }
+    }
+  } catch (error) {
+    console.log("===error====", error);
+    return next(error);
+  }
+}
+/**
+   * @swagger
+   * /user/viewJobPromotionById:
+   *   post:
+   *     tags:
+   *       - USER VIEW
+   *     description: viewJobPromotionById
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: viewJobPromotionById
+   *         description: viewJobPromotionById
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/viewJobPromotionById'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+const viewJobPromotionById =  async (req, res, next) => {
+  const validationSchema = {
+    jobId: Joi.string().required(),
+  };
+  try {
+    let validatedBody = await Joi.validate(req.query, validationSchema);
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: userType.USER,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let promotionCheck = await findPromotion({
+        jobId: validatedBody.jobId,
+        status: status.ACTIVE,
+        type: "JOB"
+      });
+      if (promotionCheck) {
+        return res.json(new response(promotionCheck, responseMessage.PROMOTION_FOUND));
+      } else {
+        throw apiError.notFound(responseMessage.PRODUCT_NOT_FOUND);
+      }
+    }
+  } catch (error) {
+    console.log("===error====", error);
+    return next(error);
+  }
+}
+/**
+   * @swagger
+   * /user/viewServicePromotionById:
+   *   post:
+   *     tags:
+   *       - USER VIEW
+   *     description: viewServicePromotionById
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: viewServicePromotionById
+   *         description: viewServicePromotionById
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/viewServicePromotionById'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+const viewServicePromotionById =  async (req, res, next) => {
+  const validationSchema = {
+    serviceId: Joi.string().required(),
+  };
+  try {
+    let validatedBody = await Joi.validate(req.query, validationSchema);
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: userType.USER,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let promotionCheck = await findPromotion({
+        serviceId: validatedBody.serviceId,
+        status: status.ACTIVE,
+        type: "SERVICE"
+      });
+      if (promotionCheck) {
+        return res.json(new response(promotionCheck, responseMessage.PROMOTION_FOUND));
+      } else {
+        throw apiError.notFound(responseMessage.PRODUCT_NOT_FOUND);
+      }
+    }
+  } catch (error) {
+    console.log("===error====", error);
+    return next(error);
+  }
+}
+/**
+   * @swagger
+   * /user/getUserActivePromotions:
+   *   post:
+   *     tags:
+   *       - USER VIEW
+   *     description: getUserActivePromotions
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: getUserActivePromotions
+   *         description: getUserActivePromotions
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/getUserActivePromotions'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+const getUserActivePromotions=  async (req, res, next) => {
+  try {
+   let userResult = await findUser({
+      _id: req.userId,
+      userType: userType.USER,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let promotionCheck = await findPromotion({
+        userId: userResult._id,
+        status: status.ACTIVE,
+      });
+      if (promotionCheck) {
+        return res.json(new response(promotionCheck, responseMessage.PROMOTION_FOUND));
+      } else {
+        throw apiError.notFound(responseMessage.PRODUCT_NOT_FOUND);
+      }
+    }
+  } catch (error) {
+    console.log("===error====", error);
+    return next(error);
+  }
+}
+/**
+   * @swagger
+   * /user/getUserPromotionList:
+   *   post:
+   *     tags:
+   *       - USER VIEW
+   *     description: getUserPromotionList
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: getUserPromotionList
+   *         description: getUserPromotionList
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/getUserPromotionList'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+const getUserPromotionList=  async (req, res, next) => {
+  try {
+   let userResult = await findUser({
+      _id: req.userId,
+      userType: userType.USER,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let promotionCheck = await findPromotion({
+        userId: userResult._id,
+      });
+      if (promotionCheck) {
+        return res.json(new response(promotionCheck, responseMessage.PROMOTION_FOUND));
+      } else {
+        throw apiError.notFound(responseMessage.PRODUCT_NOT_FOUND);
       }
     }
   } catch (error) {
@@ -4804,4 +5483,16 @@ module.exports = {
   rateUserPost,
   sendOtpToPhone,
   updatePhoneNumber,
+  createPostPromotion,
+  createProjectPromotion,
+  createProductPromotion,
+  createJobPromotion,
+  createServicePromotion,
+  viewPostPromotionById,
+  viewProductPromotionById,
+  viewProjectPromotionById,
+  viewServicePromotionById,
+  viewJobPromotionById,
+  getUserPromotionList,
+  getUserActivePromotions
 };

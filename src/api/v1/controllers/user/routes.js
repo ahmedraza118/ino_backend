@@ -45,6 +45,18 @@ const {
   rateUserPost,
   sendOtpToPhone,
   updatePhoneNumber,
+  createPostPromotion,
+  createProjectPromotion,
+  createProductPromotion,
+  createJobPromotion,
+  createServicePromotion,
+  viewPostPromotionById,
+  viewProductPromotionById,
+  viewProjectPromotionById,
+  viewServicePromotionById,
+  viewJobPromotionById,
+  getUserActivePromotions,
+  getUserPromotionList,
 } = require("./userController");
 const auth = require("../../../../helper/auth");
 // const upload = require("../../../../helper/uploadHandler");
@@ -122,5 +134,23 @@ router.post("/rateUserPost", auth.verifyToken, rateUserPost);
 // router.post("/rateUserProject", auth.verifyToken, rateUserProject);
 // router.post("/rateUserJob", auth.verifyToken, rateUserJob);
 // router.post("/rateUserPost", auth.verifyToken, rateUserPost);
+
+//Create Promotion APIs
+router.post("/createPostPromotion", auth.verifyToken, createPostPromotion);
+router.post("/createProjectPromotion", auth.verifyToken, createProjectPromotion);
+router.post("/createProductPromotion", auth.verifyToken, createProductPromotion);
+router.post("/createJobPromotion", auth.verifyToken, createJobPromotion);
+router.post("/createServicePromotion", auth.verifyToken, createServicePromotion);
+
+//Get Promotion By Id APIs
+router.get("/viewPostPromotionById", auth.verifyToken, viewPostPromotionById);
+router.get("/viewProjectPromotionById", auth.verifyToken, viewProjectPromotionById);
+router.get("/viewProductPromotionById", auth.verifyToken, viewProductPromotionById);
+router.get("/viewJobPromotionById", auth.verifyToken, viewJobPromotionById);
+router.get("/viewServicePromotionById", auth.verifyToken, viewServicePromotionById);
+// Get User Promotion List
+router.get("/getUserPromotionList", auth.verifyToken, getUserPromotionList);
+router.get("/getUserActivePromotions", auth.verifyToken, getUserActivePromotions);
+
 
 module.exports = router;

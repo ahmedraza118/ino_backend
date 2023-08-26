@@ -394,4 +394,13 @@ router.get("/listBusinessCard", auth.verifyToken, adminControllerInstance.listAl
 router.get("/blockBusinessCard", auth.verifyToken, adminControllerInstance.blockBusinessCard);
 router.get("/unblockBusinessCard", auth.verifyToken, adminControllerInstance.unblockBusinessCard);
 
+// Promotion APIs Routes
+router.get("/getAllPromotions", auth.verifyToken, adminControllerInstance.getAllPromotions);
+router.get("/getActivePromotions", auth.verifyToken, adminControllerInstance.unblockBusinessCard);
+router.get("/getExpiredPromotions", auth.verifyToken, adminControllerInstance.unblockBusinessCard);
+router.get("/viewPromotionById", auth.verifyToken, adminControllerInstance.unblockBusinessCard);
+router.get("/getPromotionByType", auth.verifyToken, adminControllerInstance.unblockBusinessCard);
+router.get("/updatePromotionById", auth.verifyToken, adminControllerInstance.unblockBusinessCard);
+
+
 module.exports = router;

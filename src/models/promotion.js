@@ -36,7 +36,7 @@ const reportSchema = new Schema(
     },
     type: {
       type: String,
-      enum: ["PROMOTION"],
+      enum: ["POST", "PROJECT", "PRODUCT","JOB","SERVICE"],
     },
     status: {
       type: String,
