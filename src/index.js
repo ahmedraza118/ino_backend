@@ -8,13 +8,17 @@ const bodyParser = require("body-parser");
 const cors = require("cors"); // Import cors module
 const apiErrorHandler = require("./helper/apiErrorHandler.js");
 const { logRequest, logResponse } = require("./helper/requestTrack.js");
+const promotionCron = require('./cron/cron'); // Adjust the path
 
 // Create Express app
 const app = express();
 
+promotionCron();
+
 app.use(logRequest);
 app.use(logResponse);
 // Use the middleware functions
+
 app.use(cors({ origin: "*" })); // Enable CORS for all routes
 // Middleware
 app.use(express.json());

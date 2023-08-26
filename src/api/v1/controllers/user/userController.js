@@ -28,6 +28,7 @@ const {
 } = require("../../services/userActivity/userActivity");
 
 const { reportServices } = require("../../services/report/report.js");
+const { promotionServices } = require("../../services/promotion/promotion.js");
 const { requestServices } = require("../../services/request/request.js");
 const {
   postRequestServices,
@@ -139,6 +140,13 @@ const {
   updateReportById,
   paginateSearchReport,
 } = reportServices;
+const {
+  createPromotion,
+  findPromotion,
+  findAllPromotion,
+  updatePromotion,
+  updatePromotionById,
+} = promotionServices;
 const {
   createBanner,
   findBanner,
@@ -4580,6 +4588,91 @@ const rateUserPost = async (req, res, next) => {
     return next(error);
   }
 };
+
+/**
+   * @swagger
+   * /user/createPostPromotion:
+   *   post:
+   *     tags:
+   *       - USER REPORT
+   *     description: createReport
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: createReport
+   *         description: createReport
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/createReport'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+const createPostPromotion =  async (req, res, next) => {
+  const validationSchema = {
+    postId: Joi.string().required(),
+    duration: Joi.string().required(),
+    bidAmount: Joi.string().required(),
+  };
+  try {
+    let validatedBody = await Joi.validate(req.body, validationSchema);
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let postRes = await findOnePost({
+        _id: validatedBody.postId,
+        status: { $ne: status.DELETE },
+      });
+      if (!postRes) {
+        throw apiError.notFound(responseMessage.POST_NOT_FOUND);
+      }
+      let promotionCheck = await findPromotion({
+        ownerId: userResult._id,
+        postId: postRes._id,
+        status: status.ACTIVE,
+      });
+      if (!promotionCheck) {
+        let obj = {
+          ownerId: userResult._id,
+          postId: postRes._id,
+          message: validatedBody.message,
+          type: "POST",
+        };
+        let result = await createReport(obj);
+        let activityobj = {
+          title: "Post report.",
+          postId: postRes._id,
+          desctiption: `Your post are reported by user.`,
+          type: "REPORT",
+          userId: userResult._id,
+        };
+        await createActivity(activityobj);
+        let update = await updatePost(
+          { _id: validatedBody.postId },
+          {
+            $addToSet: { reportedId: result._id },
+            $inc: { likesReportCount: 1 },
+          }
+        );
+        return res.json(new response(result, responseMessage.REPORTED));
+      } else {
+        throw apiError.conflict(responseMessage.ALREADY_REPORTED);
+      }
+    }
+  } catch (error) {
+    console.log("===error====", error);
+    return next(error);
+  }
+}
 
 module.exports = {
   register,
