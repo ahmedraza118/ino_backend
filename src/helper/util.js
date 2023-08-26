@@ -31,7 +31,7 @@ async function getToken(payload) {
 async function sendSmsTwilio(phoneNumber, otp) {
   try {
     return await client.messages.create({
-      body: `Your mobile One Time Password (OTP) to log in to your INO account is ${otp}. The OTP is valid for 5 minutes.`,
+      body: `Your mobile One Time Password (OTP) to verify obile number for your INO account is ${otp}. The OTP is valid for 5 minutes.`,
       to: phoneNumber,
       from: config.get("twilio.messagingServiceSid"),
     });

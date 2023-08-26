@@ -31,7 +31,7 @@ const {
   deleteUserProject,
   projectListPaginate,
   sendOtpToMail,
-  verifyMailOtp,
+  verifyMailAndUpdate,
   becomeReseller,
   addReferral,
   createUserBusinessCard,
@@ -43,6 +43,8 @@ const {
   rateUserProject,
   rateUserJob,
   rateUserPost,
+  sendOtpToPhone,
+  updatePhoneNumber,
 } = require("./userController");
 const auth = require("../../../../helper/auth");
 // const upload = require("../../../../helper/uploadHandler");
@@ -54,7 +56,9 @@ router.post("/register", register);
 router.post("/login", login);
 router.post("/verifyOTP", verifyOTP);
 router.post("/sendOtpToMail", auth.verifyToken, sendOtpToMail);
-router.post("/verifyMailOtp", auth.verifyToken, verifyMailOtp);
+router.post("/verifyMailAndUpdate", auth.verifyToken, verifyMailAndUpdate);
+router.post("/sendOtpToPhone", auth.verifyToken, sendOtpToPhone);
+router.post("/updatePhoneNumber", auth.verifyToken, updatePhoneNumber);
 
 //profile routes
 router.post("/updateProfile", auth.verifyToken, updateProfile);
