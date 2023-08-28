@@ -8,7 +8,7 @@ const options = {
   timestamps: true,
 };
 
-const reportSchema = new Schema(
+const promotionSchema = new Schema(
   {
     ownerId: {
       type: Schema.Types.ObjectId,
@@ -51,6 +51,12 @@ const reportSchema = new Schema(
         type: Number,
         required: true,
       },
+      clickedBy: [
+        {
+          type: Schema.Types.ObjectId,
+          ref: "user",
+        },
+      ],
       clicks: {
         type: Number,
         default: 0,
@@ -63,7 +69,7 @@ const reportSchema = new Schema(
   options
 );
 
-reportSchema.plugin(mongoosePaginate);
-reportSchema.plugin(mongooseAggregatePaginate);
+promotionSchema.plugin(mongoosePaginate);
+promotionSchema.plugin(mongooseAggregatePaginate);
 
-module.exports = mongoose.model("promotion", reportSchema);
+module.exports = mongoose.model("promotion", promotionSchema);

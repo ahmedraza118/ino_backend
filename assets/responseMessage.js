@@ -193,6 +193,7 @@ module.exports = {
 	CREATE_POST_PROMOTION: 'Post promotion created successfully.',
 	PROMOTION_CREATED: 'Promotion created successfully.',
 	PROMOTION_FOUND: 'Promotion found success.',
+	PROMOTION_UPDATE: 'Promotion Update success.',
 	PROMOTION_NOT_FOUND: 'Promotion not found.',
 	POST_NOT_PROMOTION: 'Post promotion not found.',
 	POST_PROMOTION: 'Post promotion found successfully.',
@@ -262,7 +263,9 @@ module.exports = {
 	WALLET_FOUND: "Wallet found Success.",
 	INSUFICIENT_FUNDS: "Insuficient funds.",
 	ALREADY_RATED: "Rating Already Exist.",
+	ALREADY_CLICKED: "Promotion Already Clicked.",
 	RATED: "Rated Success.",
+
 
 	SMS_BODY: (otp) => `Your verification code is  ${otp}`,
 	REFER_SMS_BODY: (first_name, last_name, referral_code, iosLink, androidLink, webLink) => `${first_name} ${last_name} wants to refer you on PayPenny application. 

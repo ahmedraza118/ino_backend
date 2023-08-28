@@ -65,7 +65,6 @@ const {
 } = require("../../services/businessCard/businessCard.js");
 const { promotionServices } = require("../../services/promotion/promotion.js");
 
-
 const {
   createUser,
   findUserByEmail,
@@ -329,6 +328,7 @@ const {
   createPromotion,
   findPromotion,
   findAllPromotion,
+  fetchAllPromotionList,
   updatePromotion,
   updatePromotionById,
 } = promotionServices;
@@ -3514,10 +3514,10 @@ class adminController {
           throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
         } else {
           let updateRes;
-            updateRes = await updateFee(
-              { _id: resultRes._id },
-              { amount: validatedBody.amount }
-            );
+          updateRes = await updateFee(
+            { _id: resultRes._id },
+            { amount: validatedBody.amount }
+          );
           return res.json(new response(updateRes, responseMessage.FEE_UPDATE));
         }
       }
@@ -7733,7 +7733,6 @@ class adminController {
    *         description: Something went wrong.
    */
   async listAllBusinessCard(req, res, next) {
-
     try {
       let userResult = await findUser({
         _id: req.userId,
@@ -7873,6 +7872,330 @@ class adminController {
       );
       return res.json(new response(up, responseMessage.DELETE_BUSINESS_CARD));
     } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/getUserPromotionList:
+   *   post:
+   *     tags:
+   *       - USER VIEW
+   *     description: getUserPromotionList
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: getUserPromotionList
+   *         description: getUserPromotionList
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/getUserPromotionList'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async getAllPromotions(req, res, next) {
+    try {
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      } else {
+        let promotionCheck = await fetchAllPromotionList({
+          status: status.ACTIVE,
+        });
+        if (promotionCheck) {
+          return res.json(
+            new response(promotionCheck, responseMessage.PROMOTION_FOUND)
+          );
+        } else {
+          throw apiError.notFound(responseMessage.PROMOTION_NOT_FOUND);
+        }
+      }
+    } catch (error) {
+      console.log("===error====", error);
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/getUserPromotionList:
+   *   post:
+   *     tags:
+   *       - USER VIEW
+   *     description: getUserPromotionList
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: getUserPromotionList
+   *         description: getUserPromotionList
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/getUserPromotionList'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async getActivePromotions(req, res, next) {
+    try {
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      } else {
+        let promotionCheck = await findAllPromotion({
+          status: status.ACTIVE,
+        });
+        if (promotionCheck) {
+          return res.json(
+            new response(promotionCheck, responseMessage.PROMOTION_FOUND)
+          );
+        } else {
+          throw apiError.notFound(responseMessage.PROMOTION_NOT_FOUND);
+        }
+      }
+    } catch (error) {
+      console.log("===error====", error);
+      return next(error);
+    }
+  }
+  /**
+   * @swagger
+   * /user/getExpiredPromotions:
+   *   post:
+   *     tags:
+   *       - USER VIEW
+   *     description: getExpiredPromotions
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: getExpiredPromotions
+   *         description: getExpiredPromotions
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/getExpiredPromotions'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async getExpiredPromotions(req, res, next) {
+    try {
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      } else {
+        let promotionCheck = await findAllPromotion({
+          status: status.EXPIRED,
+        });
+        if (promotionCheck) {
+          return res.json(
+            new response(promotionCheck, responseMessage.PROMOTION_FOUND)
+          );
+        } else {
+          throw apiError.notFound(responseMessage.PROMOTION_NOT_FOUND);
+        }
+      }
+    } catch (error) {
+      console.log("===error====", error);
+      return next(error);
+    }
+  }
+  /**
+   * @swagger
+   * /user/viewPromotionById:
+   *   post:
+   *     tags:
+   *       - USER VIEW
+   *     description: viewPromotionById
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: viewPromotionById
+   *         description: viewPromotionById
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/viewPromotionById'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async viewPromotionById(req, res, next) {
+    const validSchema = {
+      promotionId: Joi.string().required(),
+    };
+    try {
+      const validBody = await Joi.validate(req.query, validSchema);
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      } else {
+        let promotionCheck = await findPromotion({
+          _id: validBody.promotionId,
+          status: status.EXPIRED,
+        });
+        if (promotionCheck) {
+          return res.json(
+            new response(promotionCheck, responseMessage.PROMOTION_FOUND)
+          );
+        } else {
+          throw apiError.notFound(responseMessage.PROMOTION_NOT_FOUND);
+        }
+      }
+    } catch (error) {
+      console.log("===error====", error);
+      return next(error);
+    }
+  }
+  /**
+   * @swagger
+   * /user/getPromotionByType:
+   *   post:
+   *     tags:
+   *       - USER VIEW
+   *     description: getPromotionByType
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: getPromotionByType
+   *         description: getPromotionByType
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/getPromotionByType'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async getPromotionByType(req, res, next) {
+    const validSchema = {
+      type: Joi.string().required(),
+    };
+    try {
+      const validBody = await Joi.validate(req.query, validSchema);
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      } else {
+        let promotionCheck = await findPromotion({
+          type: validBody.type,
+          status: status.EXPIRED,
+        });
+        if (promotionCheck) {
+          return res.json(
+            new response(promotionCheck, responseMessage.PROMOTION_FOUND)
+          );
+        } else {
+          throw apiError.notFound(responseMessage.PROMOTION_NOT_FOUND);
+        }
+      }
+    } catch (error) {
+      console.log("===error====", error);
+      return next(error);
+    }
+  }
+  /**
+   * @swagger
+   * /user/updatePromotionById:
+   *   post:
+   *     tags:
+   *       - USER VIEW
+   *     description: updatePromotionById
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: updatePromotionById
+   *         description: updatePromotionById
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/updatePromotionById'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async updatePromotionById(req, res, next) {
+    const validSchema = {
+      promotionId: Joi.string().required(),
+      status: Joi.string().optional(),
+      duration: Joi.string().optional(),
+      bidAmount: Joi.string().optional(),
+    };
+    try {
+      const validBody = await Joi.validate(req.body, validSchema);
+      const { promotionId, ...updatedBody } = validBody;
+
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      } else {
+        let promotionCheck = await updatePromotionById(
+          {
+            _id: promotionId,
+          },
+          updatedBody
+        );
+        if (promotionCheck) {
+          return res.json(
+            new response(promotionCheck, responseMessage.PROMOTION_UPDATE)
+          );
+        } else {
+          throw apiError.notFound(responseMessage.PROMOTION_NOT_FOUND);
+        }
+      }
+    } catch (error) {
+      console.log("===error====", error);
       return next(error);
     }
   }

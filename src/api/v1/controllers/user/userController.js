@@ -4674,30 +4674,30 @@ const rateUserPost = async (req, res, next) => {
 };
 
 /**
-   * @swagger
-   * /user/createPostPromotion:
-   *   post:
-   *     tags:
-   *       - USER REPORT
-   *     description: createReport
-   *     produces:
-   *       - application/json
-   *     parameters:
-   *       - name: token
-   *         description: token
-   *         in: header
-   *         required: true
-   *       - name: createReport
-   *         description: createReport
-   *         in: body
-   *         required: true
-   *         schema:
-   *           $ref: '#/definitions/createReport'
-   *     responses:
-   *       200:
-   *         description: Returns success message
-   */
-const createPostPromotion =  async (req, res, next) => {
+ * @swagger
+ * /user/createPostPromotion:
+ *   post:
+ *     tags:
+ *       - USER REPORT
+ *     description: createReport
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: createReport
+ *         description: createReport
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/createReport'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const createPostPromotion = async (req, res, next) => {
   const validationSchema = {
     postId: Joi.string().required(),
     duration: Joi.string().required(),
@@ -4742,7 +4742,9 @@ const createPostPromotion =  async (req, res, next) => {
           userId: userResult._id,
         };
         await createActivity(activityobj);
-        return res.json(new response(result, responseMessage.CREATE_POST_PROMOTION));
+        return res.json(
+          new response(result, responseMessage.CREATE_POST_PROMOTION)
+        );
       } else {
         throw apiError.conflict(responseMessage.ALREADY_EXITS);
       }
@@ -4751,32 +4753,32 @@ const createPostPromotion =  async (req, res, next) => {
     console.log("===error====", error);
     return next(error);
   }
-}
+};
 /**
-   * @swagger
-   * /user/createProjectPromotion:
-   *   post:
-   *     tags:
-   *       - USER PROJECT PROMOTION
-   *     description: createProjectPromotion
-   *     produces:
-   *       - application/json
-   *     parameters:
-   *       - name: token
-   *         description: token
-   *         in: header
-   *         required: true
-   *       - name: createProjectPromotion
-   *         description: createProjectPromotion
-   *         in: body
-   *         required: true
-   *         schema:
-   *           $ref: '#/definitions/createReport'
-   *     responses:
-   *       200:
-   *         description: Returns success message
-   */
-const createProjectPromotion =  async (req, res, next) => {
+ * @swagger
+ * /user/createProjectPromotion:
+ *   post:
+ *     tags:
+ *       - USER PROJECT PROMOTION
+ *     description: createProjectPromotion
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: createProjectPromotion
+ *         description: createProjectPromotion
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/createReport'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const createProjectPromotion = async (req, res, next) => {
   const validationSchema = {
     projectId: Joi.string().required(),
     duration: Joi.string().required(),
@@ -4821,7 +4823,9 @@ const createProjectPromotion =  async (req, res, next) => {
           userId: userResult._id,
         };
         await createActivity(activityobj);
-        return res.json(new response(result, responseMessage.PROMOTION_CREATED));
+        return res.json(
+          new response(result, responseMessage.PROMOTION_CREATED)
+        );
       } else {
         throw apiError.conflict(responseMessage.ALREADY_EXITS);
       }
@@ -4830,32 +4834,32 @@ const createProjectPromotion =  async (req, res, next) => {
     console.log("===error====", error);
     return next(error);
   }
-}
+};
 /**
-   * @swagger
-   * /user/createJobPromotion:
-   *   post:
-   *     tags:
-   *       - USER JOB PROMOTION
-   *     description: createJobPromotion
-   *     produces:
-   *       - application/json
-   *     parameters:
-   *       - name: token
-   *         description: token
-   *         in: header
-   *         required: true
-   *       - name: createJobPromotion
-   *         description: createJobPromotion
-   *         in: body
-   *         required: true
-   *         schema:
-   *           $ref: '#/definitions/createReport'
-   *     responses:
-   *       200:
-   *         description: Returns success message
-   */
-const createJobPromotion =  async (req, res, next) => {
+ * @swagger
+ * /user/createJobPromotion:
+ *   post:
+ *     tags:
+ *       - USER JOB PROMOTION
+ *     description: createJobPromotion
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: createJobPromotion
+ *         description: createJobPromotion
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/createReport'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const createJobPromotion = async (req, res, next) => {
   const validationSchema = {
     jobId: Joi.string().required(),
     duration: Joi.string().required(),
@@ -4900,7 +4904,9 @@ const createJobPromotion =  async (req, res, next) => {
           userId: userResult._id,
         };
         await createActivity(activityobj);
-        return res.json(new response(result, responseMessage.PROMOTION_CREATED));
+        return res.json(
+          new response(result, responseMessage.PROMOTION_CREATED)
+        );
       } else {
         throw apiError.conflict(responseMessage.ALREADY_EXITS);
       }
@@ -4909,32 +4915,32 @@ const createJobPromotion =  async (req, res, next) => {
     console.log("===error====", error);
     return next(error);
   }
-}
+};
 /**
-   * @swagger
-   * /user/createProductPromotion:
-   *   post:
-   *     tags:
-   *       - USER PRODUCT PROMOTION
-   *     description: createProductPromotion
-   *     produces:
-   *       - application/json
-   *     parameters:
-   *       - name: token
-   *         description: token
-   *         in: header
-   *         required: true
-   *       - name: createProductPromotion
-   *         description: createProductPromotion
-   *         in: body
-   *         required: true
-   *         schema:
-   *           $ref: '#/definitions/createReport'
-   *     responses:
-   *       200:
-   *         description: Returns success message
-   */
-const createProductPromotion =  async (req, res, next) => {
+ * @swagger
+ * /user/createProductPromotion:
+ *   post:
+ *     tags:
+ *       - USER PRODUCT PROMOTION
+ *     description: createProductPromotion
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: createProductPromotion
+ *         description: createProductPromotion
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/createReport'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const createProductPromotion = async (req, res, next) => {
   const validationSchema = {
     productId: Joi.string().required(),
     duration: Joi.string().required(),
@@ -4979,7 +4985,9 @@ const createProductPromotion =  async (req, res, next) => {
           userId: userResult._id,
         };
         await createActivity(activityobj);
-        return res.json(new response(result, responseMessage.PROMOTION_CREATED));
+        return res.json(
+          new response(result, responseMessage.PROMOTION_CREATED)
+        );
       } else {
         throw apiError.conflict(responseMessage.ALREADY_EXITS);
       }
@@ -4988,32 +4996,32 @@ const createProductPromotion =  async (req, res, next) => {
     console.log("===error====", error);
     return next(error);
   }
-}
+};
 /**
-   * @swagger
-   * /user/createServicePromotion:
-   *   post:
-   *     tags:
-   *       - USER SERVICE PROMOTION
-   *     description: createServicePromotion
-   *     produces:
-   *       - application/json
-   *     parameters:
-   *       - name: token
-   *         description: token
-   *         in: header
-   *         required: true
-   *       - name: createServicePromotion
-   *         description: createServicePromotion
-   *         in: body
-   *         required: true
-   *         schema:
-   *           $ref: '#/definitions/createReport'
-   *     responses:
-   *       200:
-   *         description: Returns success message
-   */
-const createServicePromotion =  async (req, res, next) => {
+ * @swagger
+ * /user/createServicePromotion:
+ *   post:
+ *     tags:
+ *       - USER SERVICE PROMOTION
+ *     description: createServicePromotion
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: createServicePromotion
+ *         description: createServicePromotion
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/createReport'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const createServicePromotion = async (req, res, next) => {
   const validationSchema = {
     serviceId: Joi.string().required(),
     duration: Joi.string().required(),
@@ -5058,7 +5066,9 @@ const createServicePromotion =  async (req, res, next) => {
           userId: userResult._id,
         };
         await createActivity(activityobj);
-        return res.json(new response(result, responseMessage.PROMOTION_CREATED));
+        return res.json(
+          new response(result, responseMessage.PROMOTION_CREATED)
+        );
       } else {
         throw apiError.conflict(responseMessage.ALREADY_EXITS);
       }
@@ -5067,33 +5077,33 @@ const createServicePromotion =  async (req, res, next) => {
     console.log("===error====", error);
     return next(error);
   }
-}
+};
 
 /**
-   * @swagger
-   * /user/viewPostPromotionById:
-   *   post:
-   *     tags:
-   *       - USER VIEW
-   *     description: viewPostPromotionById
-   *     produces:
-   *       - application/json
-   *     parameters:
-   *       - name: token
-   *         description: token
-   *         in: header
-   *         required: true
-   *       - name: viewPostPromotionById
-   *         description: viewPostPromotionById
-   *         in: body
-   *         required: true
-   *         schema:
-   *           $ref: '#/definitions/viewPostPromotionById'
-   *     responses:
-   *       200:
-   *         description: Returns success message
-   */
-const viewPostPromotionById =  async (req, res, next) => {
+ * @swagger
+ * /user/viewPostPromotionById:
+ *   post:
+ *     tags:
+ *       - USER VIEW
+ *     description: viewPostPromotionById
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: viewPostPromotionById
+ *         description: viewPostPromotionById
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/viewPostPromotionById'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const viewPostPromotionById = async (req, res, next) => {
   const validationSchema = {
     postId: Joi.string().required(),
   };
@@ -5110,10 +5120,12 @@ const viewPostPromotionById =  async (req, res, next) => {
       let promotionCheck = await findPromotion({
         postId: validatedBody.postId,
         status: status.ACTIVE,
-        type: "POST"
+        type: "POST",
       });
       if (promotionCheck) {
-        return res.json(new response(promotionCheck, responseMessage.PROMOTION_FOUND));
+        return res.json(
+          new response(promotionCheck, responseMessage.PROMOTION_FOUND)
+        );
       } else {
         throw apiError.notFound(responseMessage.PRODUCT_NOT_FOUND);
       }
@@ -5122,32 +5134,32 @@ const viewPostPromotionById =  async (req, res, next) => {
     console.log("===error====", error);
     return next(error);
   }
-}
+};
 /**
-   * @swagger
-   * /user/viewProductPromotionById:
-   *   post:
-   *     tags:
-   *       - USER VIEW
-   *     description: viewProductPromotionById
-   *     produces:
-   *       - application/json
-   *     parameters:
-   *       - name: token
-   *         description: token
-   *         in: header
-   *         required: true
-   *       - name: viewProductPromotionById
-   *         description: viewProductPromotionById
-   *         in: body
-   *         required: true
-   *         schema:
-   *           $ref: '#/definitions/viewProductPromotionById'
-   *     responses:
-   *       200:
-   *         description: Returns success message
-   */
-const viewProductPromotionById =  async (req, res, next) => {
+ * @swagger
+ * /user/viewProductPromotionById:
+ *   post:
+ *     tags:
+ *       - USER VIEW
+ *     description: viewProductPromotionById
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: viewProductPromotionById
+ *         description: viewProductPromotionById
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/viewProductPromotionById'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const viewProductPromotionById = async (req, res, next) => {
   const validationSchema = {
     productId: Joi.string().required(),
   };
@@ -5164,10 +5176,12 @@ const viewProductPromotionById =  async (req, res, next) => {
       let promotionCheck = await findPromotion({
         productId: validatedBody.productId,
         status: status.ACTIVE,
-        type: "PRODUCT"
+        type: "PRODUCT",
       });
       if (promotionCheck) {
-        return res.json(new response(promotionCheck, responseMessage.PROMOTION_FOUND));
+        return res.json(
+          new response(promotionCheck, responseMessage.PROMOTION_FOUND)
+        );
       } else {
         throw apiError.notFound(responseMessage.PRODUCT_NOT_FOUND);
       }
@@ -5176,32 +5190,32 @@ const viewProductPromotionById =  async (req, res, next) => {
     console.log("===error====", error);
     return next(error);
   }
-}
+};
 /**
-   * @swagger
-   * /user/viewProjectPromotionById:
-   *   post:
-   *     tags:
-   *       - USER VIEW
-   *     description: viewProjectPromotionById
-   *     produces:
-   *       - application/json
-   *     parameters:
-   *       - name: token
-   *         description: token
-   *         in: header
-   *         required: true
-   *       - name: viewProjectPromotionById
-   *         description: viewProjectPromotionById
-   *         in: body
-   *         required: true
-   *         schema:
-   *           $ref: '#/definitions/viewProjectPromotionById'
-   *     responses:
-   *       200:
-   *         description: Returns success message
-   */
-const viewProjectPromotionById =  async (req, res, next) => {
+ * @swagger
+ * /user/viewProjectPromotionById:
+ *   post:
+ *     tags:
+ *       - USER VIEW
+ *     description: viewProjectPromotionById
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: viewProjectPromotionById
+ *         description: viewProjectPromotionById
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/viewProjectPromotionById'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const viewProjectPromotionById = async (req, res, next) => {
   const validationSchema = {
     projectId: Joi.string().required(),
   };
@@ -5218,10 +5232,12 @@ const viewProjectPromotionById =  async (req, res, next) => {
       let promotionCheck = await findPromotion({
         projectId: validatedBody.projectId,
         status: status.ACTIVE,
-        type: "PROJECT"
+        type: "PROJECT",
       });
       if (promotionCheck) {
-        return res.json(new response(promotionCheck, responseMessage.PROMOTION_FOUND));
+        return res.json(
+          new response(promotionCheck, responseMessage.PROMOTION_FOUND)
+        );
       } else {
         throw apiError.notFound(responseMessage.PRODUCT_NOT_FOUND);
       }
@@ -5230,32 +5246,32 @@ const viewProjectPromotionById =  async (req, res, next) => {
     console.log("===error====", error);
     return next(error);
   }
-}
+};
 /**
-   * @swagger
-   * /user/viewJobPromotionById:
-   *   post:
-   *     tags:
-   *       - USER VIEW
-   *     description: viewJobPromotionById
-   *     produces:
-   *       - application/json
-   *     parameters:
-   *       - name: token
-   *         description: token
-   *         in: header
-   *         required: true
-   *       - name: viewJobPromotionById
-   *         description: viewJobPromotionById
-   *         in: body
-   *         required: true
-   *         schema:
-   *           $ref: '#/definitions/viewJobPromotionById'
-   *     responses:
-   *       200:
-   *         description: Returns success message
-   */
-const viewJobPromotionById =  async (req, res, next) => {
+ * @swagger
+ * /user/viewJobPromotionById:
+ *   post:
+ *     tags:
+ *       - USER VIEW
+ *     description: viewJobPromotionById
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: viewJobPromotionById
+ *         description: viewJobPromotionById
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/viewJobPromotionById'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const viewJobPromotionById = async (req, res, next) => {
   const validationSchema = {
     jobId: Joi.string().required(),
   };
@@ -5272,10 +5288,12 @@ const viewJobPromotionById =  async (req, res, next) => {
       let promotionCheck = await findPromotion({
         jobId: validatedBody.jobId,
         status: status.ACTIVE,
-        type: "JOB"
+        type: "JOB",
       });
       if (promotionCheck) {
-        return res.json(new response(promotionCheck, responseMessage.PROMOTION_FOUND));
+        return res.json(
+          new response(promotionCheck, responseMessage.PROMOTION_FOUND)
+        );
       } else {
         throw apiError.notFound(responseMessage.PRODUCT_NOT_FOUND);
       }
@@ -5284,32 +5302,32 @@ const viewJobPromotionById =  async (req, res, next) => {
     console.log("===error====", error);
     return next(error);
   }
-}
+};
 /**
-   * @swagger
-   * /user/viewServicePromotionById:
-   *   post:
-   *     tags:
-   *       - USER VIEW
-   *     description: viewServicePromotionById
-   *     produces:
-   *       - application/json
-   *     parameters:
-   *       - name: token
-   *         description: token
-   *         in: header
-   *         required: true
-   *       - name: viewServicePromotionById
-   *         description: viewServicePromotionById
-   *         in: body
-   *         required: true
-   *         schema:
-   *           $ref: '#/definitions/viewServicePromotionById'
-   *     responses:
-   *       200:
-   *         description: Returns success message
-   */
-const viewServicePromotionById =  async (req, res, next) => {
+ * @swagger
+ * /user/viewServicePromotionById:
+ *   post:
+ *     tags:
+ *       - USER VIEW
+ *     description: viewServicePromotionById
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: viewServicePromotionById
+ *         description: viewServicePromotionById
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/viewServicePromotionById'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const viewServicePromotionById = async (req, res, next) => {
   const validationSchema = {
     serviceId: Joi.string().required(),
   };
@@ -5326,10 +5344,12 @@ const viewServicePromotionById =  async (req, res, next) => {
       let promotionCheck = await findPromotion({
         serviceId: validatedBody.serviceId,
         status: status.ACTIVE,
-        type: "SERVICE"
+        type: "SERVICE",
       });
       if (promotionCheck) {
-        return res.json(new response(promotionCheck, responseMessage.PROMOTION_FOUND));
+        return res.json(
+          new response(promotionCheck, responseMessage.PROMOTION_FOUND)
+        );
       } else {
         throw apiError.notFound(responseMessage.PRODUCT_NOT_FOUND);
       }
@@ -5338,34 +5358,34 @@ const viewServicePromotionById =  async (req, res, next) => {
     console.log("===error====", error);
     return next(error);
   }
-}
+};
 /**
-   * @swagger
-   * /user/getUserActivePromotions:
-   *   post:
-   *     tags:
-   *       - USER VIEW
-   *     description: getUserActivePromotions
-   *     produces:
-   *       - application/json
-   *     parameters:
-   *       - name: token
-   *         description: token
-   *         in: header
-   *         required: true
-   *       - name: getUserActivePromotions
-   *         description: getUserActivePromotions
-   *         in: body
-   *         required: true
-   *         schema:
-   *           $ref: '#/definitions/getUserActivePromotions'
-   *     responses:
-   *       200:
-   *         description: Returns success message
-   */
-const getUserActivePromotions=  async (req, res, next) => {
+ * @swagger
+ * /user/getUserActivePromotions:
+ *   post:
+ *     tags:
+ *       - USER VIEW
+ *     description: getUserActivePromotions
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: getUserActivePromotions
+ *         description: getUserActivePromotions
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/getUserActivePromotions'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getUserActivePromotions = async (req, res, next) => {
   try {
-   let userResult = await findUser({
+    let userResult = await findUser({
       _id: req.userId,
       userType: userType.USER,
       status: { $ne: status.DELETE },
@@ -5378,7 +5398,9 @@ const getUserActivePromotions=  async (req, res, next) => {
         status: status.ACTIVE,
       });
       if (promotionCheck) {
-        return res.json(new response(promotionCheck, responseMessage.PROMOTION_FOUND));
+        return res.json(
+          new response(promotionCheck, responseMessage.PROMOTION_FOUND)
+        );
       } else {
         throw apiError.notFound(responseMessage.PRODUCT_NOT_FOUND);
       }
@@ -5387,34 +5409,35 @@ const getUserActivePromotions=  async (req, res, next) => {
     console.log("===error====", error);
     return next(error);
   }
-}
+};
+
 /**
-   * @swagger
-   * /user/getUserPromotionList:
-   *   post:
-   *     tags:
-   *       - USER VIEW
-   *     description: getUserPromotionList
-   *     produces:
-   *       - application/json
-   *     parameters:
-   *       - name: token
-   *         description: token
-   *         in: header
-   *         required: true
-   *       - name: getUserPromotionList
-   *         description: getUserPromotionList
-   *         in: body
-   *         required: true
-   *         schema:
-   *           $ref: '#/definitions/getUserPromotionList'
-   *     responses:
-   *       200:
-   *         description: Returns success message
-   */
-const getUserPromotionList=  async (req, res, next) => {
+ * @swagger
+ * /user/getUserPromotionList:
+ *   post:
+ *     tags:
+ *       - USER VIEW
+ *     description: getUserPromotionList
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: getUserPromotionList
+ *         description: getUserPromotionList
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/getUserPromotionList'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getUserPromotionList = async (req, res, next) => {
   try {
-   let userResult = await findUser({
+    let userResult = await findUser({
       _id: req.userId,
       userType: userType.USER,
       status: { $ne: status.DELETE },
@@ -5426,7 +5449,9 @@ const getUserPromotionList=  async (req, res, next) => {
         userId: userResult._id,
       });
       if (promotionCheck) {
-        return res.json(new response(promotionCheck, responseMessage.PROMOTION_FOUND));
+        return res.json(
+          new response(promotionCheck, responseMessage.PROMOTION_FOUND)
+        );
       } else {
         throw apiError.notFound(responseMessage.PRODUCT_NOT_FOUND);
       }
@@ -5435,7 +5460,134 @@ const getUserPromotionList=  async (req, res, next) => {
     console.log("===error====", error);
     return next(error);
   }
-}
+};
+
+/**
+ * @swagger
+ * /user/updateUserPromotionById:
+ *   post:
+ *     tags:
+ *       - USER VIEW
+ *     description: updateUserPromotionById
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: updateUserPromotionById
+ *         description: updateUserPromotionById
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/updateUserPromotionById'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const updateUserPromotionById = async (req, res, next) => {
+  const validSchema = {
+    promotionId: Joi.string().required(),
+    status: Joi.string().optional(),
+    duration: Joi.string().optional(),
+    bidAmount: Joi.string().optional(),
+  };
+  try {
+    const validBody = await Joi.validate(req.body, validSchema);
+    const { promotionId, ...updatedBody } = validBody;
+
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: userType.ADMIN,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let promotionCheck = await updatePromotionById(
+        {
+          _id: promotionId,
+          ownerId: req.userId,
+        },
+        updatedBody
+      );
+      if (promotionCheck) {
+        return res.json(
+          new response(promotionCheck, responseMessage.PROMOTION_UPDATE)
+        );
+      } else {
+        throw apiError.notFound(responseMessage.PROMOTION_NOT_FOUND);
+      }
+    }
+  } catch (error) {
+    console.log("===error====", error);
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /user/clickOnPromotion:
+ *   post:
+ *     tags:
+ *       - USER VIEW
+ *     description: clickOnPromotion
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: clickOnPromotion
+ *         description: clickOnPromotion
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/clickOnPromotion'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const clickOnPromotion = async (req, res, next) => {
+  const validSchema = {
+    promotionId: Joi.string().required(),
+    // status: Joi.string().optional(),
+    // duration: Joi.string().optional(),
+    // bidAmount: Joi.string().optional(),
+  };
+  try {
+    const validBody = await Joi.validate(req.body, validSchema);
+    const { promotionId, ...updatedBody } = validBody;
+
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: userType.USER,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let updatePromotion = await recordClickAndUpdatePromotion(
+        promotionId,
+        userResult._id
+      );
+
+      let update
+      if (promotionCheck) {
+        updatedBody.click;
+        return res.json(
+          new response(promotionCheck, responseMessage.PROMOTION_UPDATE)
+        );
+      } else {
+        throw apiError.notFound(responseMessage.PROMOTION_NOT_FOUND);
+      }
+    }
+  } catch (error) {
+    console.log("===error====", error);
+    return next(error);
+  }
+};
 
 module.exports = {
   register,
@@ -5494,5 +5646,7 @@ module.exports = {
   viewServicePromotionById,
   viewJobPromotionById,
   getUserPromotionList,
-  getUserActivePromotions
+  getUserActivePromotions,
+  updateUserPromotionById,
+  clickOnPromotion
 };

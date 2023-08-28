@@ -368,27 +368,27 @@ router.get("/postView", auth.verifyToken, adminControllerInstance.postView);
 router.get("/deletePost", auth.verifyToken, adminControllerInstance.deletePost);
 router.get("/ignorePost", auth.verifyToken, adminControllerInstance.ignorePost);
 router.get("/allPostList", auth.verifyToken, adminControllerInstance.allPostList);
-// post management APIs
+// project management APIs
 router.get("/projectView", auth.verifyToken, adminControllerInstance.projectView);
 router.get("/deleteProject", auth.verifyToken, adminControllerInstance.deleteProject);
 router.get("/ignoreProject", auth.verifyToken, adminControllerInstance.ignoreProject);
 router.get("/allProjectList", auth.verifyToken, adminControllerInstance.allProjectList);
-// post management APIs
+// product management APIs
 router.get("/productView", auth.verifyToken, adminControllerInstance.productView);
 router.get("/deleteProduct", auth.verifyToken, adminControllerInstance.deleteProduct);
 router.get("/ignoreProduct", auth.verifyToken, adminControllerInstance.ignoreProduct);
 router.get("/allProductList", auth.verifyToken, adminControllerInstance.allProductList);
-// post management APIs
+// service management APIs
 router.get("/serviceView", auth.verifyToken, adminControllerInstance.serviceView);
 router.get("/deleteService", auth.verifyToken, adminControllerInstance.deleteService);
 router.get("/ignoreService", auth.verifyToken, adminControllerInstance.ignoreService);
 router.get("/allServiceList", auth.verifyToken, adminControllerInstance.allServiceList);
-// post management APIs
+// job management APIs
 router.get("/jobView", auth.verifyToken, adminControllerInstance.jobView);
 router.get("/deleteJob", auth.verifyToken, adminControllerInstance.deleteJob);
 router.get("/ignoreJob", auth.verifyToken, adminControllerInstance.ignoreJob);
 router.get("/allJobList", auth.verifyToken, adminControllerInstance.allJobList);
-// post management APIs
+// Business Card management APIs
 router.get("/viewBusinessCard", auth.verifyToken, adminControllerInstance.viewBusinessCard);
 router.get("/listBusinessCard", auth.verifyToken, adminControllerInstance.listAllBusinessCard);
 router.get("/blockBusinessCard", auth.verifyToken, adminControllerInstance.blockBusinessCard);
@@ -396,11 +396,11 @@ router.get("/unblockBusinessCard", auth.verifyToken, adminControllerInstance.unb
 
 // Promotion APIs Routes
 router.get("/getAllPromotions", auth.verifyToken, adminControllerInstance.getAllPromotions);
-router.get("/getActivePromotions", auth.verifyToken, adminControllerInstance.unblockBusinessCard);
-router.get("/getExpiredPromotions", auth.verifyToken, adminControllerInstance.unblockBusinessCard);
-router.get("/viewPromotionById", auth.verifyToken, adminControllerInstance.unblockBusinessCard);
-router.get("/getPromotionByType", auth.verifyToken, adminControllerInstance.unblockBusinessCard);
-router.get("/updatePromotionById", auth.verifyToken, adminControllerInstance.unblockBusinessCard);
+router.get("/getActivePromotions", auth.verifyToken, adminControllerInstance.getActivePromotions);
+router.get("/getExpiredPromotions", auth.verifyToken, adminControllerInstance.getExpiredPromotions);
+router.get("/viewPromotionById", auth.verifyToken, adminControllerInstance.viewPromotionById);
+router.get("/getPromotionByType", auth.verifyToken, adminControllerInstance.getPromotionByType);
+router.post("/updateUserPromotionById", auth.verifyToken, adminControllerInstance.updatePromotionById);
 
 
 module.exports = router;

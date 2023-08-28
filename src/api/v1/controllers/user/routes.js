@@ -57,6 +57,8 @@ const {
   viewJobPromotionById,
   getUserActivePromotions,
   getUserPromotionList,
+  updateUserPromotionById,
+  clickOnPromotion
 } = require("./userController");
 const auth = require("../../../../helper/auth");
 // const upload = require("../../../../helper/uploadHandler");
@@ -151,6 +153,11 @@ router.get("/viewServicePromotionById", auth.verifyToken, viewServicePromotionBy
 // Get User Promotion List
 router.get("/getUserPromotionList", auth.verifyToken, getUserPromotionList);
 router.get("/getUserActivePromotions", auth.verifyToken, getUserActivePromotions);
+
+// update Promotions 
+router.post("/updateUserPromotionById", auth.verifyToken, updateUserPromotionById);
+router.post("/clickOnPromotion", auth.verifyToken, clickOnPromotion);
+
 
 
 module.exports = router;
