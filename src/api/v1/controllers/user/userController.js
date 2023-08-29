@@ -145,6 +145,7 @@ const {
   findPromotion,
   findAllPromotion,
   updatePromotion,
+  recordClickAndUpdatePromotion,
   updatePromotionById,
 } = promotionServices;
 const {
@@ -4700,8 +4701,10 @@ const rateUserPost = async (req, res, next) => {
 const createPostPromotion = async (req, res, next) => {
   const validationSchema = {
     postId: Joi.string().required(),
-    duration: Joi.string().required(),
-    bidAmount: Joi.string().required(),
+    keyword: Joi.string().required(),
+    duration: Joi.number().required(),
+    bidAmount: Joi.number().required(),
+    budget: Joi.number().required(),
   };
   try {
     let validatedBody = await Joi.validate(req.body, validationSchema);
@@ -4729,14 +4732,16 @@ const createPostPromotion = async (req, res, next) => {
         let obj = {
           ownerId: userResult._id,
           postId: postRes._id,
+          keyword: validatedBody.keyword,
           duration: validatedBody.duration,
+          budget: validatedBody.budget,
           bidAmount: validatedBody.bidAmount,
           type: "POST",
         };
         let result = await createPromotion(obj);
         let activityobj = {
           title: "Post Promotion.",
-          postId: postRes._id,
+          promotionId: result._id,
           desctiption: `Your post are promotion created.`,
           type: "PROMOTION",
           userId: userResult._id,
@@ -4781,8 +4786,10 @@ const createPostPromotion = async (req, res, next) => {
 const createProjectPromotion = async (req, res, next) => {
   const validationSchema = {
     projectId: Joi.string().required(),
-    duration: Joi.string().required(),
-    bidAmount: Joi.string().required(),
+    keyword: Joi.string().required(),
+    duration: Joi.number().required(),
+    bidAmount: Joi.number().required(),
+    budget: Joi.number().required(),
   };
   try {
     let validatedBody = await Joi.validate(req.body, validationSchema);
@@ -4817,7 +4824,7 @@ const createProjectPromotion = async (req, res, next) => {
         let result = await createPromotion(obj);
         let activityobj = {
           title: "Project Promotion.",
-          projectId: projectRes._id,
+          promotionId: result._id,
           desctiption: `Your project  promotion created.`,
           type: "PROMOTION",
           userId: userResult._id,
@@ -4862,8 +4869,10 @@ const createProjectPromotion = async (req, res, next) => {
 const createJobPromotion = async (req, res, next) => {
   const validationSchema = {
     jobId: Joi.string().required(),
-    duration: Joi.string().required(),
-    bidAmount: Joi.string().required(),
+    keyword: Joi.string().required(),
+    duration: Joi.number().required(),
+    bidAmount: Joi.number().required(),
+    budget: Joi.number().required(),
   };
   try {
     let validatedBody = await Joi.validate(req.body, validationSchema);
@@ -4898,7 +4907,7 @@ const createJobPromotion = async (req, res, next) => {
         let result = await createPromotion(obj);
         let activityobj = {
           title: "Job Promotion.",
-          jobId: jobRes._id,
+          promotionId: result._id,
           desctiption: `Your job promotion created.`,
           type: "PROMOTION",
           userId: userResult._id,
@@ -4943,8 +4952,10 @@ const createJobPromotion = async (req, res, next) => {
 const createProductPromotion = async (req, res, next) => {
   const validationSchema = {
     productId: Joi.string().required(),
-    duration: Joi.string().required(),
-    bidAmount: Joi.string().required(),
+    keyword: Joi.string().required(),
+    duration: Joi.number().required(),
+    bidAmount: Joi.number().required(),
+    budget: Joi.number().required(),
   };
   try {
     let validatedBody = await Joi.validate(req.body, validationSchema);
@@ -4979,7 +4990,7 @@ const createProductPromotion = async (req, res, next) => {
         let result = await createPromotion(obj);
         let activityobj = {
           title: "P roductPromotion.",
-          productId: productRes._id,
+          promotionId: result._id,
           desctiption: `Your product promotion created.`,
           type: "PROMOTION",
           userId: userResult._id,
@@ -5024,8 +5035,10 @@ const createProductPromotion = async (req, res, next) => {
 const createServicePromotion = async (req, res, next) => {
   const validationSchema = {
     serviceId: Joi.string().required(),
-    duration: Joi.string().required(),
-    bidAmount: Joi.string().required(),
+    keyword: Joi.string().required(),
+    duration: Joi.number().required(),
+    bidAmount: Joi.number().required(),
+    budget: Joi.number().required(),
   };
   try {
     let validatedBody = await Joi.validate(req.body, validationSchema);
@@ -5060,7 +5073,7 @@ const createServicePromotion = async (req, res, next) => {
         let result = await createPromotion(obj);
         let activityobj = {
           title: "Service Promotion.",
-          serviceId: serviceRes._id,
+          promotionId: result._id,
           desctiption: `Your Service promotion created.`,
           type: "PROMOTION",
           userId: userResult._id,
@@ -5079,6 +5092,60 @@ const createServicePromotion = async (req, res, next) => {
   }
 };
 
+/**
+   * @swagger
+   * /user/viewPromotionById:
+   *   post:
+   *     tags:
+   *       - USER VIEW
+   *     description: viewPromotionById
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: viewPromotionById
+   *         description: viewPromotionById
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/viewPromotionById'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+const viewPromotionById = async (req, res, next) => {
+  const validSchema = {
+    promotionId: Joi.string().required(),
+  };
+  try {
+    const validBody = await Joi.validate(req.query, validSchema);
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: userType.USER,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let promotionCheck = await findPromotion({
+        _id: validBody.promotionId,
+      });
+      if (promotionCheck) {
+        return res.json(
+          new response(promotionCheck, responseMessage.PROMOTION_FOUND)
+        );
+      } else {
+        throw apiError.notFound(responseMessage.PROMOTION_NOT_FOUND);
+      }
+    }
+  } catch (error) {
+    console.log("===error====", error);
+    return next(error);
+  }
+}
 /**
  * @swagger
  * /user/viewPostPromotionById:
@@ -5577,7 +5644,7 @@ const clickOnPromotion = async (req, res, next) => {
       if (promotionCheck) {
         updatedBody.click;
         return res.json(
-          new response(promotionCheck, responseMessage.PROMOTION_UPDATE)
+          new response(updatePromotion, responseMessage.PROMOTION_UPDATE)
         );
       } else {
         throw apiError.notFound(responseMessage.PROMOTION_NOT_FOUND);
@@ -5648,5 +5715,6 @@ module.exports = {
   getUserPromotionList,
   getUserActivePromotions,
   updateUserPromotionById,
-  clickOnPromotion
+  clickOnPromotion, 
+  viewPromotionById,
 };

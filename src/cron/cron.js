@@ -20,6 +20,11 @@ module.exports = () => {
             promotion.duration * 24 * 60 * 60 * 1000
         );
 
+        if (promotion.bidAmount > wallet.balance) {
+
+          throw apiError.forbidden(responseMessage.LOW_BALANCE);
+        }
+
         if (new Date() >= endDate) {
           // const wallet = await walletModel.findOne(
           //   { ownerId: promotion.ownerId },

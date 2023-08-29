@@ -43,7 +43,14 @@ const promotionSchema = new Schema(
       enum: ["ACTIVE", "BLOCK", "DELETE","EXPIRED"],
       default: "ACTIVE",
     },
+    keyword:{
+      type: String
+    },
     bidAmount: {
+        type: Number,
+        required: true,
+      },
+    budget: {
         type: Number,
         required: true,
       },

@@ -87,6 +87,10 @@ var userActivityModel = new schema(
       type: schema.Types.ObjectId,
       ref: "store",
     },
+    promotionId: {
+      type: schema.Types.ObjectId,
+      ref: "promotion",
+    },
     title: {
       type: String,
     },

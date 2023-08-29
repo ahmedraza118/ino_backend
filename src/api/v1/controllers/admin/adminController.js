@@ -8067,7 +8067,6 @@ class adminController {
       } else {
         let promotionCheck = await findPromotion({
           _id: validBody.promotionId,
-          status: status.EXPIRED,
         });
         if (promotionCheck) {
           return res.json(
