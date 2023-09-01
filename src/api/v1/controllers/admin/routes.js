@@ -50,6 +50,13 @@ router.get("/viewFAQ", auth.verifyToken, adminControllerInstance.viewFAQ);
 router.post("/editFaq", auth.verifyToken, adminControllerInstance.editFaq);
 router.post("/removeFaq", auth.verifyToken, adminControllerInstance.removeFaq);
 router.get("/listFaq", auth.verifyToken, adminControllerInstance.listFaq);
+// FAQ routes
+router.post("/addBanner", auth.verifyToken, adminControllerInstance.addBanner);
+router.get("/viewBanner", auth.verifyToken, adminControllerInstance.viewBanner);
+router.post("/editBanner", auth.verifyToken, adminControllerInstance.editBanner);
+router.post("/removeBanner", auth.verifyToken, adminControllerInstance.removeBanner);
+router.get("/listBanner", auth.verifyToken, adminControllerInstance.listBanner);
+router.get("/activeDeactiveBanner", auth.verifyToken, adminControllerInstance.activeDeactiveBanner);
 
 //report routes
 router.get("/viewReport", auth.verifyToken, adminControllerInstance.viewReport);

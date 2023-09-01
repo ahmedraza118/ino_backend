@@ -13,7 +13,7 @@ const schemaDefination = new Schema(
     bannerTitle: { type: String },
     bannerDescription: { type: String },
     bannerImage: { type: String },
-    status: { type: String, default: status.BLOCK }
+    status: { type: String, default: status.ACTIVE }
   },
   options
 );

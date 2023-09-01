@@ -5640,9 +5640,9 @@ const clickOnPromotion = async (req, res, next) => {
         userResult._id
       );
 
-      let update
+      // let update
       if (promotionCheck) {
-        updatedBody.click;
+        // updatedBody.click;
         return res.json(
           new response(updatePromotion, responseMessage.PROMOTION_UPDATE)
         );
