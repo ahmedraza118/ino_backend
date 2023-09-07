@@ -278,19 +278,22 @@ const register = async (req, res, next) => {
       //   throw new apiError(409, responseMessage.MOBILE_EXIST);
       // }
 
-      let otp = await getOTP();
+      //uncomment this for production release
+      // let otp = await getOTP();
+      let otp = 1234;
+      //uncomment this for production release
 
-      if (mobileNumber) {
-        try {
-          await sendSmsTwilio(mobileNumber, otp);
-        } catch (error) {
-          // throw new Error("Failed to send OTP");
-          // Or, if you want to include the original Twilio error message:
-          throw apiError.forbidden(responseMessage.INCORRECT_NUMBER);
-          // throw new Error("Failed to send OTP: " + error.message);
-          return; // Stop the execution of the remaining code
-        }
-      }
+      // if (mobileNumber) {
+      //   try {
+      //     await sendSmsTwilio(mobileNumber, otp);
+      //   } catch (error) {
+      //     // throw new Error("Failed to send OTP");
+      //     // Or, if you want to include the original Twilio error message:
+      //     throw apiError.forbidden(responseMessage.INCORRECT_NUMBER);
+      //     // throw new Error("Failed to send OTP: " + error.message);
+      //     return; // Stop the execution of the remaining code
+      //   }
+      // }
 
       req.body.otpTime = new Date().getTime();
       req.body.otp = otp;
@@ -307,26 +310,28 @@ const register = async (req, res, next) => {
       // const hashedPassword = bcrypt.hashSync(password, salt);
       // req.body.password = hashedPassword;
 
-      let otp = await getOTP();
+      // let otp = await getOTP();
+      let otp = 1234;
+      //uncomment this for production release
       req.body.otpTime = new Date().getTime();
       req.body.otp = otp;
 
-      if (mobileNumber) {
-        try {
-          await sendSmsTwilio(mobileNumber, otp);
-        } catch (error) {
-          // throw new Error("Failed to send OTP");
-          // Or, if you want to include the original Twilio error message:
-          throw apiError.forbidden(responseMessage.INCORRECT_NUMBER);
+      //uncomment this for production release
+      // if (mobileNumber) {
+      //   try {
+      //     await sendSmsTwilio(mobileNumber, otp);
+      //   } catch (error) {
+      //     // throw new Error("Failed to send OTP");
+      //     // Or, if you want to include the original Twilio error message:
+      //     throw apiError.forbidden(responseMessage.INCORRECT_NUMBER);
 
-          // throw new Error("Failed to send OTP: " + error.message);
-          // return; // Stop the execution of the remaining code
-        }
-      }
+      //     // throw new Error("Failed to send OTP: " + error.message);
+      //     // return; // Stop the execution of the remaining code
+      //   }
+      // }
 
       result = await createUser(req.body);
       const walletRes = await createWallet(result._id);
-
       req.body.walletId = walletRes._id;
 
       const updateRes = await updateUserById(result._id, req.body);
