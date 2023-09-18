@@ -1451,6 +1451,8 @@ const createProduct = async (req, res, next) => {
       mediaType: Joi.string().required(),
       categorie: Joi.string().required(),
       subCategorie: Joi.string().optional(),
+      moq: Joi.string().optional(),
+      mqu: Joi.string().optional(),
     };
     const validatedBody = await Joi.validate(req.body, validationSchema);
     var userResult = await findUser({

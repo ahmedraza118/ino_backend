@@ -23,6 +23,12 @@ const schemaDefination = new Schema(
     details: {
       type: String,
     },
+    moq: {
+      type: String,
+    },
+    mqu: {
+      type: String,
+    },
     amount: {
       type: String,
     },
