@@ -1,4 +1,4 @@
-const productModel = require("../../../../models/post");
+const productModel = require("../../../../models/product");
 const status = require("../../../../enums/status");
 const apiError = require("../../../../helper/apiError");
 const responseMessage = require("../../../../../assets/responseMessage");

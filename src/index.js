@@ -8,7 +8,7 @@ const bodyParser = require("body-parser");
 const cors = require("cors"); // Import cors module
 const apiErrorHandler = require("./helper/apiErrorHandler.js");
 const { logRequest, logResponse } = require("./helper/requestTrack.js");
-const promotionCron = require('./cron/cron'); // Adjust the path
+const promotionCron = require("./cron/cron"); // Adjust the path
 
 // Create Express app
 const app = express();
@@ -41,7 +41,7 @@ const connectToDatabase = async () => {
       useNewUrlParser: true,
       useUnifiedTopology: true,
     });
-    console.log("Connected to the database");
+    console.log("Connected to the database @: ", dbUrl);
   } catch (error) {
     console.error("Database connection error:", error);
     throw error;

@@ -23,7 +23,7 @@ const schemaDefination = new Schema(
     details: {
       type: String,
     },
-    rates: {
+    rate: {
       type: String,
     },
     mediaType: {
