@@ -1446,7 +1446,7 @@ const getAllPostList = async (req, res, next) => {
       throw apiError.notFound(responseMessage.USER_NOT_FOUND);
     }
     let data = await listPost({
-      status: { $ne: status.DELETE },
+      status: status.ACTIVE,
     });
     if (!data) {
       throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
@@ -2108,50 +2108,50 @@ const allProductListPaginate = async (req, res, next) => {
   }
 };
 
-  /**
-   * @swagger
-   * /admin/allProductList:
-   *   get:
-   *     tags:
-   *       - ADMIN
-   *     description: allProductList
-   *     produces:
-   *       - application/json
-   *     parameters:
-   *       - name: token
-   *         description: token
-   *         in: header
-   *         required: true
-   *       - name: postId
-   *         description: postId
-   *         in: query
-   *         required: true
-   *     responses:
-   *       200:
-   *         description: Returns success message
-   */
-  const getAllProductList = async (req, res, next)=> {
-    try {
-      let userResult = await findUser({
-        _id: req.userId,
-        status: { $ne: status.DELETE },
-        userType: userType.USER,
-      });
-      if (!userResult) {
-        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
-      }
-      let data = await listProduct({
-        status: { $ne: status.DELETE },
-      });
-      if (!data) {
-        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
-      } else {
-        return res.json(new response(data, responseMessage.DATA_FOUND));
-      }
-    } catch (error) {
-      return next(error);
+/**
+ * @swagger
+ * /admin/allProductList:
+ *   get:
+ *     tags:
+ *       - ADMIN
+ *     description: allProductList
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: postId
+ *         description: postId
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getAllProductList = async (req, res, next) => {
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+      userType: userType.USER,
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
     }
+    let data = await listProduct({
+      status: status.ACTIVE,
+    });
+    if (!data) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    } else {
+      return res.json(new response(data, responseMessage.DATA_FOUND));
+    }
+  } catch (error) {
+    return next(error);
   }
+};
 
 /////////Job////////////
 
@@ -5816,5 +5816,5 @@ module.exports = {
   clickOnPromotion,
   viewPromotionById,
   getAllPostList,
-  getAllProductList
+  getAllProductList,
 };
