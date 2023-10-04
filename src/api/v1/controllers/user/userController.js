@@ -1413,6 +1413,50 @@ const allPostListPaginate = async (req, res, next) => {
   }
 };
 
+/**
+ * @swagger
+ * /admin/allPostList:
+ *   get:
+ *     tags:
+ *       - ADMIN
+ *     description: allPostList
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: postId
+ *         description: postId
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getAllPostList = async (req, res, next) => {
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+      userType: { $in: [userType.USER] },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let data = await listPost({
+      status: { $ne: status.DELETE },
+    });
+    if (!data) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    } else {
+      return res.json(new response(data, responseMessage.DATA_FOUND));
+    }
+  } catch (error) {
+    return next(error);
+  }
+};
 /////////Products////////////
 
 /**
@@ -1549,6 +1593,8 @@ const createProduct = async (req, res, next) => {
     return next(error);
   }
 };
+
+///
 
 /**
  * @swagger
@@ -2061,6 +2107,51 @@ const allProductListPaginate = async (req, res, next) => {
     return next(error);
   }
 };
+
+  /**
+   * @swagger
+   * /admin/allProductList:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: allProductList
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: postId
+   *         description: postId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  const getAllProductList = async (req, res, next)=> {
+    try {
+      let userResult = await findUser({
+        _id: req.userId,
+        status: { $ne: status.DELETE },
+        userType: userType.USER,
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let data = await listProduct({
+        status: { $ne: status.DELETE },
+      });
+      if (!data) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      } else {
+        return res.json(new response(data, responseMessage.DATA_FOUND));
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
 
 /////////Job////////////
 
@@ -5100,29 +5191,29 @@ const createServicePromotion = async (req, res, next) => {
 };
 
 /**
-   * @swagger
-   * /user/viewPromotionById:
-   *   post:
-   *     tags:
-   *       - USER VIEW
-   *     description: viewPromotionById
-   *     produces:
-   *       - application/json
-   *     parameters:
-   *       - name: token
-   *         description: token
-   *         in: header
-   *         required: true
-   *       - name: viewPromotionById
-   *         description: viewPromotionById
-   *         in: body
-   *         required: true
-   *         schema:
-   *           $ref: '#/definitions/viewPromotionById'
-   *     responses:
-   *       200:
-   *         description: Returns success message
-   */
+ * @swagger
+ * /user/viewPromotionById:
+ *   post:
+ *     tags:
+ *       - USER VIEW
+ *     description: viewPromotionById
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: viewPromotionById
+ *         description: viewPromotionById
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/viewPromotionById'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
 const viewPromotionById = async (req, res, next) => {
   const validSchema = {
     promotionId: Joi.string().required(),
@@ -5152,7 +5243,7 @@ const viewPromotionById = async (req, res, next) => {
     console.log("===error====", error);
     return next(error);
   }
-}
+};
 /**
  * @swagger
  * /user/viewPostPromotionById:
@@ -5722,6 +5813,8 @@ module.exports = {
   getUserPromotionList,
   getUserActivePromotions,
   updateUserPromotionById,
-  clickOnPromotion, 
+  clickOnPromotion,
   viewPromotionById,
+  getAllPostList,
+  getAllProductList
 };

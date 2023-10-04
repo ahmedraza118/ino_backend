@@ -60,6 +60,8 @@ const {
   updateUserPromotionById,
   clickOnPromotion,
   viewPromotionById,
+  getAllPostList,
+  getAllProductList,
 } = require("./userController");
 const auth = require("../../../../helper/auth");
 // const upload = require("../../../../helper/uploadHandler");
@@ -140,26 +142,60 @@ router.post("/rateUserPost", auth.verifyToken, rateUserPost);
 
 //Create Promotion APIs
 router.post("/createPostPromotion", auth.verifyToken, createPostPromotion);
-router.post("/createProjectPromotion", auth.verifyToken, createProjectPromotion);
-router.post("/createProductPromotion", auth.verifyToken, createProductPromotion);
+router.post(
+  "/createProjectPromotion",
+  auth.verifyToken,
+  createProjectPromotion
+);
+router.post(
+  "/createProductPromotion",
+  auth.verifyToken,
+  createProductPromotion
+);
 router.post("/createJobPromotion", auth.verifyToken, createJobPromotion);
-router.post("/createServicePromotion", auth.verifyToken, createServicePromotion);
+router.post(
+  "/createServicePromotion",
+  auth.verifyToken,
+  createServicePromotion
+);
 
 //Get Promotion By Id APIs
 router.get("/viewPromotionById", auth.verifyToken, viewPromotionById);
 router.get("/viewPromotionByPostId", auth.verifyToken, viewPostPromotionById);
-router.get("/viewPromotionByProjectId", auth.verifyToken, viewProjectPromotionById);
-router.get("/viewPromotionByProductId", auth.verifyToken, viewProductPromotionById);
+router.get(
+  "/viewPromotionByProjectId",
+  auth.verifyToken,
+  viewProjectPromotionById
+);
+router.get(
+  "/viewPromotionByProductId",
+  auth.verifyToken,
+  viewProductPromotionById
+);
 router.get("/viewPromotionByJobId", auth.verifyToken, viewJobPromotionById);
-router.get("/viewPromotionByServiceId", auth.verifyToken, viewServicePromotionById);
+router.get(
+  "/viewPromotionByServiceId",
+  auth.verifyToken,
+  viewServicePromotionById
+);
 // Get User Promotion List
 router.get("/getUserPromotionList", auth.verifyToken, getUserPromotionList);
-router.get("/getUserActivePromotions", auth.verifyToken, getUserActivePromotions);
+router.get(
+  "/getUserActivePromotions",
+  auth.verifyToken,
+  getUserActivePromotions
+);
 
-// update Promotions 
-router.post("/updateUserPromotionById", auth.verifyToken, updateUserPromotionById);
+// update Promotions
+router.post(
+  "/updateUserPromotionById",
+  auth.verifyToken,
+  updateUserPromotionById
+);
 router.post("/clickOnPromotion", auth.verifyToken, clickOnPromotion);
 
-
+// get All data APIs
+router.get("/getAllPostList", auth.verifyToken, getAllPostList);
+router.get("/getAllProductList", auth.verifyToken, getAllProductList);
 
 module.exports = router;
