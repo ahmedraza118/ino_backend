@@ -706,7 +706,12 @@ const updateProfile = async (req, res, next) => {
       }
     } else {
       if (profilePic) {
-        value.profilePic = await commonFunction.getSecureUrl(profilePic);
+        try {
+          value.profilePic = await commonFunction.getSecureUrl(profilePic);
+          console.log('Profile pic uploaded successfully', value.profilePic);
+        } catch (error) {
+          console.error('Error while uploading profile pic:', error);
+        }
       }
       if (coverPic) {
         value.coverPic = await commonFunction.getSecureUrl(coverPic);

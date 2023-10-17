@@ -2,7 +2,8 @@ const config = require("config");
 const twilio = require("twilio");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
-const cloudinary = require("cloudinary");
+var cloudinary = require("cloudinary").v2;
+
 // Configure Twilio
 const client = twilio(
   config.get("twilio.accountSid"),
@@ -10,10 +11,16 @@ const client = twilio(
 );
 
 cloudinary.config({
-  cloud_name: config.get("cloudinary.cloud_name"),
-  api_key: config.get("cloudinary.api_key"),
-  api_secret: config.get("cloudinary.api_secret"),
+  cloud_name: "dthzsu1fh",
+  api_key: "524739972345275",
+  api_secret: "_IOBT_-sCepVoMVHsljye7Kz4Gs",
 });
+
+// cloudinary.config({
+//   cloud_name: config.get("cloudinary.cloud_name"),
+//   api_key: config.get("cloudinary.api_key"),
+//   api_secret: config.get("cloudinary.api_secret"),
+// });
 
 const logo = config.get("logo");
 
@@ -62,12 +69,25 @@ async function genBase64(data) {
   return await qrcode.toDataURL(data);
 }
 
-async function getSecureUrl(base64) {
-  var result = await cloudinary.v2.uploader.upload(base64, {
-    resource_type: "auto",
+const opts = {
+  overwrite: true,
+  invalidate: true,
+  resource_type: "auto",
+};
+
+const getSecureUrl = (image) => {
+  //imgage = > base64
+  return new Promise((resolve, reject) => {
+    cloudinary.uploader.upload(image, opts, (error, result) => {
+      if (result && result.secure_url) {
+        console.log(result.secure_url);
+        return resolve(result.secure_url);
+      }
+      console.log(error.message);
+      return reject({ message: error.message });
+    });
   });
-  return result.secure_url;
-}
+};
 
 async function sendEmailOtp(email, otp) {
   // var sub = `Use the One Time Password(OTP)  ${otp}  to verify your account. `

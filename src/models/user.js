@@ -89,7 +89,7 @@ const userSchema = new mongoose.Schema({
     },
   ],
   blockStatus: { type: Boolean, default: false },
-  referralCode: { type: String, unique: true }, // Unique referral code for the user
+  referralCode: { type: String }, // Unique referral code for the user
   referredBy: { type: mongoose.Schema.Types.ObjectId, ref: "user" }, // Referring user ID
   referredUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }], // Array of referred users
   store: [
