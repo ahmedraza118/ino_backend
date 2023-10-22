@@ -708,9 +708,9 @@ const updateProfile = async (req, res, next) => {
       if (profilePic) {
         try {
           value.profilePic = await commonFunction.getSecureUrl(profilePic);
-          console.log('Profile pic uploaded successfully', value.profilePic);
+          console.log("Profile pic uploaded successfully", value.profilePic);
         } catch (error) {
-          console.error('Error while uploading profile pic:', error);
+          console.error("Error while uploading profile pic:", error);
         }
       }
       if (coverPic) {
@@ -1491,14 +1491,13 @@ const getAllPostList = async (req, res, next) => {
 const createProduct = async (req, res, next) => {
   try {
     const validationSchema = {
-      // collectionId: Joi.string().required(),
-      productName: Joi.string().required(),
-      mediaUrl: Joi.string().required(),
+      productName: Joi.string().optional(),
+      mediaUrl: Joi.string().optional(),
       details: Joi.string().required(),
-      // postType: Joi.string().required(),
-      amount: Joi.string().required(),
-      mediaType: Joi.string().required(),
-      categorie: Joi.string().required(),
+      amount: Joi.string().optional(),
+      type: Joi.string().required(),
+      mediaType: Joi.string().optional(),
+      categorie: Joi.string().optional(),
       subCategorie: Joi.string().optional(),
       moq: Joi.string().optional(),
       mqu: Joi.string().optional(),
@@ -1520,7 +1519,6 @@ const createProduct = async (req, res, next) => {
           validatedBody.mediaUrl
         );
       }
-      validatedBody.type = "PRODUCT";
       validatedBody.userId = userResult._id;
       validatedBody.creatorId = userResult._id;
       var saveProduct = await createUserProduct(validatedBody);
@@ -1541,50 +1539,7 @@ const createProduct = async (req, res, next) => {
         type: "CREATE",
       };
       let saveRequest = await createProductRequest(obj);
-      // if (validatedBody.hashTagName.length != 0) {
-      //   for (let i = 0; i < validatedBody.hashTagName.length; i++) {
-      //     let hashTagRes = await findHashTag({
-      //       hashTagName: validatedBody.hashTagName[i],
-      //       status: { $ne: status.DELETE },
-      //     });
-      //     if (!hashTagRes) {
-      //       let obj = {
-      //         hashTagName: validatedBody.hashTagName[i],
-      //         postCount: 1,
-      //         userCount: 1,
-      //         postDetails: [
-      //           {
-      //             postId: savePost._id,
-      //           },
-      //         ],
-      //       };
-      //       let saveRes = await createHashTag(obj);
-      //       var updateRes = await updatePost(
-      //         { _id: savePost._id },
-      //         {
-      //           $addToSet: { hashTagId: saveRes._id },
-      //           $inc: { hashTagCount: 1 },
-      //         }
-      //       );
-      //     } else {
-      //       var updateRes = await updatePost(
-      //         { _id: savePost._id },
-      //         {
-      //           $addToSet: { hashTagId: hashTagRes._id },
-      //           $inc: { hashTagCount: 1 },
-      //         }
-      //       );
-      //       await updateHashTag(
-      //         { _id: hashTagRes._id },
-      //         {
-      //           $push: { postDetails: { $each: [{ postId: savePost._id }] } },
-      //           $inc: { postCount: 1, userCount: 1 },
-      //         }
-      //       );
-      //     }
-      //   }
-      //   return res.json(new response(updateRes, responseMessage.POST_CREATE));
-      // }
+
       return res.json(
         new response(
           { saveProduct, saveRequest },
@@ -1641,6 +1596,8 @@ const updateUserProduct = async (req, res, next) => {
       mediaType: Joi.string().allow("").optional(),
       categorie: Joi.string().allow("").optional(),
       subCategorie: Joi.string().allow("").optional(),
+      moq: Joi.string().optional(),
+      mqu: Joi.string().optional(),
     };
     const validatedBody = await Joi.validate(req.body, validationSchema);
     var userResult = await findUser({
@@ -1667,7 +1624,6 @@ const updateUserProduct = async (req, res, next) => {
           validatedBody.mediaUrl
         );
       }
-      validatedBody.type = "PRODUCT";
       validatedBody.userId = userResult._id;
       validatedBody.creatorId = userResult._id;
       var saveProduct = await updateProduct(
@@ -2158,6 +2114,96 @@ const getAllProductList = async (req, res, next) => {
   }
 };
 
+/**
+ * @swagger
+ * /admin/getSellerProductList:
+ *   get:
+ *     tags:
+ *       - ADMIN
+ *     description: getSellerProductList
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: postId
+ *         description: postId
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getSellerProductList = async (req, res, next) => {
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+      userType: userType.USER,
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let data = await listProduct({
+      status: status.ACTIVE,
+      type: "SELLER",
+    });
+    if (!data) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    } else {
+      return res.json(new response(data, responseMessage.DATA_FOUND));
+    }
+  } catch (error) {
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /admin/getBuyerProductList:
+ *   get:
+ *     tags:
+ *       - ADMIN
+ *     description: getBuyerProductList
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: postId
+ *         description: postId
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getBuyerProductList = async (req, res, next) => {
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+      userType: userType.USER,
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let data = await listProduct({
+      status: status.ACTIVE,
+      type: "BUYER",
+    });
+    if (!data) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    } else {
+      return res.json(new response(data, responseMessage.DATA_FOUND));
+    }
+  } catch (error) {
+    return next(error);
+  }
+};
 /////////Job////////////
 
 /**
@@ -2188,16 +2234,18 @@ const createJob = async (req, res, next) => {
   try {
     const validationSchema = {
       // collectionId: Joi.string().required(),
-      title: Joi.string().required(),
-      sector: Joi.string().required(),
-      profession: Joi.string().required(),
-      mediaUrl: Joi.string().required(),
-      description: Joi.string().required(),
+      title: Joi.string().optional(),
+      sector: Joi.string().optional(),
+      profession: Joi.string().optional(),
+      mediaUrl: Joi.string().optional(),
+      description: Joi.string().optional(),
       // postType: Joi.string().required(),
-      salary: Joi.string().required(),
-      mediaType: Joi.string().required(),
-      experience: Joi.string().required(),
+      salary: Joi.string().optional(),
+      mediaType: Joi.string().optional(),
+      experience: Joi.string().optional(),
       skills: Joi.string().optional(),
+      type: Joi.string().optional(),
+      resume: Joi.string().optional(),
     };
     const validatedBody = await Joi.validate(req.body, validationSchema);
     var userResult = await findUser({
@@ -2216,7 +2264,6 @@ const createJob = async (req, res, next) => {
           validatedBody.mediaUrl
         );
       }
-      validatedBody.type = "JOB";
       validatedBody.userId = userResult._id;
       validatedBody.creatorId = userResult._id;
       var saveJob = await createUserJob(validatedBody);
@@ -2333,6 +2380,7 @@ const updateUserJob = async (req, res, next) => {
       mediaType: Joi.string().allow("").optional(),
       experience: Joi.string().allow("").optional(),
       skills: Joi.string().allow("").optional(),
+      resume: Joi.string().allow("").optional(),
     };
     const validatedBody = await Joi.validate(req.body, validationSchema);
     var userResult = await findUser({
@@ -2801,6 +2849,142 @@ const allJobListPaginate = async (req, res, next) => {
     return next(error);
   }
 };
+
+/**
+ * @swagger
+ * /admin/getAllJobList:
+ *   get:
+ *     tags:
+ *       - ADMIN
+ *     description: getAllJobList
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: postId
+ *         description: postId
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getAllJobList = async (req, res, next) => {
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+      userType: userType.USER,
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let data = await listJob({
+      status: status.ACTIVE,
+    });
+    if (!data) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    } else {
+      return res.json(new response(data, responseMessage.DATA_FOUND));
+    }
+  } catch (error) {
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /admin/getSellerJobList:
+ *   get:
+ *     tags:
+ *       - ADMIN
+ *     description: getSellerJobList
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: postId
+ *         description: postId
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getSellerJobList = async (req, res, next) => {
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+      userType: userType.USER,
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let data = await listJob({
+      status: status.ACTIVE,
+      type: "SELLER",
+    });
+    if (!data) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    } else {
+      return res.json(new response(data, responseMessage.DATA_FOUND));
+    }
+  } catch (error) {
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /admin/getBuyerJobList:
+ *   get:
+ *     tags:
+ *       - ADMIN
+ *     description: getBuyerJobList
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: postId
+ *         description: postId
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getBuyerJobList = async (req, res, next) => {
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+      userType: userType.USER,
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let data = await listJob({
+      status: status.ACTIVE,
+      type: "BUYER",
+    });
+    if (!data) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    } else {
+      return res.json(new response(data, responseMessage.DATA_FOUND));
+    }
+  } catch (error) {
+    return next(error);
+  }
+};
+
 /////////Project////////////
 
 /**
@@ -3089,7 +3273,7 @@ const deleteUserProject = async (req, res, next) => {
         status: { $ne: status.DELETE },
       });
       if (!projectRes) {
-        throw apiError.notFound(responseMessage.JOB_NOT_FOUND);
+        throw apiError.notFound(responseMessage.PRODUCT_NOT_FOUND);
       }
       validatedBody.creatorId = userResult._id;
       validatedBody.status = status.DELETE;
@@ -3452,6 +3636,51 @@ const allProjectListPaginate = async (req, res, next) => {
   }
 };
 
+/**
+ * @swagger
+ * /admin/getAllProjectList:
+ *   get:
+ *     tags:
+ *       - ADMIN
+ *     description: getAllProjectList
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: postId
+ *         description: postId
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getAllProjectList = async (req, res, next) => {
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+      userType: userType.USER,
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let data = await listProject({
+      status: status.ACTIVE,
+    });
+    if (!data) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    } else {
+      return res.json(new response(data, responseMessage.DATA_FOUND));
+    }
+  } catch (error) {
+    return next(error);
+  }
+};
+
 /////////Services////////////
 
 /**
@@ -3482,13 +3711,14 @@ const createService = async (req, res, next) => {
   try {
     const validationSchema = {
       // collectionId: Joi.string().required(),
-      serviceName: Joi.string().required(),
-      mediaUrl: Joi.string().required(),
-      details: Joi.string().required(),
+      serviceName: Joi.string().optional(),
+      mediaUrl: Joi.string().optional(),
+      details: Joi.string().optional(),
       // postType: Joi.string().required(),
       rate: Joi.string().required(),
-      mediaType: Joi.string().required(),
-      categorie: Joi.string().required(),
+      mediaType: Joi.string().optional(),
+      categorie: Joi.string().optional(),
+      type: Joi.string().optional(),
       // subCategorie: Joi.string().optional(),
     };
     const validatedBody = await Joi.validate(req.body, validationSchema);
@@ -3508,7 +3738,6 @@ const createService = async (req, res, next) => {
           validatedBody.mediaUrl
         );
       }
-      validatedBody.type = "SERVICE";
       validatedBody.userId = userResult._id;
       validatedBody.creatorId = userResult._id;
       var saveService = await createUserService(validatedBody);
@@ -3653,7 +3882,6 @@ const updateUserService = async (req, res, next) => {
           validatedBody.mediaUrl
         );
       }
-      validatedBody.type = "SERVICE";
       validatedBody.userId = userResult._id;
       validatedBody.creatorId = userResult._id;
       var saveService = await updateService(
@@ -4102,6 +4330,141 @@ const allServiceListPaginate = async (req, res, next) => {
     return res.json(new response(properResult, responseMessage.DATA_FOUND));
   } catch (error) {
     console.log("Catch error ==>", error);
+    return next(error);
+  }
+};
+
+/**
+ * @swagger
+ * /admin/getAllServiceList:
+ *   get:
+ *     tags:
+ *       - ADMIN
+ *     description: getAllServiceList
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: postId
+ *         description: postId
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getAllServiceList = async (req, res, next) => {
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+      userType: userType.USER,
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let data = await listService({
+      status: status.ACTIVE,
+    });
+    if (!data) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    } else {
+      return res.json(new response(data, responseMessage.DATA_FOUND));
+    }
+  } catch (error) {
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /admin/getSellerServiceList:
+ *   get:
+ *     tags:
+ *       - ADMIN
+ *     description: getSellerServiceList
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: postId
+ *         description: postId
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getSellerServiceList = async (req, res, next) => {
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+      userType: userType.USER,
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let data = await listService({
+      status: status.ACTIVE,
+      type: "SELLER",
+    });
+    if (!data) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    } else {
+      return res.json(new response(data, responseMessage.DATA_FOUND));
+    }
+  } catch (error) {
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /admin/getBuyerServiceList:
+ *   get:
+ *     tags:
+ *       - ADMIN
+ *     description: getBuyerServiceList
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: postId
+ *         description: postId
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getBuyerServiceList = async (req, res, next) => {
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+      userType: userType.USER,
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let data = await listService({
+      status: status.ACTIVE,
+      type: "BUYER",
+    });
+    if (!data) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    } else {
+      return res.json(new response(data, responseMessage.DATA_FOUND));
+    }
+  } catch (error) {
     return next(error);
   }
 };
@@ -5822,4 +6185,13 @@ module.exports = {
   viewPromotionById,
   getAllPostList,
   getAllProductList,
+  getSellerProductList,
+  getBuyerProductList,
+  getAllJobList,
+  getSellerJobList,
+  getBuyerJobList,
+  getAllServiceList,
+  getSellerServiceList,
+  getBuyerServiceList,
+  getAllProjectList,
 };

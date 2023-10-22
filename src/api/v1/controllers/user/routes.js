@@ -62,6 +62,15 @@ const {
   viewPromotionById,
   getAllPostList,
   getAllProductList,
+  getSellerProductList,
+  getBuyerProductList,
+  getAllJobList,
+  getSellerJobList,
+  getBuyerJobList,
+  getAllServiceList,
+  getSellerServiceList,
+  getBuyerServiceList,
+  getAllProjectList,
 } = require("./userController");
 const auth = require("../../../../helper/auth");
 // const upload = require("../../../../helper/uploadHandler");
@@ -196,6 +205,15 @@ router.post("/clickOnPromotion", auth.verifyToken, clickOnPromotion);
 
 // get All data APIs
 router.get("/getAllPostList", auth.verifyToken, getAllPostList);
+router.get("/getAllJobList", auth.verifyToken, getAllJobList);
+router.get("/getSellerJobList", auth.verifyToken, getSellerJobList);
+router.get("/getBuyerJobList", auth.verifyToken, getBuyerJobList);
 router.get("/getAllProductList", auth.verifyToken, getAllProductList);
+router.get("/getSellerProductList", auth.verifyToken, getSellerProductList);
+router.get("/getBuyerProductList", auth.verifyToken, getBuyerProductList);
+router.get("/getAllServiceList", auth.verifyToken, getAllServiceList);
+router.get("/getSellerServiceList", auth.verifyToken, getSellerServiceList);
+router.get("/getBuyerServiceList", auth.verifyToken, getBuyerServiceList);
+router.get("/getAllProjectList", auth.verifyToken, getAllProjectList);
 
 module.exports = router;

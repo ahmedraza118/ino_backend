@@ -38,6 +38,9 @@ const schemaDefination = new Schema(
     skills : {
       type: String,
     },
+    resume : {
+      type: String,
+    },
     mediaType: {
       type: String,
       enum: ["TEXT", "MEDIA"],
