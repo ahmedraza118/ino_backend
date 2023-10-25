@@ -92,6 +92,9 @@ const userSchema = new mongoose.Schema({
   referralCode: { type: String }, // Unique referral code for the user
   referredBy: { type: mongoose.Schema.Types.ObjectId, ref: "user" }, // Referring user ID
   referredUsers: [{ type: mongoose.Schema.Types.ObjectId, ref: "user" }], // Array of referred users
+  referredUserCount: {
+    type: Number
+  },
   store: [
     {
       type: Schema.Types.ObjectId,

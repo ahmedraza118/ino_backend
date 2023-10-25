@@ -4589,8 +4589,12 @@ const addReferral = async (req, res, next) => {
       } else {
         referral = await updateUserById(
           { _id: referral._id },
-          { referredUsers: userResult._id }
+          {
+            $push: { referredUsers: userResult._id },
+            $inc: { referredUserCount: 1 }
+          }
         );
+        
         var updatedUser = await updateUserById(
           { _id: userResult._id },
           { referredBy: referral._id }

@@ -570,7 +570,7 @@ class storeController {
         throw apiError.notFound(responseMessage.USER_NOT_FOUND);
       }
       let dataResults = await listAllStores({
-        status: { $ne: status.DELETE },
+        status: status.ACTIVE,
       });
       if (!dataResults) {
         throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
