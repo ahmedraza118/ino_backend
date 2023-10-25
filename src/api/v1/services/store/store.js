@@ -41,11 +41,9 @@ async function findStoreByName(name) {
   }
 }
 
-async function listAllStores() {
+async function listAllStores(query) {
   try {
-    const stores = await Store.find({
-      status: { $ne: status.DELETE },
-    });
+    const stores = await Store.find(query);
     return stores;
   } catch (error) {
     // Handle the error and provide a meaningful error message

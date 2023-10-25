@@ -409,5 +409,15 @@ router.get("/viewPromotionById", auth.verifyToken, adminControllerInstance.viewP
 router.get("/getPromotionByType", auth.verifyToken, adminControllerInstance.getPromotionByType);
 router.post("/updateUserPromotionById", auth.verifyToken, adminControllerInstance.updatePromotionById);
 
+//Governament Project APIs
+router.post("/createProject", auth.verifyToken, adminControllerInstance.createProject);
+router.post("/updateProject", auth.verifyToken, adminControllerInstance.updateProject);
+router.post("/deleteProject", auth.verifyToken, adminControllerInstance.deleteProject);
+router.get("/projectListPaginate", auth.verifyToken, adminControllerInstance.projectListPaginate);
+router.get("/projectView", auth.verifyToken, adminControllerInstance.projectView);
+router.get("/getAllProjectList", auth.verifyToken, adminControllerInstance.getAllProjectList);
+router.get("/getAllGovtProjectList", auth.verifyToken, adminControllerInstance.getAllGovtProjectList);
+
+
 
 module.exports = router;

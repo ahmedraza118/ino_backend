@@ -93,6 +93,7 @@ class storeController {
         mail: Joi.string().required(),
         type: Joi.string().required(),
         banner: Joi.string().optional(),
+        offer: Joi.string().optional(),
         location: Joi.string().required(),
         timing: Joi.string().required(),
         established: Joi.string().optional(),
@@ -199,6 +200,7 @@ class storeController {
         instagram: Joi.string().optional(),
         linkedIn: Joi.string().optional(),
         website: Joi.string().optional(),
+        offer: Joi.string().optional(),
         awards: Joi.array().items(Joi.string()), // Array of strings for awards
         certificates: Joi.array().items(Joi.string()), // Array of strings for certificates
         catalogue: Joi.array()
@@ -567,7 +569,9 @@ class storeController {
       if (!userResult) {
         throw apiError.notFound(responseMessage.USER_NOT_FOUND);
       }
-      let dataResults = await listAllStores();
+      let dataResults = await listAllStores({
+        status: { $ne: status.DELETE },
+      });
       if (!dataResults) {
         throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
       }
@@ -664,6 +668,17 @@ class storeController {
     try {
       const validationSchema = {
         storeId: Joi.string().required(),
+        catalogue: Joi.array()
+        .items(
+          Joi.object({
+            // Define the array of objects schema
+            name: Joi.string().optional(),
+            description: Joi.string().optional(),
+            price: Joi.number().optional(),
+          })
+        )
+        .optional(),
+      phoneNumber: Joi.string().optional(),
       };
       const validatedBody = await Joi.validate(req.body, validationSchema);
       var userResult = await findUser({

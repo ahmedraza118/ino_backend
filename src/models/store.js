@@ -40,6 +40,7 @@ const schemaDefination = new Schema(
     instagram: { type: String },
     linkedIn: { type: String },
     website: { type: String },
+    offer: { type: String },
   },
   options
 );

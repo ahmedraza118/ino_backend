@@ -160,6 +160,7 @@ module.exports = {
 	POST_NOT_FOUND: "Post not found.",
 	STORE_NOT_FOUND: "Store not found.",
 	PRODUCT_NOT_FOUND: "Product not found.",
+	PROGECT_NOT_FOUND: "Product not found.",
 	JOB_NOT_FOUND: "Job not found.",
 	PROJECT_NOT_FOUND: "Project not found.",
 	SERVICE_NOT_FOUND: "Service not found.",
