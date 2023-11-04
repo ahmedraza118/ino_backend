@@ -3670,6 +3670,7 @@ const getAllProjectList = async (req, res, next) => {
     }
     let data = await listProject({
       status: status.ACTIVE,
+      type : { $ne: 'GOVT' },
     });
     if (!data) {
       throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
@@ -3680,6 +3681,53 @@ const getAllProjectList = async (req, res, next) => {
     return next(error);
   }
 };
+
+
+/**
+   * @swagger
+   * /admin/getAllGovtProjectList:
+   *   get:
+   *     tags:
+   *       - ADMIN
+   *     description: getAllGovtProjectList
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: postId
+   *         description: postId
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+const  getAllGovtProjectList = async(req, res, next)=> {
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+      userType: userType.USER,
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let data = await listProject({
+      status: status.ACTIVE,
+      type: "GOVT",
+    });
+    if (!data) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    } else {
+      return res.json(new response(data, responseMessage.DATA_FOUND));
+    }
+  } catch (error) {
+    return next(error);
+  }
+}
 
 /////////Services////////////
 
@@ -6198,4 +6246,5 @@ module.exports = {
   getSellerServiceList,
   getBuyerServiceList,
   getAllProjectList,
+  getAllGovtProjectList,
 };

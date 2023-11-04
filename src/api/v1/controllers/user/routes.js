@@ -71,6 +71,7 @@ const {
   getSellerServiceList,
   getBuyerServiceList,
   getAllProjectList,
+  getAllGovtProjectList,
 } = require("./userController");
 const auth = require("../../../../helper/auth");
 // const upload = require("../../../../helper/uploadHandler");
@@ -215,5 +216,6 @@ router.get("/getAllServiceList", auth.verifyToken, getAllServiceList);
 router.get("/getSellerServiceList", auth.verifyToken, getSellerServiceList);
 router.get("/getBuyerServiceList", auth.verifyToken, getBuyerServiceList);
 router.get("/getAllProjectList", auth.verifyToken, getAllProjectList);
+router.get("/getAllGovtProjectList", auth.verifyToken, getAllGovtProjectList);
 
 module.exports = router;

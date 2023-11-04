@@ -7733,7 +7733,11 @@ class adminController {
    *         description: Something went wrong.
    */
   async listAllBusinessCard(req, res, next) {
+    const validSchema = {
+      businessCardId: Joi.string().required(),
+    };
     try {
+      const validBody = await Joi.validate(req.query, validSchema);
       let userResult = await findUser({
         _id: req.userId,
         userType: userType.ADMIN,
