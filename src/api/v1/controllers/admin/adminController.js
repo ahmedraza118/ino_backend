@@ -18,6 +18,12 @@ const {
   productCategorieServices,
 } = require("../../services/productCategorie/productCategorie");
 const {
+  sectorServices,
+} = require("../../services/sector/sector");
+const {
+  professionCategorieServices,
+} = require("../../services/professionCategorie/professionCategorie");
+const {
   serviceCategorieServices,
 } = require("../../services/serviceCategorie/serviceCategorie");
 const {
@@ -301,6 +307,20 @@ const {
   productCategorieList,
   paginateSearchProductCategorie,
 } = productCategorieServices;
+const {
+  createSector,
+  findSector,
+  updateSector,
+  sectorList,
+  paginateSearchSector,
+} = sectorServices;
+const {
+  createProfessionCategorie,
+  findProfessionCategorie,
+  updateProfessionCategorie,
+  professionCategorieList,
+  paginateSearchProfessionCategorie,
+} = professionCategorieServices;
 const {
   createServiceCategorie,
   findServiceCategorie,
@@ -1019,13 +1039,434 @@ class adminController {
 
   // get All Product Categories
 
-  async getAllProdctCategories(req, res, next) {
+  async getAllProductCategories(req, res, next) {
     try {
       const categorieRes = await productCategorieList();
       return res.json(new response(categorieRes, responseMessage.DATA_FOUND));
     } catch (error) {
       // Handle the error gracefully (e.g., log or throw a custom error)
       console.error("Error in getAllproductCategories:", error);
+      return next(error);
+    }
+  }
+  //////////////////////
+  /**
+   * @swagger
+   * /user/createSector:
+   *   post:
+   *     tags:
+   *       - PRODUCT CATEGORIE
+   *     description: createSector
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: name
+   *         description: name
+   *         in: formData
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async createSector(req, res, next) {
+    const validationSchema = {
+      name: Joi.string().required(),
+      description: Joi.string().optional(),
+    };
+    try {
+      const { value, error } = Joi.object(validationSchema).validate(req.body);
+      if (error) {
+        throw error;
+      }
+
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let categorieRes = await findSector({
+        name: req.body.name,
+        status: { $ne: status.DELETE },
+      });
+      if (categorieRes) {
+        throw apiError.conflict(responseMessage.CATEGORIE_EXIST);
+      }
+      value.userId = userResult._id;
+      let saveRes = await createSector(value);
+      return res.json(new response(saveRes, responseMessage.CREATE_CATEGORIE));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/viewSectorById:
+   *   get:
+   *     tags:
+   *       - viewSectorById
+   *     description: viewSectorById
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: product name
+   *         description: description
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async viewSectorById(req, res, next) {
+    const validationSchema = {
+      sectorId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let resultRes = await findSector({
+        _id: validatedBody.sectorId,
+        status: { $ne: status.DELETE },
+      });
+      if (!resultRes) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/deleteSector:
+   *   delete:
+   *     tags:
+   *       - deleteSector
+   *     description: deleteSector
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: name
+   *         description: description
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async deleteSector(req, res, next) {
+    const validationSchema = {
+      sectorId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let resultRes = await findSector({
+        _id: validatedBody.sectorId,
+        status: { $ne: status.DELETE },
+      });
+      if (!resultRes) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      let updateRes = await updateSector(
+        { _id: resultRes._id },
+        { status: status.DELETE }
+      );
+      return res.json(
+        new response(updateRes, responseMessage.CATEGORIE_DELETE)
+      );
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/SearchSector:
+   *   get:
+   *     tags:
+   *       - Search
+   *     description: SearchSector
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: fromDate
+   *         description: fromDate
+   *         in: query
+   *         required: false
+   *       - name: toDate
+   *         description: toDate
+   *         in: query
+   *         required: false
+   *       - name: page
+   *         description: page
+   *         in: query
+   *         required: false
+   *       - name: limit
+   *         description: limit
+   *         in: query
+   *         required: false
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async searchSector(req, res, next) {
+    const validationSchema = {
+      fromDate: Joi.string().optional(),
+      toDate: Joi.string().optional(),
+      page: Joi.string().optional(),
+      limit: Joi.string().optional(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let resultRes = await paginateSearchSector(validatedBody);
+      if (resultRes.docs.length == 0) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  // get All Sectors
+
+  async getAllSector(req, res, next) {
+    try {
+      const categorieRes = await sectorList();
+      return res.json(new response(categorieRes, responseMessage.DATA_FOUND));
+    } catch (error) {
+      // Handle the error gracefully (e.g., log or throw a custom error)
+      console.error("Error in getAllSectors:", error);
+      return next(error);
+    }
+  }
+
+  ////////////////////////////////////////////
+  /**
+   * @swagger
+   * /user/createProfessionCategorie:
+   *   post:
+   *     tags:
+   *       - Profession CATEGORIE
+   *     description: createProfessionCategorie
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: name
+   *         description: name
+   *         in: formData
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async createProfessionCategorie(req, res, next) {
+    const validationSchema = {
+      name: Joi.string().required(),
+      description: Joi.string().required(),
+    };
+    try {
+      const { value, error } = Joi.object(validationSchema).validate(req.body);
+      if (error) {
+        throw error;
+      }
+
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let categorieRes = await findProfessionCategorie({
+        name: req.body.name,
+        status: { $ne: status.DELETE },
+      });
+      if (categorieRes) {
+        throw apiError.conflict(responseMessage.CATEGORIE_EXIST);
+      }
+      value.userId = userResult._id;
+      let saveRes = await createProfessionCategorie(value);
+      return res.json(new response(saveRes, responseMessage.CREATE_CATEGORIE));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/viewProfessionCategorie:
+   *   get:
+   *     tags:
+   *       - viewProfessionCategorie
+   *     description: viewProfessionCategorie
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: Profession name
+   *         description: description
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async viewProfessionCategorie(req, res, next) {
+    const validationSchema = {
+      categorieId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let resultRes = await findProfessionCategorie({
+        _id: validatedBody.categorieId,
+        status: { $ne: status.DELETE },
+      });
+      if (!resultRes) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/deleteProfessionCategorie:
+   *   delete:
+   *     tags:
+   *       - deleteProfessionCategorie
+   *     description: deleteProfessionCategorie
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: name
+   *         description: description
+   *         in: query
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async deleteProfessionCategorie(req, res, next) {
+    const validationSchema = {
+      categorieId: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let userResult = await findUser({
+        _id: req.userId,
+        userType: userType.ADMIN,
+        status: { $ne: status.DELETE },
+      });
+      if (!userResult) {
+        throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+      }
+      let resultRes = await findProfessionCategorie({
+        _id: validatedBody.categorieId,
+        status: { $ne: status.DELETE },
+      });
+      if (!resultRes) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      let updateRes = await updateProfessionCategorie(
+        { _id: resultRes._id },
+        { status: status.DELETE }
+      );
+      return res.json(
+        new response(updateRes, responseMessage.CATEGORIE_DELETE)
+      );
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  /**
+   * @swagger
+   * /user/SearchProfessionCategories:
+   *   get:
+   *     tags:
+   *       - Search
+   *     description: SearchProfessionCategories
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: fromDate
+   *         description: fromDate
+   *         in: query
+   *         required: false
+   *       - name: toDate
+   *         description: toDate
+   *         in: query
+   *         required: false
+   *       - name: page
+   *         description: page
+   *         in: query
+   *         required: false
+   *       - name: limit
+   *         description: limit
+   *         in: query
+   *         required: false
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async SearchProfessionCategories(req, res, next) {
+    const validationSchema = {
+      fromDate: Joi.string().optional(),
+      toDate: Joi.string().optional(),
+      page: Joi.string().optional(),
+      limit: Joi.string().optional(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.query, validationSchema);
+      let resultRes = await paginateSearchProfessionCategorie(validatedBody);
+      if (resultRes.docs.length == 0) {
+        throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+      }
+      return res.json(new response(resultRes, responseMessage.DATA_FOUND));
+    } catch (error) {
+      return next(error);
+    }
+  }
+
+  // get All Profession Categories
+
+  async getAllProfessionCategories(req, res, next) {
+    try {
+      const categorieRes = await professionCategorieList();
+      return res.json(new response(categorieRes, responseMessage.DATA_FOUND));
+    } catch (error) {
+      // Handle the error gracefully (e.g., log or throw a custom error)
+      console.error("Error in getAllProfessionCategories:", error);
       return next(error);
     }
   }

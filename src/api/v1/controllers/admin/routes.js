@@ -185,9 +185,9 @@ router.post(
 //   adminControllerInstance.SearchProductCategories
 // );
 router.get(
-  "/getAllProdctCategories",
+  "/getAllProductCategories",
   auth.verifyToken,
-  adminControllerInstance.getAllProdctCategories
+  adminControllerInstance.getAllProductCategories
 );
 //Product Sub Categories routes
 router.get(
@@ -418,6 +418,59 @@ router.get("/projectView", auth.verifyToken, adminControllerInstance.projectView
 router.get("/getAllProjectList", auth.verifyToken, adminControllerInstance.getAllProjectList);
 router.get("/getAllGovtProjectList", auth.verifyToken, adminControllerInstance.getAllGovtProjectList);
 
+//Profession Categories routes
+router.get(
+  "/viewProfessionCategorie",
+  auth.verifyToken,
+  adminControllerInstance.viewProfessionCategorie
+);
+router.post(
+  "/createProfessionCategorie",
+  auth.verifyToken,
+  adminControllerInstance.createProfessionCategorie
+);
+router.post(
+  "/deleteProfessionCategorie",
+  auth.verifyToken,
+  adminControllerInstance.deleteProfessionCategorie
+);
+// router.get(
+//   "/SearchProfessionCategories",
+//   auth.verifyToken,
+//   adminControllerInstance.SearchProfessionCategories
+// );
+router.get(
+  "/getAllProfessionCategories",
+  auth.verifyToken,
+  adminControllerInstance.getAllProfessionCategories
+);
+
+//Sector routes
+router.get(
+  "/viewSectorById",
+  auth.verifyToken,
+  adminControllerInstance.viewSectorById
+);
+router.post(
+  "/createSector",
+  auth.verifyToken,
+  adminControllerInstance.createSector
+);
+router.post(
+  "/deleteSector",
+  auth.verifyToken,
+  adminControllerInstance.deleteSector
+);
+// router.get(
+//   "/SearchProfessionCategories",
+//   auth.verifyToken,
+//   adminControllerInstance.SearchProfessionCategories
+// );
+router.get(
+  "/getAllSector",
+  auth.verifyToken,
+  adminControllerInstance.getAllSector
+);
 
 
 module.exports = router;

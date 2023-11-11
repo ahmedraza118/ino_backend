@@ -1695,7 +1695,7 @@ const updateUserProduct = async (req, res, next) => {
 const deleteUserProduct = async (req, res, next) => {
   try {
     const validationSchema = {
-      postId: Joi.string().required(),
+      productId: Joi.string().required(),
     };
     const validatedBody = await Joi.validate(req.body, validationSchema);
     var userResult = await findUser({
@@ -1706,7 +1706,7 @@ const deleteUserProduct = async (req, res, next) => {
       throw apiError.notFound(responseMessage.USER_NOT_FOUND);
     } else {
       let postRes = await findOneProduct({
-        _id: validatedBody.postId,
+        _id: validatedBody.productId,
         userId: userResult._id,
         status: { $ne: status.DELETE },
       });
@@ -1719,7 +1719,7 @@ const deleteUserProduct = async (req, res, next) => {
       await updateUserById({ _id: userResult._id }, { isPost: true });
       await createActivity({
         userId: userResult._id,
-        postId: savePost._id,
+        productId: savePost._id,
         // collectionId: result._id,
         title: "Product Delete",
         desctiption: "Product Deleted successfully.",
