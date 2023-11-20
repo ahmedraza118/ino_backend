@@ -24,5 +24,8 @@
     "email": "ahmedrazach118@gmail.com",
     "password": "nagsrxbxqcditvdk"
   },
+  "RAZORPAY_KEY_ID": "rzp_test_tNENdnPVNBSVvj",
+  "RAZORPAY_KEY_SECRET": "iKEbcZu38V2PwTMO74biRfWh",
   "logo": "http://res.cloudinary.com/dytxy932u/image/upload/v1649153755/e4gqdqnfkqzubyjhu95q.png"
+
 }

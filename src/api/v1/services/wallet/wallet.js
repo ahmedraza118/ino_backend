@@ -20,19 +20,27 @@ const walletServices = {
     }
   },
 
-  deposit: async (userId, amount) => {
+  deposit: async (userId, query) => {
     try {
       const userWallet = await walletModel.findOne({ ownerId: userId });
 
       if (!userWallet) {
         throw apiError.notFound(responseMessage.WALLET_NOT_FOUND);
       }
-
       // Update the balance and transaction history
-      userWallet.balance += amount;
+      userWallet.balance += query.amount;
       userWallet.transactionHistory.push({
-        amount: amount,
+        amount: query.amount,
         type: "deposit",
+        order_id: query.order_id,
+        entity:query.entity,
+        currency: query.currency,
+        status : query.status,
+        receipt : query.receipt,
+        attempts : query.attempts,
+        notes : query.notes,
+        offer_id : query.offer_id,
+        created_at: query.created_at,
       });
 
       const updatedWallet = await userWallet.save();

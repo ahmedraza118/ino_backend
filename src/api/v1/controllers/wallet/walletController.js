@@ -9,6 +9,8 @@ const userModel = require("../../../../models/user");
 const apiError = require("../../../../helper/apiError");
 const response = require("../../../../../assets/response");
 const bcrypt = require("bcryptjs");
+const Razorpay = require('razorpay');
+
 const responseMessage = require("../../../../../assets/responseMessage");
 const commonFunction = require("../../../../helper/util.js");
 
@@ -33,6 +35,11 @@ const {
   getWallet,
   listAllWallets,
 } = walletServices;
+// Initialize Razorpay (replace 'YOUR_RAZORPAY_KEY_ID' and 'YOUR_RAZORPAY_KEY_SECRET' with your actual Razorpay credentials)
+const razorpay = new Razorpay({
+  key_id: config.get('RAZORPAY_KEY_ID'),
+  key_secret: config.get('RAZORPAY_KEY_SECRET'),
+});
 
 class walletController {
   /**
@@ -72,8 +79,30 @@ class walletController {
       if (!userResult) {
         throw apiError.notFound(responseMessage.USER_NOT_FOUND);
       }
-      let updateRes = await deposit(userResult._id, validatedBody.amount);
-      return res.json(new response(updateRes, responseMessage.FUND_DEPOSIT));
+
+       // Use Razorpay API to create order
+      const order = await razorpay.orders.create({
+        amount: validatedBody.amount * 100, // Convert amount to paise
+        currency: 'INR',
+        receipt: req.userId // user Id in database
+      });
+
+      validatedBody.order_id = order.id;
+      validatedBody.entity = order.entity;
+      validatedBody.currency = order.currency;
+      validatedBody.status = order.status;
+      validatedBody.receipt = order.receipt;
+      validatedBody.attempts = order.attempts;
+      validatedBody.notes = order.notes;
+      validatedBody.offer_id = order.offer_id;
+      validatedBody.created_at = order.created_at;
+      
+      console.log("Order is here!!!", order);
+
+      let updatedRes = await deposit(userResult._id, validatedBody);
+      console.log("saved Order is here!!!", updatedRes);
+
+      return res.json(new response(updatedRes, responseMessage.FUND_DEPOSIT));
     } catch (error) {
       return next(error);
     }
