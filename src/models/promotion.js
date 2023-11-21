@@ -52,11 +52,9 @@ const promotionSchema = new Schema(
       },
     budget: {
         type: Number,
-        required: true,
       },
     spentAmount: {
         type: Number,
-        required: true,
       },
       clickedBy: [
         {

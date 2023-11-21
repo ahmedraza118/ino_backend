@@ -133,6 +133,7 @@ var userActivityModel = new schema(
         "REELS",
         "SHARE",
         "RESELLER",
+        "PROMOTION",
       ],
     },
     status: {
