@@ -45,6 +45,7 @@ const {
   rateUserPost,
   sendOtpToPhone,
   updatePhoneNumber,
+  createCampaignPromotion,
   createPostPromotion,
   createProjectPromotion,
   createProductPromotion,
@@ -72,6 +73,11 @@ const {
   getBuyerServiceList,
   getAllProjectList,
   getAllGovtProjectList,
+  createCampaignPromotion,
+  getCampaignsList,
+  getUserAllCampaigns,
+  getUserActiveCampaigns,
+  updateUserCampaignById
 } = require("./userController");
 const auth = require("../../../../helper/auth");
 // const upload = require("../../../../helper/uploadHandler");
@@ -217,5 +223,12 @@ router.get("/getSellerServiceList", auth.verifyToken, getSellerServiceList);
 router.get("/getBuyerServiceList", auth.verifyToken, getBuyerServiceList);
 router.get("/getAllProjectList", auth.verifyToken, getAllProjectList);
 router.get("/getAllGovtProjectList", auth.verifyToken, getAllGovtProjectList);
+
+// Campaign Routes
+router.get("/createCampaignPromotion", auth.verifyToken, createCampaignPromotion);
+router.get("/updateUserCampaignById", auth.verifyToken, updateUserCampaignById);
+router.get("/getUserActiveCampaigns", auth.verifyToken, getUserActiveCampaigns);
+router.get("/getUserAllCampaigns", auth.verifyToken, getUserAllCampaigns);
+router.get("/getCampaignsList", auth.verifyToken, getCampaignsList);
 
 module.exports = router;

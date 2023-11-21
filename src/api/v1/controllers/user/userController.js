@@ -5192,6 +5192,308 @@ const rateUserPost = async (req, res, next) => {
   }
 };
 
+//Campaign APIs
+/**
+ * @swagger
+ * /user/createCampaignPromotion:
+ *   post:
+ *     tags:
+ *       - USER REPORT
+ *     description: createReport
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: createReport
+ *         description: createReport
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/createReport'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const createCampaignPromotion = async (req, res, next) => {
+  const validationSchema = {
+    headline: Joi.string().required(),
+    photo: Joi.string().required(),
+    description: Joi.string().required(),
+    keyword: Joi.string().required(),
+    duration: Joi.number().required(),
+    bidAmount: Joi.number().required(),
+    budget: Joi.number().required(),
+    startDate: Joi.number().required(),
+  };
+  try {
+    let validatedBody = await Joi.validate(req.body, validationSchema);
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: userType.USER,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      const photo = commonFunction.getSecureUrl(validatedBody.photo)
+        let obj = {
+          ownerId: userResult._id,
+          keyword: validatedBody.keyword,
+          duration: validatedBody.duration,
+          budget: validatedBody.budget,
+          bidAmount: validatedBody.bidAmount,
+          startDate: validatedBody.startDate,
+          description: validatedBody.description,
+          headline: validatedBody.headline,
+          photo: photo,
+          type: "CAMPAIGN",
+        };
+
+        let result = await createPromotion(obj);
+        let activityobj = {
+          title: "Campaign.",
+          promotionId: result._id,
+          desctiption: `Your Campaign created.`,
+          type: "CAMPAIGN",
+          userId: userResult._id,
+        };
+        await createActivity(activityobj);
+        return res.json(
+          new response(result, responseMessage.CREATE_CAMPAIGN)
+        );
+      
+    }
+  } catch (error) {
+    console.log("===error====", error);
+    return next(error);
+  }
+};
+
+/**
+ * @swagger
+ * /user/getUserActiveCampaigns:
+ *   post:
+ *     tags:
+ *       - USER VIEW
+ *     description: getUserActiveCampaigns
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: getUserActiveCampaigns
+ *         description: getUserActiveCampaigns
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/getUserActiveCampaigns'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getUserActiveCampaigns = async (req, res, next) => {
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: userType.USER,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let promotionCheck = await findAllPromotion({
+        userId: userResult._id,
+        status: status.ACTIVE,
+        type: "CAMPAIGN"
+      });
+      if (promotionCheck) {
+        return res.json(
+          new response(promotionCheck, responseMessage.CAMPAIGN_FOUND)
+        );
+      } else {
+        throw apiError.notFound(responseMessage.CAMPAIGN_NOT_FOUND);
+      }
+    }
+  } catch (error) {
+    console.log("===error====", error);
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /user/getUserAllCampaigns:
+ *   post:
+ *     tags:
+ *       - USER VIEW
+ *     description: getUserAllCampaigns
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: getUserAllCampaigns
+ *         description: getUserAllCampaigns
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/getUserAllCampaigns'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getUserAllCampaigns = async (req, res, next) => {
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: userType.USER,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let promotionCheck = await findAllPromotion({
+        userId: userResult._id,
+        type: "CAMPAIGN"
+      });
+      if (promotionCheck) {
+        return res.json(
+          new response(promotionCheck, responseMessage.CAMPAIGN_FOUND)
+        );
+      } else {
+        throw apiError.notFound(responseMessage.CAMPAIGN_NOT_FOUND);
+      }
+    }
+  } catch (error) {
+    console.log("===error====", error);
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /user/getCampaignsList:
+ *   post:
+ *     tags:
+ *       - USER VIEW
+ *     description: getCampaignsList
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: getCampaignsList
+ *         description: getCampaignsList
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/getCampaignsList'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getCampaignsList = async (req, res, next) => {
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let promotionCheck = await findAllPromotion({
+        status: status.ACTIVE,
+        type: "CAMPAIGN"
+      });
+      if (promotionCheck) {
+        return res.json(
+          new response(promotionCheck, responseMessage.CAMPAIGN_FOUND)
+        );
+      } else {
+        throw apiError.notFound(responseMessage.CAMPAIGN_NOT_FOUND);
+      }
+    }
+  } catch (error) {
+    console.log("===error====", error);
+    return next(error);
+  }
+};
+
+/**
+ * @swagger
+ * /user/updateUserCampaignById:
+ *   post:
+ *     tags:
+ *       - USER VIEW
+ *     description: updateUserCampaignById
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: updateUserCampaignById
+ *         description: updateUserCampaignById
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/updateUserCampaignById'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const updateUserCampaignById = async (req, res, next) => {
+  const validSchema = {
+    campaignId: Joi.string().required(),
+    status: Joi.string().optional(),
+    duration: Joi.string().optional(),
+    bidAmount: Joi.string().optional(),
+    headline: Joi.string().optional(),
+    photo: Joi.string().optional(),
+    description: Joi.string().optional(),
+  };
+  try {
+    const validBody = await Joi.validate(req.body, validSchema);
+    const { campaignId, ...updatedBody } = validBody;
+
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let promotionCheck = await updatePromotionById(
+        {
+          _id: campaignId,
+          ownerId: req.userId,
+          type: "CAMPAIGN"
+        },
+        updatedBody
+      );
+      if (promotionCheck) {
+        return res.json(
+          new response(promotionCheck, responseMessage.PROMOTION_UPDATE)
+        );
+      } else {
+        throw apiError.notFound(responseMessage.CAMPAIGN_NOT_FOUND);
+      }
+    }
+  } catch (error) {
+    console.log("===error====", error);
+    return next(error);
+  }
+};
+
+//Promotion APIs
 /**
  * @swagger
  * /user/createPostPromotion:
@@ -5944,6 +6246,7 @@ const viewServicePromotionById = async (req, res, next) => {
     return next(error);
   }
 };
+
 /**
  * @swagger
  * /user/getUserActivePromotions:
@@ -5978,7 +6281,7 @@ const getUserActivePromotions = async (req, res, next) => {
     if (!userResult) {
       throw apiError.notFound(responseMessage.USER_NOT_FOUND);
     } else {
-      let promotionCheck = await findPromotion({
+      let promotionCheck = await findAllPromotion({
         userId: userResult._id,
         status: status.ACTIVE,
       });
@@ -6030,7 +6333,7 @@ const getUserPromotionList = async (req, res, next) => {
     if (!userResult) {
       throw apiError.notFound(responseMessage.USER_NOT_FOUND);
     } else {
-      let promotionCheck = await findPromotion({
+      let promotionCheck = await findAllPromotion({
         userId: userResult._id,
       });
       if (promotionCheck) {
@@ -6038,7 +6341,7 @@ const getUserPromotionList = async (req, res, next) => {
           new response(promotionCheck, responseMessage.PROMOTION_FOUND)
         );
       } else {
-        throw apiError.notFound(responseMessage.PRODUCT_NOT_FOUND);
+        throw apiError.notFound(responseMessage.PROMOTION_NOT_FOUND);
       }
     }
   } catch (error) {
@@ -6084,7 +6387,6 @@ const updateUserPromotionById = async (req, res, next) => {
 
     let userResult = await findUser({
       _id: req.userId,
-      userType: userType.ADMIN,
       status: { $ne: status.DELETE },
     });
     if (!userResult) {
@@ -6247,4 +6549,9 @@ module.exports = {
   getBuyerServiceList,
   getAllProjectList,
   getAllGovtProjectList,
+  createCampaignPromotion,
+  getCampaignsList,
+  getUserAllCampaigns,
+  getUserActiveCampaigns,
+  updateUserCampaignById
 };

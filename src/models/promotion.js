@@ -36,7 +36,16 @@ const promotionSchema = new Schema(
     },
     type: {
       type: String,
-      enum: ["POST", "PROJECT", "PRODUCT","JOB","SERVICE"],
+      enum: ["POST", "PROJECT", "PRODUCT","JOB","SERVICE","CAMPAIGN"],
+    },
+    description:{
+      type: String,
+    },
+    headline:{
+      type: String,
+    },
+    photo:{
+      type: String,
     },
     status: {
       type: String,
@@ -70,6 +79,9 @@ const promotionSchema = new Schema(
         type: Number,
         required: true,
       },
+      startDate:{
+        type: Date
+      }
   },
   options
 );
