@@ -31,8 +31,8 @@ app.use(apiErrorHandler);
 const connectToDatabase = async () => {
   try {
     const dbConfig = config.get("dbConfig");
-    let dbUrl =  'mongodb+srv://ahmedrazach118:ahmed118118@fitherofficial.ku0eltl.mongodb.net/'
-    // let dbUrl = `mongodb://${dbConfig.dbHost}:${dbConfig.dbPort}/${dbConfig.dbName}`;
+    // let dbUrl =  'mongodb+srv://ahmedrazach118:ahmed118118@fitherofficial.ku0eltl.mongodb.net/'
+    let dbUrl = `mongodb://${dbConfig.dbHost}:${dbConfig.dbPort}/${dbConfig.dbName}`;
 
     if (process.env.MONGO_URL) {
       dbUrl = process.env.MONGO_URL;
