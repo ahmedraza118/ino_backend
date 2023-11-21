@@ -45,7 +45,6 @@ const {
   rateUserPost,
   sendOtpToPhone,
   updatePhoneNumber,
-  createCampaignPromotion,
   createPostPromotion,
   createProjectPromotion,
   createProductPromotion,
