@@ -76,7 +76,12 @@ const {
   getCampaignsList,
   getUserAllCampaigns,
   getUserActiveCampaigns,
-  updateUserCampaignById
+  updateUserCampaignById,
+  getAllJobsByUserId,
+  getAllPostsByUserId,
+  getAllProjectsByUserId,
+  getAllServicesByUserId,
+  getAllProductsByUserId,
 } = require("./userController");
 const auth = require("../../../../helper/auth");
 // const upload = require("../../../../helper/uploadHandler");
@@ -229,5 +234,11 @@ router.get("/updateUserCampaignById", auth.verifyToken, updateUserCampaignById);
 router.get("/getUserActiveCampaigns", auth.verifyToken, getUserActiveCampaigns);
 router.get("/getUserAllCampaigns", auth.verifyToken, getUserAllCampaigns);
 router.get("/getCampaignsList", auth.verifyToken, getCampaignsList);
+// Get User Inputs Routes
+router.get("/getAllJobsByUserId", auth.verifyToken, getAllJobsByUserId);
+router.get("/getAllProjectsByUserId", auth.verifyToken, getAllProjectsByUserId);
+router.get("/getAllServicesByUserId", auth.verifyToken, getAllServicesByUserId);
+router.get("/getAllProductsByUserId", auth.verifyToken, getAllProductsByUserId);
+router.get("/getAllPostsByUserId", auth.verifyToken, getAllPostsByUserId);
 
 module.exports = router;

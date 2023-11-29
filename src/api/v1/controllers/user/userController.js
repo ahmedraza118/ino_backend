@@ -1462,6 +1462,51 @@ const getAllPostList = async (req, res, next) => {
     return next(error);
   }
 };
+/**
+ * @swagger
+ * /admin/getAllPostsByUserId:
+ *   get:
+ *     tags:
+ *       - ADMIN
+ *     description: getAllPostsByUserId
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: postId
+ *         description: postId
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getAllPostsByUserId = async (req, res, next) => {
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+      userType: { $in: [userType.USER] },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let data = await listPost({
+      userId: req.userId,
+      status: status.ACTIVE,
+    });
+    if (!data) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    } else {
+      return res.json(new response(data, responseMessage.DATA_FOUND));
+    }
+  } catch (error) {
+    return next(error);
+  }
+};
 /////////Products////////////
 
 /**
@@ -2102,6 +2147,51 @@ const getAllProductList = async (req, res, next) => {
       throw apiError.notFound(responseMessage.USER_NOT_FOUND);
     }
     let data = await listProduct({
+      status: status.ACTIVE,
+    });
+    if (!data) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    } else {
+      return res.json(new response(data, responseMessage.DATA_FOUND));
+    }
+  } catch (error) {
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /admin/listAllUserProducts:
+ *   get:
+ *     tags:
+ *       - ADMIN
+ *     description: listAllUserProducts
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: postId
+ *         description: postId
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getAllProductsByUserId = async (req, res, next) => {
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+      userType: userType.USER,
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let data = await listProduct({
+      userId: req.userId,
       status: status.ACTIVE,
     });
     if (!data) {
@@ -2883,6 +2973,51 @@ const getAllJobList = async (req, res, next) => {
       throw apiError.notFound(responseMessage.USER_NOT_FOUND);
     }
     let data = await listJob({
+      status: status.ACTIVE,
+    });
+    if (!data) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    } else {
+      return res.json(new response(data, responseMessage.DATA_FOUND));
+    }
+  } catch (error) {
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /admin/getAllJobsByUserId:
+ *   get:
+ *     tags:
+ *       - ADMIN
+ *     description: getAllJobsByUserId
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: postId
+ *         description: postId
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getAllJobsByUserId = async (req, res, next) => {
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+      userType: userType.USER,
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let data = await listJob({
+      userId: req.userId,
       status: status.ACTIVE,
     });
     if (!data) {
@@ -3681,6 +3816,52 @@ const getAllProjectList = async (req, res, next) => {
     return next(error);
   }
 };
+/**
+ * @swagger
+ * /admin/getAllProjectsByUserId:
+ *   get:
+ *     tags:
+ *       - ADMIN
+ *     description: getAllProjectsByUserId
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: postId
+ *         description: postId
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getAllProjectsByUserId = async (req, res, next) => {
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+      userType: userType.USER,
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let data = await listProject({
+      userId: req.userId,
+      status: status.ACTIVE,
+      type : { $ne: 'GOVT' },
+    });
+    if (!data) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    } else {
+      return res.json(new response(data, responseMessage.DATA_FOUND));
+    }
+  } catch (error) {
+    return next(error);
+  }
+};
 
 
 /**
@@ -4405,6 +4586,50 @@ const allServiceListPaginate = async (req, res, next) => {
  *         description: Returns success message
  */
 const getAllServiceList = async (req, res, next) => {
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      status: { $ne: status.DELETE },
+      userType: userType.USER,
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    }
+    let data = await listService({
+      status: status.ACTIVE,
+    });
+    if (!data) {
+      throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+    } else {
+      return res.json(new response(data, responseMessage.DATA_FOUND));
+    }
+  } catch (error) {
+    return next(error);
+  }
+};
+/**
+ * @swagger
+ * /admin/getAllServicesByUserId:
+ *   get:
+ *     tags:
+ *       - ADMIN
+ *     description: getAllServicesByUserId
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: postId
+ *         description: postId
+ *         in: query
+ *         required: true
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getAllServicesByUserId = async (req, res, next) => {
   try {
     let userResult = await findUser({
       _id: req.userId,
@@ -6553,5 +6778,10 @@ module.exports = {
   getCampaignsList,
   getUserAllCampaigns,
   getUserActiveCampaigns,
-  updateUserCampaignById
+  updateUserCampaignById,
+  getAllJobsByUserId,
+  getAllPostsByUserId,
+  getAllProjectsByUserId,
+  getAllServicesByUserId,
+  getAllProductsByUserId
 };
