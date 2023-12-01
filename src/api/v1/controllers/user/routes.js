@@ -229,8 +229,8 @@ router.get("/getAllProjectList", auth.verifyToken, getAllProjectList);
 router.get("/getAllGovtProjectList", auth.verifyToken, getAllGovtProjectList);
 
 // Campaign Routes
-router.get("/createCampaignPromotion", auth.verifyToken, createCampaignPromotion);
-router.get("/updateUserCampaignById", auth.verifyToken, updateUserCampaignById);
+router.post("/createCampaignPromotion", auth.verifyToken, createCampaignPromotion);
+router.post("/updateUserCampaignById", auth.verifyToken, updateUserCampaignById);
 router.get("/getUserActiveCampaigns", auth.verifyToken, getUserActiveCampaigns);
 router.get("/getUserAllCampaigns", auth.verifyToken, getUserAllCampaigns);
 router.get("/getCampaignsList", auth.verifyToken, getCampaignsList);
