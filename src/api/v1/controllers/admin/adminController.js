@@ -3759,6 +3759,67 @@ class adminController {
       return next(error);
     }
   }
+  /**
+   * @swagger
+   * /admin/userUnblock:
+   *   post:
+   *     tags:
+   *       -  ADMIN
+   *     description: userUnblock
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: token
+   *         description: token
+   *         in: header
+   *         required: true
+   *       - name: _id
+   *         description: _id
+   *         in: formData
+   *         required: true
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+  async userUnblock(req, res, next) {
+    const validationSchema = {
+      _id: Joi.string().required(),
+    };
+    try {
+      const validatedBody = await Joi.validate(req.body, validationSchema);
+      let adminResult = await findUser({
+        _id: req.userId,
+        userType: { $in: [userType.ADMIN] },
+        status: { $ne: status.DELETE },
+      });
+      if (!adminResult) {
+        throw apiError.unauthorized(responseMessage.UNAUTHORIZED);
+      } else {
+        let userResult = await findUser({
+          _id: validatedBody._id,
+          userType: { $ne: userType.ADMIN },
+          status: { $ne: status.DELETE },
+        });
+        if (!userResult) {
+          throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+        } else {
+          if (userResult.status == status.BLOCK) {
+            let statusRes = await updateUserById(
+              { _id: userResult._id },
+              { $set: { status: status.ACTIVE } }
+            );
+            return res.json(
+              new response(statusRes, responseMessage.UNBLOCK_BY_ADMIN)
+            );
+          } else {
+            throw apiError.notFound(responseMessage.DATA_NOT_FOUND);
+          }
+        }
+      }
+    } catch (error) {
+      return next(error);
+    }
+  }
 
   /**
    * @swagger

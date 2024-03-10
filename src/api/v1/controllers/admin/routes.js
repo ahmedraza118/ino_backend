@@ -72,6 +72,11 @@ router.post(
   auth.verifyToken,
   adminControllerInstance.userBlockUnblock
 );
+router.post(
+  "/userUnblock",
+  auth.verifyToken,
+  adminControllerInstance.userUnblock
+);
 router.get(
   "/listPaginateUser",
   auth.verifyToken,

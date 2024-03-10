@@ -4640,6 +4640,7 @@ const getAllServicesByUserId = async (req, res, next) => {
       throw apiError.notFound(responseMessage.USER_NOT_FOUND);
     }
     let data = await listService({
+      userId: req.userId,
       status: status.ACTIVE,
     });
     if (!data) {
@@ -5463,7 +5464,7 @@ const createCampaignPromotion = async (req, res, next) => {
     if (!userResult) {
       throw apiError.notFound(responseMessage.USER_NOT_FOUND);
     } else {
-      const photo = commonFunction.getSecureUrl(validatedBody.photo)
+      const photo = await commonFunction.getSecureUrl(validatedBody.photo)
         let obj = {
           ownerId: userResult._id,
           keyword: validatedBody.keyword,
@@ -6507,7 +6508,7 @@ const getUserActivePromotions = async (req, res, next) => {
       throw apiError.notFound(responseMessage.USER_NOT_FOUND);
     } else {
       let promotionCheck = await findAllPromotion({
-        userId: userResult._id,
+        ownerId: userResult._id,
         status: status.ACTIVE,
       });
       if (promotionCheck) {
@@ -6559,7 +6560,7 @@ const getUserPromotionList = async (req, res, next) => {
       throw apiError.notFound(responseMessage.USER_NOT_FOUND);
     } else {
       let promotionCheck = await findAllPromotion({
-        userId: userResult._id,
+        ownerId: userResult._id,
       });
       if (promotionCheck) {
         return res.json(
@@ -6680,13 +6681,20 @@ const clickOnPromotion = async (req, res, next) => {
     if (!userResult) {
       throw apiError.notFound(responseMessage.USER_NOT_FOUND);
     } else {
+
+      let promotionCheck = await findPromotion({
+        _id: promotionId,
+        status: { $ne: status.DELETE },
+        status: { $ne: status.EXPIRED },
+        status: { $ne: status.BLOCK },
+      });
+
+      if (promotionCheck) {
+        // let update
       let updatePromotion = await recordClickAndUpdatePromotion(
         promotionId,
         userResult._id
       );
-
-      // let update
-      if (promotionCheck) {
         // updatedBody.click;
         return res.json(
           new response(updatePromotion, responseMessage.PROMOTION_UPDATE)
