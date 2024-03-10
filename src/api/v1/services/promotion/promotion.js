@@ -37,41 +37,101 @@ const promotionServices = {
 
   recordClickAndUpdatePromotion: async (promotionId, userId) => {
     try {
-      const promotion = await promotionModel.find({
+      const promotion = await promotionModel.findOne({
         _id: promotionId,
         status: status.ACTIVE,
       });
-      const wallet = await walletModel.find({
+
+      const wallet = await walletModel.findOne({
         ownerId: promotion.ownerId,
         status: status.ACTIVE,
       });
+
       if (!promotion) {
         throw apiError.notFound(responseMessage.PROMOTION_NOT_FOUND);
       }
+
       if (!wallet) {
         throw apiError.notFound(responseMessage.WALLET_NOT_FOUND);
       }
+
       if (promotion.clickedBy && promotion.clickedBy.includes(userId)) {
         throw apiError.forbidden(responseMessage.ALREADY_CLICKED);
       }
+
       const bidAmount = promotion.bidAmount;
-      const updatedSpentAmount = promotion.spentAmount + bidAmount;
-      const updatedBudget = promotion.budget - bidAmount;
-      const updatedPromotion = await promotionModel.findByIdAndUpdate(promotionId, {
-        $push: { clickedBy: userId },
-        $inc: { clicks: 1 },
-        $set: { spentAmount: updatedSpentAmount, budget: updatedBudget }
-      }, { new: true });
-        const updatedWallet = await walletModel.findByIdAndUpdate(wallet._id, {
-          $inc: {balance: -bidAmount },
-        });
-      if (updatedPromotion.bidAmount > updatedWallet.balance) {
-        const updatedPromotion = await promotionModel.findByIdAndUpdate(promotionId, {
-          $set: { status: status.EXPIRED},
-        });
-      console.log("Click updated successfully.");
-      return updatedPromotion;
+
+      // Ensure bidAmount is a valid number
+      if (isNaN(bidAmount)) {
+        throw new Error("Invalid bidAmount value");
       }
+
+      const updatedSpentAmount = promotion.spentAmount + bidAmount;
+
+      // Ensure updatedSpentAmount is a valid number
+      if (isNaN(updatedSpentAmount)) {
+        throw new Error("Invalid updatedSpentAmount value");
+      }
+
+      const updatedBudget = promotion.budget - bidAmount;
+
+      // Ensure updatedBudget is a valid number
+      if (isNaN(updatedBudget)) {
+        throw new Error("Invalid updatedBudget value");
+      }
+
+      console.log(
+        "Budget type:",
+        typeof promotion.budget,
+        "Value:",
+        promotion.budget
+      );
+      console.log(
+        "Updated Budget type:",
+        typeof updatedBudget,
+        "Value:",
+        updatedBudget
+      );
+
+      const updatedPromotion = await promotionModel.findByIdAndUpdate(
+        promotionId,
+        {
+          $push: { clickedBy: userId },
+          $inc: { clicks: 1 },
+          $set: { spentAmount: updatedSpentAmount, budget: updatedBudget },
+        },
+        { new: true }
+      );
+
+      const updatedBalance = wallet.balance - bidAmount;
+
+      console.log(
+        "Balance type:",
+        typeof wallet.balance,
+        "Value:",
+        wallet.balance
+      );
+      console.log(
+        "Updated Balance type:",
+        typeof updatedBalance,
+        "Value:",
+        updatedBalance
+      );
+
+      const updatedWallet = await walletModel.findByIdAndUpdate(
+        wallet._id,
+        {
+          $set: { balance: updatedBalance },
+        },
+        { new: true }
+      );
+
+      if (updatedPromotion.bidAmount > updatedWallet.balance) {
+        await promotionModel.findByIdAndUpdate(promotionId, {
+          $set: { status: status.EXPIRED },
+        });
+      }
+
       console.log("Click updated successfully.");
       return updatedPromotion;
     } catch (error) {
