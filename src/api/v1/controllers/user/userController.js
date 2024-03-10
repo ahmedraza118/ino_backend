@@ -5450,7 +5450,7 @@ const createCampaignPromotion = async (req, res, next) => {
     headline: Joi.string().required(),
     photo: Joi.string().required(),
     description: Joi.string().required(),
-    keyword: Joi.string().required(),
+    keyword: Joi.array().items(Joi.string()).optional().default([]),
     duration: Joi.number().required(),
     bidAmount: Joi.number().required(),
     budget: Joi.number().required(),
@@ -5749,7 +5749,7 @@ const updateUserCampaignById = async (req, res, next) => {
 const createPostPromotion = async (req, res, next) => {
   const validationSchema = {
     postId: Joi.string().required(),
-    keyword: Joi.string().required(),
+    keyword: Joi.array().items(Joi.string()).optional().default([]),
     duration: Joi.number().required(),
     bidAmount: Joi.number().required(),
     budget: Joi.number().required(),
@@ -5834,7 +5834,7 @@ const createPostPromotion = async (req, res, next) => {
 const createProjectPromotion = async (req, res, next) => {
   const validationSchema = {
     projectId: Joi.string().required(),
-    keyword: Joi.string().required(),
+    keyword: Joi.array().items(Joi.string()).optional().default([]),
     duration: Joi.number().required(),
     bidAmount: Joi.number().required(),
     budget: Joi.number().required(),
@@ -5919,7 +5919,7 @@ const createProjectPromotion = async (req, res, next) => {
 const createJobPromotion = async (req, res, next) => {
   const validationSchema = {
     jobId: Joi.string().required(),
-    keyword: Joi.string().required(),
+    keyword: Joi.array().items(Joi.string()).optional().default([]),
     duration: Joi.number().required(),
     bidAmount: Joi.number().required(),
     budget: Joi.number().required(),
@@ -6004,7 +6004,7 @@ const createJobPromotion = async (req, res, next) => {
 const createProductPromotion = async (req, res, next) => {
   const validationSchema = {
     productId: Joi.string().required(),
-    keyword: Joi.string().required(),
+    keyword: Joi.array().items(Joi.string()).optional().default([]),
     duration: Joi.number().required(),
     bidAmount: Joi.number().required(),
     budget: Joi.number().required(),
@@ -6089,7 +6089,7 @@ const createProductPromotion = async (req, res, next) => {
 const createServicePromotion = async (req, res, next) => {
   const validationSchema = {
     serviceId: Joi.string().required(),
-    keyword: Joi.string().required(),
+    keyword: Joi.array().items(Joi.string()).optional().default([]),
     duration: Joi.number().required(),
     bidAmount: Joi.number().required(),
     budget: Joi.number().required(),
