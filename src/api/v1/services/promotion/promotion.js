@@ -61,36 +61,23 @@ const promotionServices = {
 
       const bidAmount = promotion.bidAmount;
 
-      // Ensure bidAmount is a valid number
-      if (isNaN(bidAmount)) {
-        throw new Error("Invalid bidAmount value");
-      }
+      let updatedSpentAmount = promotion.spentAmount + bidAmount;
+      let updatedBudget = promotion.budget - bidAmount;
+      updatedSpentAmount = parseFloat(updatedSpentAmount);
+      updatedBudget = parseFloat(updatedBudget);
 
-      const updatedSpentAmount = promotion.spentAmount + bidAmount;
-
-      // Ensure updatedSpentAmount is a valid number
-      if (isNaN(updatedSpentAmount)) {
-        throw new Error("Invalid updatedSpentAmount value");
-      }
-
-      const updatedBudget = promotion.budget - bidAmount;
-
-      // Ensure updatedBudget is a valid number
-      if (isNaN(updatedBudget)) {
-        throw new Error("Invalid updatedBudget value");
-      }
 
       console.log(
         "Budget type:",
-        typeof promotion.budget,
-        "Value:",
-        promotion.budget
-      );
-      console.log(
-        "Updated Budget type:",
         typeof updatedBudget,
         "Value:",
         updatedBudget
+      );
+      console.log(
+        "Updated spentAmount type:",
+        typeof updatedSpentAmount,
+        "Value:",
+        updatedSpentAmount
       );
 
       const updatedPromotion = await promotionModel.findByIdAndUpdate(
@@ -103,7 +90,8 @@ const promotionServices = {
         { new: true }
       );
 
-      const updatedBalance = wallet.balance - bidAmount;
+      let updatedBalance = wallet.balance - bidAmount;
+      updatedBalance = parseFloat(updatedBalance);
 
       console.log(
         "Balance type:",
