@@ -61,9 +61,9 @@ const promotionServices = {
 
       const bidAmount = promotion.bidAmount;
 
-      let updatedSpentAmount = promotion.spentAmount + bidAmount;
+      // let updatedSpentAmount = promotion.spentAmount + bidAmount;
       let updatedBudget = promotion.budget - bidAmount;
-      updatedSpentAmount = parseFloat(updatedSpentAmount);
+      // updatedSpentAmount = parseFloat(updatedSpentAmount);
       updatedBudget = parseFloat(updatedBudget);
 
 
@@ -73,19 +73,19 @@ const promotionServices = {
         "Value:",
         updatedBudget
       );
-      console.log(
-        "Updated spentAmount type:",
-        typeof updatedSpentAmount,
-        "Value:",
-        updatedSpentAmount
-      );
+      // console.log(
+      //   "Updated spentAmount type:",
+      //   typeof updatedSpentAmount,
+      //   "Value:",
+      //   updatedSpentAmount
+      // );
 
       const updatedPromotion = await promotionModel.findByIdAndUpdate(
         promotionId,
         {
           $push: { clickedBy: userId },
           $inc: { clicks: 1 },
-          $set: { spentAmount: updatedSpentAmount, budget: updatedBudget },
+          $set: { budget: updatedBudget },
         },
         { new: true }
       );
