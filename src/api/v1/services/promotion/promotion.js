@@ -51,21 +51,20 @@ const promotionServices = {
       if (!wallet) {
         throw apiError.notFound(responseMessage.WALLET_NOT_FOUND);
       }
-      // have to fix this
       if (promotion.clickedBy && promotion.clickedBy.includes(userId)) {
         throw apiError.forbidden(responseMessage.ALREADY_CLICKED);
       }
       const bidAmount = promotion.bidAmount;
-      
-      // Update the promotion with new click and add user to clickedBy
+      const updatedSpentAmount = promotion.spentAmount + bidAmount;
+      const updatedBudget = promotion.budget - bidAmount;
       const updatedPromotion = await promotionModel.findByIdAndUpdate(promotionId, {
         $push: { clickedBy: userId },
-        $inc: { clicks: 1, spentAmount: bidAmount, budget: - bidAmount },
-      });
-      const updatedWallet = await walletModel.findByIdAndUpdate(wallet._id, {
-        $inc: {balance: -bidAmount },
-      });
-
+        $inc: { clicks: 1 },
+        $set: { spentAmount: updatedSpentAmount, budget: updatedBudget }
+      }, { new: true });
+        const updatedWallet = await walletModel.findByIdAndUpdate(wallet._id, {
+          $inc: {balance: -bidAmount },
+        });
       if (updatedPromotion.bidAmount > updatedWallet.balance) {
         const updatedPromotion = await promotionModel.findByIdAndUpdate(promotionId, {
           $set: { status: status.EXPIRED},
