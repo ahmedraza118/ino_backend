@@ -36,52 +36,54 @@ const promotionSchema = new Schema(
     },
     type: {
       type: String,
-      enum: ["POST", "PROJECT", "PRODUCT","JOB","SERVICE","CAMPAIGN"],
+      enum: ["POST", "PROJECT", "PRODUCT", "JOB", "SERVICE", "CAMPAIGN"],
     },
-    description:{
+    description: {
       type: String,
     },
-    headline:{
+    headline: {
       type: String,
     },
-    photo:{
+    photo: {
       type: String,
     },
     status: {
       type: String,
-      enum: ["ACTIVE", "BLOCK", "DELETE","EXPIRED"],
+      enum: ["ACTIVE", "BLOCK", "DELETE", "EXPIRED"],
       default: "ACTIVE",
     },
-    keyword:{
-      type: String
-    },
+    keyword: [
+      {
+        type: String,
+      },
+    ],
     bidAmount: {
-        type: Number,
-        required: true,
-      },
+      type: Number,
+      required: true,
+    },
     budget: {
-        type: Number,
-      },
+      type: Number,
+    },
     spentAmount: {
-        type: Number,
+      type: Number,
+    },
+    clickedBy: [
+      {
+        type: Schema.Types.ObjectId,
+        ref: "user",
       },
-      clickedBy: [
-        {
-          type: Schema.Types.ObjectId,
-          ref: "user",
-        },
-      ],
-      clicks: {
-        type: Number,
-        default: 0,
-      },
-      duration: {
-        type: Number,
-        required: true,
-      },
-      startDate:{
-        type: Date
-      }
+    ],
+    clicks: {
+      type: Number,
+      default: 0,
+    },
+    duration: {
+      type: Number,
+      required: true,
+    },
+    startDate: {
+      type: Date,
+    },
   },
   options
 );
