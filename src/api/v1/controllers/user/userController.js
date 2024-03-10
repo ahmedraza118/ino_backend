@@ -5867,6 +5867,8 @@ const createProjectPromotion = async (req, res, next) => {
           projectId: projectRes._id,
           duration: validatedBody.duration,
           bidAmount: validatedBody.bidAmount,
+          budget: validatedBody.budget,
+          keyword: validatedBody.keyword,
           type: "PROJECT",
         };
         let result = await createPromotion(obj);
@@ -5950,6 +5952,8 @@ const createJobPromotion = async (req, res, next) => {
           jobId: jobRes._id,
           duration: validatedBody.duration,
           bidAmount: validatedBody.bidAmount,
+          budget: validatedBody.budget,
+          keyword: validatedBody.keyword,
           type: "JOB",
         };
         let result = await createPromotion(obj);
@@ -6033,6 +6037,8 @@ const createProductPromotion = async (req, res, next) => {
           productId: productRes._id,
           duration: validatedBody.duration,
           bidAmount: validatedBody.bidAmount,
+          budget: validatedBody.budget,
+          keyword: validatedBody.keyword,
           type: "PRODUCT",
         };
         let result = await createPromotion(obj);
@@ -6116,6 +6122,8 @@ const createServicePromotion = async (req, res, next) => {
           serviceId: serviceRes._id,
           duration: validatedBody.duration,
           bidAmount: validatedBody.bidAmount,
+          budget: validatedBody.budget,
+          keyword: validatedBody.keyword,
           type: "SERVICE",
         };
         let result = await createPromotion(obj);
