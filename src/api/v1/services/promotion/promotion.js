@@ -51,7 +51,8 @@ const promotionServices = {
       if (!wallet) {
         throw apiError.notFound(responseMessage.WALLET_NOT_FOUND);
       }
-      if (promotion.clickedBy.includes(userId)) {
+      // have to fix this
+      if (promotion.clickedBy && promotion.clickedBy.includes(userId)) {
         throw apiError.forbidden(responseMessage.ALREADY_CLICKED);
       }
       const bidAmount = promotion.bidAmount;

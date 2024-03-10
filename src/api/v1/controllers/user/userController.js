@@ -5533,7 +5533,7 @@ const getUserActiveCampaigns = async (req, res, next) => {
       throw apiError.notFound(responseMessage.USER_NOT_FOUND);
     } else {
       let promotionCheck = await findAllPromotion({
-        userId: userResult._id,
+        ownerId: userResult._id,
         status: status.ACTIVE,
         type: "CAMPAIGN"
       });
@@ -5585,7 +5585,7 @@ const getUserAllCampaigns = async (req, res, next) => {
       throw apiError.notFound(responseMessage.USER_NOT_FOUND);
     } else {
       let promotionCheck = await findAllPromotion({
-        userId: userResult._id,
+        ownerId: userResult._id,
         type: "CAMPAIGN"
       });
       if (promotionCheck) {
