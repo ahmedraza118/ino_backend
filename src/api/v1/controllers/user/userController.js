@@ -638,6 +638,8 @@ const updateProfile = async (req, res, next) => {
     gender: Joi.string().allow("").optional(),
     bio: Joi.string().allow("").optional(),
     dob: Joi.string().allow("").optional(),
+    identification: Joi.string().allow("").optional(),
+    interest: Joi.array().items(Joi.string()).optional().default([]),
     facebook: Joi.string().allow("").optional(),
     twitter: Joi.string().allow("").optional(),
     instagram: Joi.string().allow("").optional(),

@@ -76,6 +76,9 @@ const userSchema = new mongoose.Schema({
       type: String,
     },
   ],
+  identification:{
+    type: String
+  },
   blockedUser: [
     {
       type: Schema.Types.ObjectId,
