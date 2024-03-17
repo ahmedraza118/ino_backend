@@ -41,6 +41,7 @@ module.exports = {
 	FAQ_ADDED: 'FAQ added successfully',
 	UPLOAD_SUCCESS: 'File uploaded successfully',
 	TRANSACTION_SUCCESS: 'Transaction has been completed',
+	TRANSACTION_NOT_FOUND: 'Transaction Not Found',
 	DATA_FOUND: 'Data found successfully',
 	DETAILS_FETCHED: 'Details has been fetched successfully',
 	DATA_NOT_FOUND: 'Data not found.',

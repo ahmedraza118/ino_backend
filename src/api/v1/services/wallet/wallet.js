@@ -33,13 +33,13 @@ const walletServices = {
         amount: query.amount,
         type: "deposit",
         order_id: query.order_id,
-        entity:query.entity,
+        entity: query.entity,
         currency: query.currency,
-        status : query.status,
-        receipt : query.receipt,
-        attempts : query.attempts,
-        notes : query.notes,
-        offer_id : query.offer_id,
+        status: query.status,
+        receipt: query.receipt,
+        attempts: query.attempts,
+        notes: query.notes,
+        offer_id: query.offer_id,
         created_at: query.created_at,
       });
 
@@ -80,7 +80,9 @@ const walletServices = {
 
   getWallet: async (userId) => {
     try {
-      const userWallet = await walletModel.findOne({ ownerId: userId });
+      const userWallet = await walletModel
+        .findOne({ ownerId: userId })
+        .select("-transactionHistory");
 
       if (!userWallet) {
         throw apiError.notFound(responseMessage.WALLET_NOT_FOUND);
@@ -92,6 +94,39 @@ const walletServices = {
       throw error;
     }
   },
+  getWalletTransactionHistory: async (userId) => {
+    try {
+      const userWallet = await walletModel.findOne({ ownerId: userId });
+
+      if (!userWallet) {
+        throw new Error(responseMessage.WALLET_NOT_FOUND);
+      }
+
+      return userWallet.transactionHistory;
+    } catch (error) {
+      console.error("Error getting wallet transaction history:", error.message);
+      throw error;
+    }
+  },
+
+  getTransactionById: async (userId, transactionId) => {
+    try {
+      const transaction = await walletModel.findOne(
+        { ownerId: userId, "transactionHistory._id": transactionId },
+        { "transactionHistory.$": 1 }
+      );
+
+      if (!transaction || !transaction.transactionHistory.length) {
+        throw new Error(responseMessage.TRANSACTION_NOT_FOUND);
+      }
+
+      return transaction.transactionHistory[0];
+    } catch (error) {
+      console.error("Error getting transaction:", error.message);
+      throw error;
+    }
+  },
+
   listAllWallets: async () => {
     try {
       const allWallets = await walletModel.find();
@@ -104,9 +139,13 @@ const walletServices = {
   },
   updateWalletById: async (walletId, updateData) => {
     try {
-      const updatedUser = await walletModel.findByIdAndUpdate(walletId, updateData, {
-        new: true,
-      });
+      const updatedUser = await walletModel.findByIdAndUpdate(
+        walletId,
+        updateData,
+        {
+          new: true,
+        }
+      );
       return updatedUser;
     } catch (error) {
       throw error;

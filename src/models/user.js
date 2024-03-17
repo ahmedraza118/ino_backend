@@ -26,6 +26,12 @@ const userSchema = new mongoose.Schema({
     required: false,
   },
   location: { type: String },
+  country: { type: String },
+  city: { type: String },
+  state: { type: String },
+  zipCode: { type: String },
+  addressLine1: { type: String },
+  addressLine2: { type: String },
   countryCode: { type: String },
   mobileNumber: {
     type: String,

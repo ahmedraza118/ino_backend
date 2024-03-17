@@ -147,6 +147,7 @@ const {
   updatePromotion,
   recordClickAndUpdatePromotion,
   updatePromotionById,
+  fetchAllPromotionList,
 } = promotionServices;
 const {
   createBanner,
@@ -639,6 +640,12 @@ const updateProfile = async (req, res, next) => {
     bio: Joi.string().allow("").optional(),
     dob: Joi.string().allow("").optional(),
     identification: Joi.string().allow("").optional(),
+    country: Joi.string().allow("").optional(),
+    city: Joi.string().allow("").optional(),
+    state: Joi.string().allow("").optional(),
+    zipCode: Joi.string().allow("").optional(),
+    addressLine1: Joi.string().allow("").optional(),
+    addressLine2: Joi.string().allow("").optional(),
     interest: Joi.array().items(Joi.string()).optional().default([]),
     facebook: Joi.string().allow("").optional(),
     twitter: Joi.string().allow("").optional(),
@@ -6150,6 +6157,54 @@ const createServicePromotion = async (req, res, next) => {
 
 /**
  * @swagger
+ * /user/getAllPromotions:
+ *   post:
+ *     tags:
+ *       - USER VIEW
+ *     description: getAllPromotions
+ *     produces:
+ *       - application/json
+ *     parameters:
+ *       - name: token
+ *         description: token
+ *         in: header
+ *         required: true
+ *       - name: getAllPromotions
+ *         description: getAllPromotions
+ *         in: body
+ *         required: true
+ *         schema:
+ *           $ref: '#/definitions/getAllPromotions'
+ *     responses:
+ *       200:
+ *         description: Returns success message
+ */
+const getAllPromotions = async (req, res, next) => {
+  try {
+    let userResult = await findUser({
+      _id: req.userId,
+      userType: userType.USER,
+      status: { $ne: status.DELETE },
+    });
+    if (!userResult) {
+      throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+    } else {
+      let promotionCheck = await fetchAllPromotionList();
+      if (promotionCheck) {
+        return res.json(
+          new response(promotionCheck, responseMessage.PROMOTION_FOUND)
+        );
+      } else {
+        throw apiError.notFound(responseMessage.PROMOTION_NOT_FOUND);
+      }
+    }
+  } catch (error) {
+    console.log("===error====", error);
+    return next(error);
+  }
+};
+/**
+ * @swagger
  * /user/viewPromotionById:
  *   post:
  *     tags:
@@ -6780,6 +6835,7 @@ module.exports = {
   updateUserPromotionById,
   clickOnPromotion,
   viewPromotionById,
+  getAllPromotions,
   getAllPostList,
   getAllProductList,
   getSellerProductList,

@@ -60,6 +60,7 @@ const {
   updateUserPromotionById,
   clickOnPromotion,
   viewPromotionById,
+  getAllPromotions,
   getAllPostList,
   getAllProductList,
   getSellerProductList,
@@ -161,6 +162,7 @@ router.post("/rateUserPost", auth.verifyToken, rateUserPost);
 // router.post("/rateUserPost", auth.verifyToken, rateUserPost);
 
 //Create Promotion APIs
+router.post("/getAllPromotions", auth.verifyToken, getAllPromotions);
 router.post("/createPostPromotion", auth.verifyToken, createPostPromotion);
 router.post(
   "/createProjectPromotion",

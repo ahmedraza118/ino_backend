@@ -34,6 +34,8 @@ const {
   transferFunds,
   getWallet,
   listAllWallets,
+  getWalletTransactionHistory,
+  getTransactionById,
 } = walletServices;
 // Initialize Razorpay (replace 'YOUR_RAZORPAY_KEY_ID' and 'YOUR_RAZORPAY_KEY_SECRET' with your actual Razorpay credentials)
 const razorpay = new Razorpay({
@@ -340,6 +342,86 @@ class walletController {
       return next(error);
     }
   }
+
+    /**
+   * @swagger
+   * /wallet/getTransactionHistory:
+   *   post:
+   *     tags:
+   *       - USER
+   *     description: getTransactionHistory
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: login
+   *         description: login
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/getTransactionHistory'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+    async getTransactionHistory(req, res, next) {
+      try {
+        let userResult = await findUser({
+          _id: req.userId,
+          userType: { $in: [userType.USER] },
+          status: { $ne: status.DELETE },
+        });
+  
+        if (!userResult) {
+          throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+        }
+        let walletRes = await getWalletTransactionHistory(userResult._id);
+        return res.json(new response(walletRes, responseMessage.WALLET_FOUND));
+      } catch (error) {
+        return next(error);
+      }
+    }
+    /**
+   * @swagger
+   * /wallet/viewTransactionById:
+   *   post:
+   *     tags:
+   *       - USER
+   *     description: viewTransactionById
+   *     produces:
+   *       - application/json
+   *     parameters:
+   *       - name: login
+   *         description: login
+   *         in: body
+   *         required: true
+   *         schema:
+   *           $ref: '#/definitions/viewTransactionById'
+   *     responses:
+   *       200:
+   *         description: Returns success message
+   */
+    async viewTransactionById(req, res, next) {
+      const validationSchema = {
+        transactionId: Joi.number().required(),
+      };
+
+      try {
+        const validatedBody = await Joi.validate(req.query, validationSchema);
+        let userResult = await findUser({
+          _id: req.userId,
+          userType: { $in: [userType.USER] },
+          status: { $ne: status.DELETE },
+        });
+  
+        if (!userResult) {
+          throw apiError.notFound(responseMessage.USER_NOT_FOUND);
+        }
+        let walletRes = await getTransactionById(userResult._id, validatedBody.transactionId);
+        return res.json(new response(walletRes, responseMessage.TRANSACTION_NOT_FOUND));
+      } catch (error) {
+        return next(error);
+      }
+    }
   /**
    * @swagger
    * /wallet/listAllWallets:
