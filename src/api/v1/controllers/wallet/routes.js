@@ -36,12 +36,12 @@ router.post(
 router.get(
   "/getTransactionHistory",
   auth.verifyToken,
-  walletControllerInstance.transferFunds
+  walletControllerInstance.getTransactionHistory
 );
 router.get(
   "/viewTransactionById",
   auth.verifyToken,
-  walletControllerInstance.transferFunds
+  walletControllerInstance.viewTransactionById
 );
 
 module.exports = router;
